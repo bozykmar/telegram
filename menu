@@ -33,7 +33,7 @@ def obsluz_komendy():
 
                 elif tekst == "/raport":
                     wyslij_wiadomosc(chat_id, "⏳ Generuję raport walorów...")
-                    skrypt.main()
+                    walory.main()
                     print("Obsłużono /raport -> wygenerowano raport")
 
                 requests.get(f"{url}?offset={update_id + 1}")
