@@ -10,7 +10,7 @@ GROUPS = {
     "COINBASE": [
         {"name": "MSFT Perp", "ticker": "MSFT"},
         {"name": "GOOGL Perp", "ticker": "GOOGL"},
-        {"name": "QQQ Perp", "ticker": "NQ=F"}  # NQ=F odpowiada kontraktom Futures / NASDAQ 100
+        {"name": "QQQ Perp", "ticker": "NQ=F"}
     ],
     "WEEX": [
         {"name": "QQQUSDT", "ticker": "NQ=F"},
@@ -55,22 +55,22 @@ def get_asset_data(asset_info):
 
 def format_colored_val(val, max_pos, max_neg):
     """
-    Formatowanie koloru tekstu dla wskaźników procentowych (T oraz M):
-    - Wzrosty (>= 0): Najlepszy = zielony, Pozostałe = żółty
-    - Spadki (< 0): Największy minus = czerwony, Pozostałe = pomarańczowy
+    Formatowanie z emoji i pogrubieniem (zgodne z Telegram HTML):
+    - Wzrosty: Najlepszy = 🟢, Pozostałe = 🟡
+    - Spadki: Największy minus = 🔴, Pozostałe = 🟠
     """
     val_str = f"{val:+.1f}%"
     
     if val >= 0:
         if val == max_pos and max_pos > 0:
-            return f'🟢 <font color="#00FF00"><b>{val_str}</b></font>'
+            return f"🟢 <b>{val_str}</b>"
         else:
-            return f'🟡 <font color="#FFFF00"><b>{val_str}</b></font>'
+            return f"🟡 <b>{val_str}</b>"
     else:
         if val == max_neg and max_neg < 0:
-            return f'🔴 <font color="#FF0000"><b>{val_str}</b></font>'
+            return f"🔴 <b>{val_str}</b>"
         else:
-            return f'🟠 <font color="#FFA500"><b>{val_str}</b></font>'
+            return f"🟠 <b>{val_str}</b>"
 
 def main():
     raport_parts = ["📊 <b>RAPORT SYGNAŁÓW I POTENCJAŁU WALORÓW</b>"]
@@ -85,13 +85,13 @@ def main():
         if not parsed_assets:
             continue
 
-        # Wyznaczenie wartości ekstremalnych dla Tygodnia (T)
+        # Wartości ekstremalne dla Tygodnia (T)
         pos_t = [a["change_7d"] for a in parsed_assets if a["change_7d"] >= 0]
         neg_t = [a["change_7d"] for a in parsed_assets if a["change_7d"] < 0]
         max_pos_t = max(pos_t) if pos_t else None
         max_neg_t = min(neg_t) if neg_t else None
 
-        # Wyznaczenie wartości ekstremalnych dla Miesiąca (M)
+        # Wartości ekstremalne dla Miesiąca (M)
         pos_m = [a["change_30d"] for a in parsed_assets if a["change_30d"] >= 0]
         neg_m = [a["change_30d"] for a in parsed_assets if a["change_30d"] < 0]
         max_pos_m = max(pos_m) if pos_m else None
