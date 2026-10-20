@@ -10,7 +10,7 @@ GROUPS = {
     "COINBASE": [
         {"name": "MSFT Perp", "ticker": "MSFT"},
         {"name": "GOOGL Perp", "ticker": "GOOGL"},
-        {"name": "QQQ Perp", "ticker": "NQ=F"}  # Użycie NQ=F zwraca wycenę kontraktu Futures / NASDAQ 100 (~700-800 USD)
+        {"name": "QQQ Perp", "ticker": "NQ=F"}  # NQ=F odpowiada kontraktom Futures / NASDAQ 100
     ],
     "WEEX": [
         {"name": "QQQUSDT", "ticker": "NQ=F"},
@@ -53,21 +53,21 @@ def get_asset_data(asset_info):
         "change_30d": change_30d
     }
 
-def format_colored_month(change_30d, max_pos, max_neg):
+def format_colored_val(val, max_pos, max_neg):
     """
-    Formatowanie koloru tekstu dla wartości miesięcznej (M):
-    - Wzrosty: Najlepszy = zielony, Pozostałe = żółty
-    - Spadki: Największy minus = czerwony, Pozostałe = pomarańczowy
+    Formatowanie koloru tekstu dla wskaźników procentowych (T oraz M):
+    - Wzrosty (>= 0): Najlepszy = zielony, Pozostałe = żółty
+    - Spadki (< 0): Największy minus = czerwony, Pozostałe = pomarańczowy
     """
-    val_str = f"{change_30d:+.1f}%"
+    val_str = f"{val:+.1f}%"
     
-    if change_30d >= 0:
-        if change_30d == max_pos and max_pos > 0:
+    if val >= 0:
+        if val == max_pos and max_pos > 0:
             return f'🟢 <font color="#00FF00"><b>{val_str}</b></font>'
         else:
             return f'🟡 <font color="#FFFF00"><b>{val_str}</b></font>'
     else:
-        if change_30d == max_neg and max_neg < 0:
+        if val == max_neg and max_neg < 0:
             return f'🔴 <font color="#FF0000"><b>{val_str}</b></font>'
         else:
             return f'🟠 <font color="#FFA500"><b>{val_str}</b></font>'
@@ -76,7 +76,6 @@ def main():
     raport_parts = ["📊 <b>RAPORT SYGNAŁÓW I POTENCJAŁU WALORÓW</b>"]
 
     for group_name, assets in GROUPS.items():
-        # Pobranie danych dla całej grupy
         parsed_assets = []
         for asset in assets:
             data = get_asset_data(asset)
@@ -86,18 +85,24 @@ def main():
         if not parsed_assets:
             continue
 
-        # Wyznaczenie wartości ekstremalnych dla grupy (do kolorowania M)
-        pos_changes = [a["change_30d"] for a in parsed_assets if a["change_30d"] >= 0]
-        neg_changes = [a["change_30d"] for a in parsed_assets if a["change_30d"] < 0]
+        # Wyznaczenie wartości ekstremalnych dla Tygodnia (T)
+        pos_t = [a["change_7d"] for a in parsed_assets if a["change_7d"] >= 0]
+        neg_t = [a["change_7d"] for a in parsed_assets if a["change_7d"] < 0]
+        max_pos_t = max(pos_t) if pos_t else None
+        max_neg_t = min(neg_t) if neg_t else None
 
-        max_pos = max(pos_changes) if pos_changes else None
-        max_neg = min(neg_changes) if neg_changes else None
+        # Wyznaczenie wartości ekstremalnych dla Miesiąca (M)
+        pos_m = [a["change_30d"] for a in parsed_assets if a["change_30d"] >= 0]
+        neg_m = [a["change_30d"] for a in parsed_assets if a["change_30d"] < 0]
+        max_pos_m = max(pos_m) if pos_m else None
+        max_neg_m = min(neg_m) if neg_m else None
 
         # Pusta linijka przed nagłówkiem grupy
         raport_parts.append(f"\n🏛 <b>GRUPA {group_name}</b>\n")
 
         for a in parsed_assets:
-            formatted_m = format_colored_month(a["change_30d"], max_pos, max_neg)
+            formatted_t = format_colored_val(a["change_7d"], max_pos_t, max_neg_t)
+            formatted_m = format_colored_val(a["change_30d"], max_pos_m, max_neg_m)
             
             msg = (
                 f"📌 <b>{a['name']}</b>\n"
@@ -105,7 +110,7 @@ def main():
                 f"• <b>Poziom 200 SMA (Stop Loss):</b> ${a['latest_sma']:,.2f}\n"
                 f"• <b>Odchylenie od 200 SMA:</b> {a['diff_pct']:+.1f}%\n"
                 f"• <b>Główny trend (D1/W1):</b> {a['status']}\n"
-                f"• <b>Wzrost T / M:</b> {a['change_7d']:+.1f}% / {formatted_m}\n"
+                f"• <b>Wzrost T / M:</b> {formatted_t} / {formatted_m}\n"
             )
             raport_parts.append(msg)
 
