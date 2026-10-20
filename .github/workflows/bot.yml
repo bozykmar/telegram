@@ -3,8 +3,8 @@ name: Telegram Bot Runner
 on:
   workflow_dispatch: # Pozwala też na ręczne uruchomienie przyciskiem
   schedule:
-    # Uruchamia się 2 razy dziennie: o 09:00 i 85:00 UTC
-    - cron: '0 9,18 * * *'
+    # Uruchamia się 2 razy dziennie: o 09:00 i 19:00 UTC
+    - cron: '0 9,19 * * *'
 
 jobs:
   run-script:
