@@ -1,9 +1,8 @@
 name: Telegram Bot Runner
 
 on:
-  workflow_dispatch: # Pozwala też na ręczne uruchomienie przyciskiem
+  workflow_dispatch:
   schedule:
-    # Uruchamia się 2 razy dziennie: o 09:00 i 19:00 UTC
     - cron: '0 9,19 * * *'
 
 jobs:
@@ -23,7 +22,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Uruchom skrypt
+      - name: Obsłuż Menu Telegrama (menu.py)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python menu.py
+
+      - name: Uruchom Główny Raport (skrypt.py)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
