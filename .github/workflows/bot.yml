@@ -28,8 +28,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python menu.py
 
-      - name: Uruchom Główny Raport (skrypt.py)
+      - name: Uruchom Główny Raport (walory.py)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python skrypt.py
+        run: python walory.py
