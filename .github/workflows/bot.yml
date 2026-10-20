@@ -3,7 +3,7 @@ name: Telegram Bot Runner
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9,20 * * *'
+    - cron: '0 9,21 * * *'
 
 jobs:
   run-script:
