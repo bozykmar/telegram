@@ -10,10 +10,10 @@ GROUPS = {
     "COINBASE": [
         {"name": "MSFT Perp", "ticker": "MSFT"},
         {"name": "GOOGL Perp", "ticker": "GOOGL"},
-        {"name": "QQQ Perp", "ticker": "QQQ"}  # Zmieniono z NQ=F na QQQ (wartość ~730 USD)
+        {"name": "QQQ Perp", "ticker": "QQQ"}
     ],
     "WEEX": [
-        {"name": "QQQUSDT", "ticker": "QQQ"},   # Zmieniono z NQ=F na QQQ (wartość ~730 USD)
+        {"name": "QQQUSDT", "ticker": "QQQ"},
         {"name": "SPYUSDT", "ticker": "SPY"},
         {"name": "BTCUSDT", "ticker": "BTC-USD"}
     ]
@@ -56,7 +56,7 @@ def get_asset_data(asset_info):
 
 def format_colored_val(val, max_pos, max_neg):
     """
-    Formatowanie wartości procentowych z emoji i pogrubieniem (zgodnie z Telegram HTML):
+    Formatowanie wartości procentowych z emoji i pogrubieniem:
     - Wzrosty: Najlepszy = 🟢, Pozostałe = 🟡
     - Spadki: Największy minus = 🔴, Pozostałe = 🟠
     """
@@ -86,19 +86,43 @@ def main():
         if not parsed_assets:
             continue
 
-        # Wartości ekstremalne dla Tygodnia (T)
+        # Ekstremalne wartości dla Tygodnia (T) w danej grupie
         pos_t = [a["change_7d"] for a in parsed_assets if a["change_7d"] >= 0]
         neg_t = [a["change_7d"] for a in parsed_assets if a["change_7d"] < 0]
         max_pos_t = max(pos_t) if pos_t else None
         max_neg_t = min(neg_t) if neg_t else None
 
-        # Wartości ekstremalne dla Miesiąca (M)
+        # Ekstremalne wartości dla Miesiąca (M) w danej grupie
         pos_m = [a["change_30d"] for a in parsed_assets if a["change_30d"] >= 0]
         neg_m = [a["change_30d"] for a in parsed_assets if a["change_30d"] < 0]
         max_pos_m = max(pos_m) if pos_m else None
         max_neg_m = min(neg_m) if neg_m else None
 
-        # Pusta linijka (odstęp) przed nagłówkiem grupy
+        # Pusta linijka przed nagłówkiem grupy
         raport_parts.append(f"\n🏛 <b>GRUPA {group_name}</b>\n")
 
         for a in parsed_assets:
+            formatted_t = format_colored_val(a["change_7d"], max_pos_t, max_neg_t)
+            formatted_m = format_colored_val(a["change_30d"], max_pos_m, max_neg_m)
+            
+            msg = (
+                f"📌 <b>{a['name']}</b>\n"
+                f"• <b>Cena rynkowa (Mark Price):</b> ${a['latest_close']:,.2f}\n"
+                f"• <b>Poziom 200 SMA (Stop Loss):</b> ${a['latest_sma']:,.2f}\n"
+                f"• <b>Odchylenie od 200 SMA:</b> {a['diff_pct']:+.1f}%\n"
+                f"• <b>Główny trend (D1/W1):</b> {a['status']}\n"
+                f"• <b>Wzrost T / M:</b> {formatted_t} / {formatted_m}\n"
+            )
+            raport_parts.append(msg)
+
+    pelny_raport = "\n".join(raport_parts)
+    wyslij_telegram(pelny_raport)
+
+def wyslij_telegram(tekst):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {"chat_id": CHAT_ID, "text": tekst, "parse_mode": "HTML"}
+    response = requests.post(url, json=payload)
+    response.raise_for_status()
+
+if __name__ == "__main__":
+    main()
