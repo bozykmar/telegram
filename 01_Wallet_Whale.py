@@ -76,8 +76,8 @@ def get_hyperliquid_positions(address):
                     "pnl_pct": pnl_pct,
                     "leverage": leverage_str
                 })
-    except Exception as e:
-        print(f"Błąd pobierania danych dla {address}: {e}")
+        except Exception as e:
+            print(f"Błąd pobierania danych dla {address}: {e}")
             
     positions.sort(key=lambda x: x["val"], reverse=True)
     return positions[:5]
