@@ -2,7 +2,7 @@ import os
 import requests
 
 # Adres portfela Hyperliquid
-WALLET_ADDRESS = "0x936c...bb0f"  # Wpisz pełny adres portfela
+WALLET_ADDRESS = "0x936cf4fb95c30ce83f658b5bbb247e4bb381bb0f"  # Wpisz pełny adres portfela
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
