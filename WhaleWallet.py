@@ -7,20 +7,27 @@ WALLET_ADDRESS = "0x936cf4fb95c30ce83f658b5bbb247e4bb381bb0f"
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-def get_hyperliquid_positions(address):
-    url = "https://api.hyperliquid.xyz/info"
-    headers = {"Content-Type": "application/json"}
-    
-    positions = []
-    
-    # 1. Pobieranie pozycji PERP (kontrakty terminowe)
-    payload_perp = {
-        "type": "clearinghouseState",
-        "user": address
-    }
-    
+API_URL = "https://api.hyperliquid.xyz/info"
+HEADERS = {"Content-Type": "application/json"}
+
+def get_spot_token_names():
+    """Pobiera mapowanie ID tokenów spot/HIP-1 na ich nazwy rynkowe."""
     try:
-        res_perp = requests.post(url, json=payload_perp, headers=headers).json()
+        res = requests.post(API_URL, json={"type": "spotMeta"}, headers=HEADERS).json()
+        tokens = res.get("tokens", [])
+        # Tworzenie słownika: index -> name
+        return {idx: token.get("name") for idx, token in enumerate(tokens)}
+    except Exception as e:
+        print(f"Błąd pobierania spotMeta: {e}")
+        return {}
+
+def get_hyperliquid_positions(address):
+    positions = []
+    token_map = get_spot_token_names()
+
+    # 1. Pobieranie pozycji PERPETUAL (Krypto)
+    try:
+        res_perp = requests.post(API_URL, json={"type": "clearinghouseState", "user": address}, headers=HEADERS).json()
         asset_positions = res_perp.get("assetPositions", [])
         
         for item in asset_positions:
@@ -54,45 +61,43 @@ def get_hyperliquid_positions(address):
                     "val": position_value,
                     "upnl": upnl,
                     "pnl_pct": pnl_pct,
-                    "leverage": leverage_raw
+                    "leverage": str(leverage_raw)
                 })
     except Exception as e:
-        print(f"Błąd pobierania perps: {e}")
+        print(f"Błąd pobierania pozycji Perp: {e}")
 
-    # 2. Pobieranie pozycji SPOT / HIP-1 (np. xyz:BRENTOIL)
-    payload_spot = {
-        "type": "spotClearinghouseState",
-        "user": address
-    }
-    
+    # 2. Pobieranie pozycji SPOT / HIP-1 (np. xyz:BRENTOIL, surowce, akcje)
     try:
-        res_spot = requests.post(url, json=payload_spot, headers=headers).json()
+        res_spot = requests.post(API_URL, json={"type": "spotClearinghouseState", "user": address}, headers=HEADERS).json()
         balances = res_spot.get("balances", [])
         
         for b in balances:
-            coin = b.get("coin")
+            coin_idx = b.get("token")
+            coin_name = token_map.get(coin_idx, b.get("coin", "UNKNOWN"))
+            
             total_sz = float(b.get("total", 0))
             entry_px = float(b.get("entryPx", 0)) if b.get("entryPx") else 0.0
             
-            # Pomijamy małe/puste pozycje
-            if total_sz > 0 and coin not in ["USDC", "USDT"]:
-                # Jeśli brakuje ceny wejścia lub wartości w obiekcie spot
-                val = float(b.get("hold", 0)) + float(b.get("total", 0))
-                # Próba oszacowania wartości pozycji jeśli API spot dostarcza wartość
-                pos_val = float(b.get("entryPx", 0)) * total_sz if entry_px > 0 else total_sz
+            # Pomijamy waluty rozliczeniowe USDC / USDT oraz puste salda
+            if total_sz > 0 and coin_name not in ["USDC", "USDT"]:
+                # Odczyt lub kalkulacja wartości pozycji
+                val = float(b.get("entryPx", 0)) * total_sz if entry_px > 0 else total_sz
+                
+                # Formatowanie nazwy dla tokenów HIP-1
+                display_name = f"xyz:{coin_name}" if not coin_name.startswith("xyz:") else coin_name
                 
                 positions.append({
-                    "coin": f"xyz:{coin}" if not coin.startswith("xyz:") else coin,
+                    "coin": display_name,
                     "direction": "SPOT",
                     "color_icon": "⚪",
                     "entry_px": entry_px,
-                    "val": pos_val,
+                    "val": val,
                     "upnl": 0.0,
                     "pnl_pct": 0.0,
                     "leverage": "1"
                 })
     except Exception as e:
-        print(f"Błąd pobierania spot: {e}")
+        print(f"Błąd pobierania pozycji Spot/HIP-1: {e}")
             
     # Sortowanie pozycji malejąco po wartości pozycji (positionValue)
     positions.sort(key=lambda x: x["val"], reverse=True)
@@ -121,12 +126,12 @@ def main():
         pnl_sign = "+" if p["upnl"] >= 0 else ""
         
         msg += f"*{i}. {p['coin']}* | {p['color_icon']} *{p['direction']}* *{p['leverage']}x*\n"
-        msg += f"   Position: **${p['val']:,.2f}**\n"
+        msg += f"   Position: *${p['val']:,.2f}*\n"
         
         if p["direction"] != "SPOT":
-            msg += f"   uPnL: **{pnl_sign}${p['upnl']:,.2f}** (**{pnl_sign}{p['pnl_pct']:.2f}%**)\n"
+            msg += f"   uPnL: *{pnl_sign}${p['upnl']:,.2f}* (*{pnl_sign}{p['pnl_pct']:.2f}%*)\n"
         
-        msg += f"   Avg. Price: **${p['entry_px']:,.4f}**\n\n"
+        msg += f"   Avg. Price: *${p['entry_px']:,.4f}*\n\n"
 
     send_telegram_message(msg)
 
