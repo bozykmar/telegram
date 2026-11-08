@@ -91,4 +91,32 @@ def get_hyperliquid_positions(address):
                     "entry_px": entry_px,
                     "val": position_value,
                     "upnl": upnl,
-                    "
+                    "pnl_pct": pnl_pct,
+                    "leverage": leverage_str
+                })
+    except Exception as e:
+        print(f"Błąd pobierania pozycji Perp ({address}): {e}")
+
+    # 2. Pobieranie pozycji SPOT / HIP-1
+    try:
+        res_spot = requests.post(API_URL, json={"type": "spotClearinghouseState", "user": address}, headers=HEADERS).json()
+        balances = res_spot.get("balances", [])
+        
+        for b in balances:
+            coin_idx = b.get("token")
+            coin_name = token_map.get(coin_idx, b.get("coin", "UNKNOWN"))
+            
+            total_sz = float(b.get("total", 0))
+            entry_px = float(b.get("entryPx", 0)) if b.get("entryPx") else 0.0
+            
+            if total_sz > 0 and coin_name not in ["USDC", "USDT"]:
+                val = float(b.get("entryPx", 0)) * total_sz if entry_px > 0 else total_sz
+                display_name = f"xyz:{coin_name}" if not coin_name.startswith("xyz:") else coin_name
+                
+                positions.append({
+                    "coin": display_name,
+                    "direction": "SPOT",
+                    "color_icon": "⚪",
+                    "entry_px": entry_px,
+                    "val": val,
+                    "upnl": 0.0
