@@ -37,23 +37,16 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
 
     return wallets
 
-def get_spot_token_names():
-    """Pobiera mapowanie ID tokenów spot/HIP-1 na ich nazwy rynkowe."""
-    try:
-        res = requests.post(API_URL, json={"type": "spotMeta"}, headers=HEADERS).json()
-        tokens = res.get("tokens", [])
-        return {idx: token.get("name") for idx, token in enumerate(tokens)}
-    except Exception as e:
-        print(f"Błąd pobierania spotMeta: {e}")
-        return {}
-
 def get_hyperliquid_positions(address):
+    """Pobiera 5 największych pozycji PERPETUAL z portfela."""
     positions = []
-    token_map = get_spot_token_names()
 
-    # 1. Pobieranie pozycji PERPETUAL
     try:
-        res_perp = requests.post(API_URL, json={"type": "clearinghouseState", "user": address}, headers=HEADERS).json()
+        payload = {
+            "type": "clearinghouseState",
+            "user": address
+        }
+        res_perp = requests.post(API_URL, json=payload, headers=HEADERS).json()
         asset_positions = res_perp.get("assetPositions", [])
         
         for item in asset_positions:
@@ -95,28 +88,17 @@ def get_hyperliquid_positions(address):
                     "leverage": leverage_str
                 })
     except Exception as e:
-        print(f"Błąd pobierania pozycji Perp ({address}): {e}")
+        print(f"Błąd pobierania pozycji dla adresu {address}: {e}")
+            
+    positions.sort(key=lambda x: x["val"], reverse=True)
+    return positions[:5]
 
-    # 2. Pobieranie pozycji SPOT / HIP-1
-    try:
-        res_spot = requests.post(API_URL, json={"type": "spotClearinghouseState", "user": address}, headers=HEADERS).json()
-        balances = res_spot.get("balances", [])
-        
-        for b in balances:
-            coin_idx = b.get("token")
-            coin_name = token_map.get(coin_idx, b.get("coin", "UNKNOWN"))
-            
-            total_sz = float(b.get("total", 0))
-            entry_px = float(b.get("entryPx", 0)) if b.get("entryPx") else 0.0
-            
-            if total_sz > 0 and coin_name not in ["USDC", "USDT"]:
-                val = float(b.get("entryPx", 0)) * total_sz if entry_px > 0 else total_sz
-                display_name = f"xyz:{coin_name}" if not coin_name.startswith("xyz:") else coin_name
-                
-                positions.append({
-                    "coin": display_name,
-                    "direction": "SPOT",
-                    "color_icon": "⚪",
-                    "entry_px": entry_px,
-                    "val": val,
-                    "upnl": 0.0
+def send_telegram_message(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True
+    }
+    res = requests.post(url, json=payload)
