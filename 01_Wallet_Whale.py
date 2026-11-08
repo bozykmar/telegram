@@ -7,12 +7,7 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
-
 def load_wallet_configs(file_path="01_Wallet_Address.txt"):
-    """
-    Wczytuje listę portfeli z pliku tekstowego.
-    Format wiersza: Nazwa - Link - Opis
-    """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Nie znaleziono pliku {file_path}")
 
@@ -22,7 +17,6 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
 
     for line in lines:
         parts = [p.strip() for p in line.split("-") if p.strip()]
-        
         link = parts[1] if len(parts) > 1 else ""
         wallet_address = ""
         if "/trader/" in link:
@@ -38,16 +32,10 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
 
     return wallets
 
-
 def get_hyperliquid_positions(address):
-    """Pobiera 5 największych pozycji PERPETUAL z portfela."""
     positions = []
-
     try:
-        payload = {
-            "type": "clearinghouseState",
-            "user": address
-        }
+        payload = {"type": "clearinghouseState", "user": address}
         res_perp = requests.post(API_URL, json=payload, headers=HEADERS).json()
         asset_positions = res_perp.get("assetPositions", [])
         
@@ -65,7 +53,6 @@ def get_hyperliquid_positions(address):
                 leverage_obj = pos.get("leverage", {})
                 lev_type = leverage_obj.get("type", "").capitalize()
                 lev_val = leverage_obj.get("value", 1)
-                
                 leverage_str = f"{lev_type}{lev_val}x" if lev_type else f"{lev_val}x"
                 
                 try:
@@ -90,11 +77,10 @@ def get_hyperliquid_positions(address):
                     "leverage": leverage_str
                 })
     except Exception as e:
-        print(f"Błąd pobierania pozycji dla adresu {address}: {e}")
+        print(f"Błąd pobierania danych dla {address}: {e}")
             
     positions.sort(key=lambda x: x["val"], reverse=True)
     return positions[:5]
-
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -106,9 +92,8 @@ def send_telegram_message(message):
     }
     res = requests.post(url, json=payload)
     if not res.ok:
-        print(f"Błąd wysyłania do Telegrama: {res.text}")
+        print(f"Błąd Telegrama: {res.text}")
         res.raise_for_status()
-
 
 def process_wallet(config):
     top5 = get_hyperliquid_positions(config["address"])
@@ -128,7 +113,6 @@ def process_wallet(config):
 
     for i, p in enumerate(top5, 1):
         pnl_sign = "+" if p["upnl"] >= 0 else ""
-        
         val_str = f"${p['val']:,.2f}"
         upnl_str = f"{pnl_sign}${p['upnl']:,.2f}"
         pct_str = f"{pnl_sign}{p['pnl_pct']:.2f}%"
@@ -141,17 +125,14 @@ def process_wallet(config):
 
     send_telegram_message(msg)
 
-
 def main():
     wallets = load_wallet_configs("01_Wallet_Address.txt")
-    
     if not wallets:
-        print("Brak poprawnych konfiguracji portfeli w pliku 01_Wallet_Address.txt")
+        print("Brak poprawnych konfiguracji w pliku 01_Wallet_Address.txt")
         return
 
     for wallet in wallets:
         process_wallet(wallet)
-
 
 if __name__ == "__main__":
     main()
