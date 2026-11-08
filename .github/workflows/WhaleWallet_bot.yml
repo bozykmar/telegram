@@ -1,4 +1,4 @@
-name: Daily WhaleWallet Raport
+name: WhaleWallet Raport
 
 on:
   schedule:
