@@ -9,10 +9,6 @@ API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
 def load_wallet_configs(file_path="01_Wallet_Address.txt"):
-    """
-    Wczytuje listę portfeli z pliku tekstowego (każdy portfel w nowym wierszu).
-    Format wiersza: Nazwa - Link - Opis
-    """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Nie znaleziono pliku {file_path}")
 
@@ -39,14 +35,13 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
     return wallets
 
 def escape_markdown(text):
-    """Eskapuje znaki specjalne wymagane przez Telegram MarkdownV2."""
+    """Eskapuje WSZYSTKIE znaki specjalne wymagane przez Telegram MarkdownV2."""
     if not isinstance(text, str):
         text = str(text)
     escape_chars = r'_*[]()~`>#+-=|{}.!'
     return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
 
 def get_spot_token_names():
-    """Pobiera mapowanie ID tokenów spot/HIP-1 na ich nazwy rynkowe."""
     try:
         res = requests.post(API_URL, json={"type": "spotMeta"}, headers=HEADERS).json()
         tokens = res.get("tokens", [])
@@ -59,7 +54,7 @@ def get_hyperliquid_positions(address):
     positions = []
     token_map = get_spot_token_names()
 
-    # 1. Pobieranie pozycji PERPETUAL
+    # 1. PERPETUAL
     try:
         res_perp = requests.post(API_URL, json={"type": "clearinghouseState", "user": address}, headers=HEADERS).json()
         asset_positions = res_perp.get("assetPositions", [])
@@ -105,7 +100,7 @@ def get_hyperliquid_positions(address):
     except Exception as e:
         print(f"Błąd pobierania pozycji Perp ({address}): {e}")
 
-    # 2. Pobieranie pozycji SPOT / HIP-1
+    # 2. SPOT / HIP-1
     try:
         res_spot = requests.post(API_URL, json={"type": "spotClearinghouseState", "user": address}, headers=HEADERS).json()
         balances = res_spot.get("balances", [])
@@ -127,71 +122,4 @@ def get_hyperliquid_positions(address):
                     "color_icon": "⚪",
                     "entry_px": entry_px,
                     "val": val,
-                    "upnl": 0.0,
-                    "pnl_pct": 0.0,
-                    "leverage": "1x"
-                })
-    except Exception as e:
-        print(f"Błąd pobierania pozycji Spot ({address}): {e}")
-            
-    positions.sort(key=lambda x: x["val"], reverse=True)
-    return positions[:5]
-
-def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "parse_mode": "MarkdownV2",
-        "disable_web_page_preview": True
-    }
-    res = requests.post(url, json=payload)
-    if not res.ok:
-        print(f"Błąd wysyłania do Telegrama: {res.text}")
-
-def process_wallet(config):
-    top5 = get_hyperliquid_positions(config["address"])
-    
-    header_link = f"[{escape_markdown(config['name'])}]({config['link']})"
-    if config["description"]:
-        header = f"{header_link} \\- _{escape_markdown(config['description'])}_\n\n"
-    else:
-        header = f"{header_link}\n\n"
-
-    msg = header
-
-    if not top5:
-        msg += "_Brak aktywnych pozycji na portfelu\\._"
-        send_telegram_message(msg)
-        return
-
-    for i, p in enumerate(top5, 1):
-        pnl_sign = "+" if p["upnl"] >= 0 else ""
-        
-        val_str = f"${p['val']:,.2f}"
-        upnl_str = f"{pnl_sign}${p['upnl']:,.2f}"
-        pct_str = f"{pnl_sign}{p['pnl_pct']:.2f}%"
-        avg_str = f"${p['entry_px']:,.4f}"
-        
-        msg += f"*{i}\\. {escape_markdown(p['coin'])}* | {p['color_icon']} *{escape_markdown(p['direction'])}* *{escape_markdown(p['leverage'])}*\n"
-        msg += f"   Position: *{escape_markdown(val_str)}*\n"
-        
-        if p["direction"] != "SPOT":
-            msg += f"   uPnL: *{escape_markdown(upnl_str)}* (*{escape_markdown(pct_str)}*)\n"
-        
-        msg += f"   Avg. Price: *{escape_markdown(avg_str)}*\n\n"
-
-    send_telegram_message(msg)
-
-def main():
-    wallets = load_wallet_configs("01_Wallet_Address.txt")
-    
-    if not wallets:
-        print("Brak poprawnych konfiguracji portfeli w pliku 01_Wallet_Address.txt")
-        return
-
-    for wallet in wallets:
-        process_wallet(wallet)
-
-if __name__ == "__main__":
-    main()
+                    "upnl": 0.0
