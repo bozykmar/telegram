@@ -7,6 +7,7 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
+
 def load_wallet_configs(file_path="01_Wallet_Address.txt"):
     """
     Wczytuje listę portfeli z pliku tekstowego.
@@ -36,6 +37,7 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
             })
 
     return wallets
+
 
 def get_hyperliquid_positions(address):
     """Pobiera 5 największych pozycji PERPETUAL z portfela."""
@@ -93,6 +95,7 @@ def get_hyperliquid_positions(address):
     positions.sort(key=lambda x: x["val"], reverse=True)
     return positions[:5]
 
+
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
@@ -102,3 +105,53 @@ def send_telegram_message(message):
         "disable_web_page_preview": True
     }
     res = requests.post(url, json=payload)
+    if not res.ok:
+        print(f"Błąd wysyłania do Telegrama: {res.text}")
+        res.raise_for_status()
+
+
+def process_wallet(config):
+    top5 = get_hyperliquid_positions(config["address"])
+    
+    header_link = f'<a href="{config["link"]}">{config["name"]}</a>'
+    if config["description"]:
+        header = f'{header_link} - <i>{config["description"]}</i>\n\n'
+    else:
+        header = f'{header_link}\n\n'
+
+    msg = header
+
+    if not top5:
+        msg += "<i>Brak aktywnych pozycji na portfelu.</i>"
+        send_telegram_message(msg)
+        return
+
+    for i, p in enumerate(top5, 1):
+        pnl_sign = "+" if p["upnl"] >= 0 else ""
+        
+        val_str = f"${p['val']:,.2f}"
+        upnl_str = f"{pnl_sign}${p['upnl']:,.2f}"
+        pct_str = f"{pnl_sign}{p['pnl_pct']:.2f}%"
+        avg_str = f"${p['entry_px']:,.4f}"
+        
+        msg += f"<b>{i}. {p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> <b>{p['leverage']}</b>\n"
+        msg += f"   Position: <b>{val_str}</b>\n"
+        msg += f"   uPnL: <b>{upnl_str}</b> (<b>{pct_str}</b>)\n"
+        msg += f"   Avg. Price: <b>{avg_str}</b>\n\n"
+
+    send_telegram_message(msg)
+
+
+def main():
+    wallets = load_wallet_configs("01_Wallet_Address.txt")
+    
+    if not wallets:
+        print("Brak poprawnych konfiguracji portfeli w pliku 01_Wallet_Address.txt")
+        return
+
+    for wallet in wallets:
+        process_wallet(wallet)
+
+
+if __name__ == "__main__":
+    main()
