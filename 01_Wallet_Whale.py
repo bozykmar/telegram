@@ -8,31 +8,35 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
-def load_wallet_config(file_path="01_Wallet_Address.txt"):
+def load_wallet_configs(file_path="01_Wallet_Address.txt"):
     """
-    Wczytuje konfigurację portfela z pliku tekstowego.
-    Format pliku: Nazwa - Link - Opis
+    Wczytuje listę portfeli z pliku tekstowego (każdy portfel w nowym wierszu).
+    Format wiersza: Nazwa - Link - Opis
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Nie znaleziono pliku {file_path}")
 
+    wallets = []
     with open(file_path, "r", encoding="utf-8") as f:
-        line = f.read().strip()
+        lines = [line.strip() for line in f if line.strip()]
 
-    parts = [p.strip() for p in line.split("-") if p.strip()]
-    
-    # Wyciąganie adresu z linku (zakładamy format .../trader/0x...)
-    link = parts[1] if len(parts) > 1 else ""
-    wallet_address = ""
-    if "/trader/" in link:
-        wallet_address = link.split("/trader/")[-1].strip()
+    for line in lines:
+        parts = [p.strip() for p in line.split("-") if p.strip()]
+        
+        link = parts[1] if len(parts) > 1 else ""
+        wallet_address = ""
+        if "/trader/" in link:
+            wallet_address = link.split("/trader/")[-1].strip()
 
-    return {
-        "name": parts[0] if len(parts) > 0 else "Wallet",
-        "link": link,
-        "description": parts[2] if len(parts) > 2 else "",
-        "address": wallet_address
-    }
+        if wallet_address:
+            wallets.append({
+                "name": parts[0] if len(parts) > 0 else "Wallet",
+                "link": link,
+                "description": parts[2] if len(parts) > 2 else "",
+                "address": wallet_address
+            })
+
+    return wallets
 
 def escape_markdown(text):
     """Eskapuje znaki specjalne wymagane przez Telegram MarkdownV2."""
@@ -55,7 +59,7 @@ def get_hyperliquid_positions(address):
     positions = []
     token_map = get_spot_token_names()
 
-    # 1. Pobieranie pozycji PERPETUAL (Krypto + HIP-1 perps jak xyz:BRENTOIL)
+    # 1. Pobieranie pozycji PERPETUAL
     try:
         res_perp = requests.post(API_URL, json={"type": "clearinghouseState", "user": address}, headers=HEADERS).json()
         asset_positions = res_perp.get("assetPositions", [])
@@ -99,7 +103,7 @@ def get_hyperliquid_positions(address):
                     "leverage": leverage_str
                 })
     except Exception as e:
-        print(f"Błąd pobierania pozycji Perp: {e}")
+        print(f"Błąd pobierania pozycji Perp ({address}): {e}")
 
     # 2. Pobieranie pozycji SPOT / HIP-1
     try:
@@ -128,9 +132,8 @@ def get_hyperliquid_positions(address):
                     "leverage": "1x"
                 })
     except Exception as e:
-        print(f"Błąd pobierania pozycji Spot: {e}")
+        print(f"Błąd pobierania pozycji Spot ({address}): {e}")
             
-    # Sortowanie pozycji malejąco po wartości pozycji (positionValue)
     positions.sort(key=lambda x: x["val"], reverse=True)
     return positions[:5]
 
@@ -146,20 +149,9 @@ def send_telegram_message(message):
     if not res.ok:
         print(f"Błąd wysyłania do Telegrama: {res.text}")
 
-def main():
-    config = load_wallet_config("01_Wallet_Address.txt")
-    
-    if not config["address"]:
-        print("Nie udało się odczytać adresu portfela z pliku 01_Wallet_Address.txt")
-        return
-
+def process_wallet(config):
     top5 = get_hyperliquid_positions(config["address"])
     
-    if not top5:
-        send_telegram_message("Brak aktywnych pozycji na portfelu.")
-        return
-
-    # Budowanie nagłówka wiadomości
     header_link = f"[{escape_markdown(config['name'])}]({config['link']})"
     if config["description"]:
         header = f"{header_link} \\- _{escape_markdown(config['description'])}_\n\n"
@@ -167,7 +159,12 @@ def main():
         header = f"{header_link}\n\n"
 
     msg = header
-    
+
+    if not top5:
+        msg += "_Brak aktywnych pozycji na portfelu\\._"
+        send_telegram_message(msg)
+        return
+
     for i, p in enumerate(top5, 1):
         pnl_sign = "+" if p["upnl"] >= 0 else ""
         
@@ -185,6 +182,16 @@ def main():
         msg += f"   Avg. Price: *{escape_markdown(avg_str)}*\n\n"
 
     send_telegram_message(msg)
+
+def main():
+    wallets = load_wallet_configs("01_Wallet_Address.txt")
+    
+    if not wallets:
+        print("Brak poprawnych konfiguracji portfeli w pliku 01_Wallet_Address.txt")
+        return
+
+    for wallet in wallets:
+        process_wallet(wallet)
 
 if __name__ == "__main__":
     main()
