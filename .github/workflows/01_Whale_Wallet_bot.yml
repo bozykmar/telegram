@@ -8,7 +8,9 @@ on:
 
 jobs:
   run-report:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      ACTIONS_RUNNER_FORCE_NODE24: "true"
     steps:
       - name: Checkout kod
         uses: actions/checkout@v4
@@ -25,5 +27,4 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
         run: python 01_Wallet_Whale.py
