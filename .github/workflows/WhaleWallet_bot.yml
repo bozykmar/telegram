@@ -1,4 +1,4 @@
-name: Daily Hyperliquid Telegram Report
+name: Daily WhaleWallet Raport
 
 on:
   schedule:
