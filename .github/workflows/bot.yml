@@ -1,4 +1,4 @@
-name: Telegram Bot Runner
+name: Walory Bot
 
 on:
   workflow_dispatch:
