@@ -8,7 +8,7 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
-def load_wallet_config(file_path="Wallet_Address.txt"):
+def load_wallet_config(file_path="01_Wallet_Address.txt"):
     """
     Wczytuje konfigurację portfela z pliku tekstowego.
     Format pliku: Nazwa - Link - Opis
@@ -147,10 +147,10 @@ def send_telegram_message(message):
         print(f"Błąd wysyłania do Telegrama: {res.text}")
 
 def main():
-    config = load_wallet_config("Wallet_Address.txt")
+    config = load_wallet_config("01_Wallet_Address.txt")
     
     if not config["address"]:
-        print("Nie udało się odczytać adresu portfela z pliku Wallet_Address.txt")
+        print("Nie udało się odczytać adresu portfela z pliku 01_Wallet_Address.txt")
         return
 
     top5 = get_hyperliquid_positions(config["address"])
