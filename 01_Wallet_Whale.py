@@ -9,6 +9,10 @@ HEADERS = {"Content-Type": "application/json"}
 
 
 def load_wallet_configs(file_path="01_Wallet_Address.txt"):
+    """
+    Format linii: Nazwa - Opis - Link
+    Przykład: Wallet #1 - najlepszy portfel - https://hyperbot.network/trader/0x...
+    """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Nie znaleziono pliku {file_path}")
 
@@ -18,16 +22,22 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
 
     for line in lines:
         parts = [p.strip() for p in line.split(" - ") if p.strip()]
-        link = parts[1] if len(parts) > 1 else ""
-        wallet_address = ""
-        if "/trader/" in link:
-            wallet_address = link.split("/trader/")[-1].strip()
+        if len(parts) < 2:
+            continue
+
+        link = parts[-1]
+        if "/trader/" not in link:
+            continue
+
+        wallet_address = link.split("/trader/")[-1].strip().split("?")[0].strip("/")
+        name = parts[0]
+        description = " - ".join(parts[1:-1])
 
         if wallet_address:
             wallets.append({
-                "name": parts[0] if len(parts) > 0 else "Wallet",
+                "name": name,
+                "description": description,
                 "link": link,
-                "description": parts[2] if len(parts) > 2 else "",
                 "address": wallet_address,
             })
 
@@ -54,6 +64,9 @@ def get_hyperliquid_positions(address):
             direction = "LONG" if szi > 0 else "SHORT"
             color_icon = "🟢" if szi > 0 else "🔴"
 
+            # Aktualna cena rynkowa wyliczona z wartości pozycji
+            mark_px = position_value / abs(szi)
+
             leverage_obj = pos.get("leverage", {})
             lev_type = leverage_obj.get("type", "").capitalize()
             lev_val = leverage_obj.get("value", 1)
@@ -75,6 +88,7 @@ def get_hyperliquid_positions(address):
                 "direction": direction,
                 "color_icon": color_icon,
                 "entry_px": entry_px,
+                "mark_px": mark_px,
                 "val": position_value,
                 "upnl": upnl,
                 "pnl_pct": pnl_pct,
@@ -116,17 +130,20 @@ def process_wallet(config):
         send_telegram_message(msg)
         return
 
-    for i, p in enumerate(top5, 1):
-        pnl_sign = "+" if p["upnl"] >= 0 else ""
+    for p in top5:
         val_str = f"${p['val']:,.2f}"
-        upnl_str = f"{pnl_sign}${p['upnl']:,.2f}"
-        pct_str = f"{pnl_sign}{p['pnl_pct']:.2f}%"
+        upnl_str = f"${p['upnl']:+,.2f}"
+        pct_str = f"{p['pnl_pct']:+.2f}%"
         avg_str = f"${p['entry_px']:,.4f}"
+        mark_str = f"$ {p['mark_px']:,.4f}"
 
-        msg += f"<b>{i}. {p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> <b>{p['leverage']}</b>\n"
-        msg += f"   Position: <b>{val_str}</b>\n"
-        msg += f"   uPnL: <b>{upnl_str}</b> (<b>{pct_str}</b>)\n"
-        msg += f"   Avg. Price: <b>{avg_str}</b>\n\n"
+        msg += (
+            f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
+            f"<b>{p['leverage']}</b>  /  Price {mark_str}  /  Avg. Price: <b>{avg_str}</b>\n"
+        )
+        msg += (
+            f"Position: <b>{val_str}</b>  /  uPnL: <b>{upnl_str}</b> (<b>{pct_str}</b>)\n\n"
+        )
 
     send_telegram_message(msg)
 
