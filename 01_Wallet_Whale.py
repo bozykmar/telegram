@@ -135,14 +135,15 @@ def process_wallet(config):
         upnl_str = f"${p['upnl']:+,.2f}"
         pct_str = f"{p['pnl_pct']:+.2f}%"
         avg_str = f"${p['entry_px']:,.4f}"
-        mark_str = f"$ {p['mark_px']:,.4f}"
+        mark_str = f"${p['mark_px']:,.4f}"
 
         msg += (
             f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
-            f"<b>{p['leverage']}</b>  /  Price {mark_str}  /  Avg. Price: <b>{avg_str}</b>\n"
+            f"<b>{p['leverage']}</b>\n"
         )
+        msg += f"Price <b>{mark_str}</b> / Avg. Price: <b>{avg_str}</b>\n"
         msg += (
-            f"Position: <b>{val_str}</b>  /  uPnL: <b>{upnl_str}</b> (<b>{pct_str}</b>)\n\n"
+            f"Position: <b>{val_str}</b> / uPnL: <b>{upnl_str}</b> (<b>{pct_str}</b>)\n\n"
         )
 
     send_telegram_message(msg)
