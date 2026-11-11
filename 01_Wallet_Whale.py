@@ -125,8 +125,9 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
 
 def get_hyperliquid_data(address):
     """
-    Zwraca (account_value, lista_pozycji) lub None przy błędzie
+    Zwraca (account_equity, lista_pozycji) lub None przy błędzie
     (wtedy snapshot nie jest zapisywany).
+    Udział pozycji = margin pozycji / suma marginów wszystkich otwartych pozycji.
     """
     positions = []
     try:
@@ -135,7 +136,7 @@ def get_hyperliquid_data(address):
         res.raise_for_status()
         res_perp = res.json()
 
-        account_value = float(res_perp.get("marginSummary", {}).get("accountValue", 0))
+        account_equity = float(res_perp.get("marginSummary", {}).get("accountValue", 0))
         asset_positions = res_perp.get("assetPositions", [])
 
         for item in asset_positions:
@@ -168,7 +169,6 @@ def get_hyperliquid_data(address):
                 margin_used = position_value / leverage_val_num
 
             pnl_pct = (upnl / margin_used * 100) if margin_used > 0 else 0.0
-            portfolio_pct = (margin_used / account_value * 100) if account_value > 0 else 0.0
 
             positions.append({
                 "coin": coin,
@@ -180,14 +180,20 @@ def get_hyperliquid_data(address):
                 "upnl": upnl,
                 "pnl_pct": pnl_pct,
                 "leverage": leverage_str,
-                "portfolio_pct": portfolio_pct,
+                "margin": margin_used,
             })
+
+        # Udział w całkowitym marginie portfela (suma wszystkich pozycji = 100%)
+        total_margin = sum(p["margin"] for p in positions)
+        for p in positions:
+            p["portfolio_pct"] = (p["margin"] / total_margin * 100) if total_margin > 0 else 0.0
+
     except Exception as e:
         print(f"Błąd pobierania danych dla {address}: {e}")
         return None
 
     positions.sort(key=lambda x: x["val"], reverse=True)
-    return account_value, positions
+    return account_equity, positions
 
 
 # ---------------------------------------------------------------- Telegram
@@ -204,6 +210,16 @@ def send_telegram_message(message):
     if not res.ok:
         print(f"Błąd Telegrama: {res.text}")
     res.raise_for_status()
+
+
+def build_position_block_no_history(p):
+    return (
+        f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
+        f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
+        f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
+        f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
+        f"(<b>{p['pnl_pct']:+.2f}%</b>)\n\n"
+    )
 
 
 def build_position_block(p, prev_pos, prev_label):
@@ -238,34 +254,36 @@ def process_wallet(config, history, today_iso):
     if config["description"]:
         parts.append(f'<i>{config["description"]}</i>')
     parts.append(today_label)
-    msg = " - ".join(parts) + "\n\n"
+    header = " - ".join(parts) + "\n"  # bez pustej linii przed Account Equity
 
     data = get_hyperliquid_data(address)
     if data is None:
-        msg += "<i>Nie udało się pobrać danych portfela.</i>"
-        send_telegram_message(msg)
+        send_telegram_message(header + "\n<i>Nie udało się pobrać danych portfela.</i>")
         return
 
-    account_value, all_positions = data
+    account_equity, all_positions = data
 
     prev_date, prev_snap = get_previous_snapshot(history, address, today_iso)
     prev_label = fmt_date(prev_date) if prev_date else None
     prev_positions = prev_snap["positions"] if prev_snap else {}
 
-    # Zmiana wartości konta
+    msg = header
+
+    # Account Equity (tuż pod nagłówkiem)
     if prev_snap:
         msg += (
-            f"Wartość konta: <b>{fmt_usd(account_value, 2)}</b> "
+            f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b> "
             f"({prev_label}: {fmt_usd(prev_snap['account_value'], 2)}, "
-            f"zmiana {fmt_change_pct(prev_snap['account_value'], account_value)})\n\n"
+            f"zmiana {fmt_change_pct(prev_snap['account_value'], account_equity)})\n\n"
         )
     else:
-        msg += f"Wartość konta: <b>{fmt_usd(account_value, 2)}</b>\n\n"
+        msg += f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b>\n\n"
 
     top5 = all_positions[:5]
 
     if not top5:
         msg += "<i>Brak aktywnych pozycji na portfelu.</i>\n\n"
+
     for p in top5:
         prev_pos = prev_positions.get(p["coin"])
         # zmiana kierunku = traktujemy jako nową pozycję
@@ -296,7 +314,7 @@ def process_wallet(config, history, today_iso):
 
     # Zapis dzisiejszego snapshotu (nadpisuje poprzedni zapis z tej samej daty)
     history.setdefault(address, {})[today_iso] = {
-        "account_value": account_value,
+        "account_value": account_equity,
         "positions": {
             p["coin"]: {
                 "direction": p["direction"],
@@ -309,16 +327,6 @@ def process_wallet(config, history, today_iso):
             for p in all_positions
         },
     }
-
-
-def build_position_block_no_history(p):
-    return (
-        f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
-        f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
-        f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
-        f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
-        f"(<b>{p['pnl_pct']:+.2f}%</b>)\n\n"
-    )
 
 
 def main():
