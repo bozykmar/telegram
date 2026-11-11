@@ -10,7 +10,7 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
-HISTORY_FILE = "02_Wallet_History.json"
+HISTORY_FILE = "01_Wallet_History.json"
 HISTORY_DAYS = 30  # ile dni historii przechowywać
 TZ = ZoneInfo("Europe/Warsaw")
 
