@@ -1,3 +1,5 @@
+name: 01_Whale_Wallet
+
 permissions:
   contents: write
 
