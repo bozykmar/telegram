@@ -2,3 +2,5 @@ Wallet #1 - najlepszy portfel - https://hyperbot.network/trader/0x936cf4fb95c30c
 Wallet #2 - nowy portfel - https://hyperbot.network/trader/0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00
 Wallet #3 - nie mój typ #3 - https://hyperbot.network/trader/0x082e843a431aef031264dc232693dd710aedca88
 Wallet #4 - #4 - https://hyperbot.network/trader/0x15a4f009bb324a3fb9e36137136b201e3fe0dfdb
+Wallet #5 - #4 - https://hyperbot.network/trader/0x5b5d51203a0f9079f8aeb098a6523a13f298c060
+Wallet #6 - #4 - https://hyperbot.network/trader/0xfc27136e42af1732ddc9ce2605ea9bff1b959d9d
