@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: repo-writes
+  cancel-in-progress: false
+
 jobs:
   run-report:
     runs-on: ubuntu-latest
@@ -32,7 +36,7 @@ jobs:
             exit 0
           fi
           git commit -m "Aktualizacja historii portfeli"
-          for i in 1 2 3; do
+          for i in 1 2 3 4 5; do
             git pull --rebase origin main && git push origin main && exit 0
             echo "Próba $i nieudana, ponawiam..."
             sleep 5
