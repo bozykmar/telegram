@@ -1,5 +1,8 @@
 import os
+import json
 import requests
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
@@ -7,13 +10,19 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
 
+HISTORY_FILE = "02_Wallet_History.json"
+HISTORY_DAYS = 30  # ile dni historii przechowywać
+TZ = ZoneInfo("Europe/Warsaw")
+
 NBSP = "\u00a0"  # twarda spacja, żeby kwota nie łamała się w nowej linii
 
 
+# ---------------------------------------------------------------- formatowanie
+
 def fmt_usd(value, decimals, signed=False):
     """
-    Wartość >= 1000 USD: bez miejsc po przecinku, spacja jako separator tysięcy ($2 129).
-    Wartość < 1000 USD: bez zmian, podana liczba miejsc po przecinku ($75.3510).
+    >= 1000 USD: bez miejsc po przecinku, spacja jako separator tysięcy ($2 129).
+    <  1000 USD: podana liczba miejsc po przecinku ($75.3510).
     """
     sign = ""
     if signed:
@@ -33,6 +42,48 @@ def fmt_usd(value, decimals, signed=False):
 def fmt_pct_portfolio(value):
     return f"{value:.0f}%" if value >= 1 else f"{value:.1f}%"
 
+
+def fmt_change_pct(old, new):
+    if old == 0:
+        return "n/d"
+    return f"{(new - old) / abs(old) * 100:+.1f}%"
+
+
+def fmt_date(iso_date):
+    return datetime.strptime(iso_date, "%Y-%m-%d").strftime("%d.%m.%Y")
+
+
+# ---------------------------------------------------------------- historia
+
+def load_history():
+    if not os.path.exists(HISTORY_FILE):
+        return {}
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"Nie udało się wczytać historii: {e}")
+        return {}
+
+
+def save_history(history):
+    cutoff = sorted({d for w in history.values() for d in w})[-HISTORY_DAYS:]
+    for address in history:
+        history[address] = {d: s for d, s in history[address].items() if d in cutoff}
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
+
+def get_previous_snapshot(history, address, today_iso):
+    """Zwraca (data, snapshot) z ostatniego dnia wcześniejszego niż dzisiaj."""
+    days = history.get(address, {})
+    older = sorted(d for d in days if d < today_iso)
+    if not older:
+        return None, None
+    return older[-1], days[older[-1]]
+
+
+# ---------------------------------------------------------------- konfiguracja
 
 def load_wallet_configs(file_path="01_Wallet_Address.txt"):
     """
@@ -70,11 +121,19 @@ def load_wallet_configs(file_path="01_Wallet_Address.txt"):
     return wallets
 
 
-def get_hyperliquid_positions(address):
+# ---------------------------------------------------------------- Hyperliquid
+
+def get_hyperliquid_data(address):
+    """
+    Zwraca (account_value, lista_pozycji) lub None przy błędzie
+    (wtedy snapshot nie jest zapisywany).
+    """
     positions = []
     try:
         payload = {"type": "clearinghouseState", "user": address}
-        res_perp = requests.post(API_URL, json=payload, headers=HEADERS, timeout=30).json()
+        res = requests.post(API_URL, json=payload, headers=HEADERS, timeout=30)
+        res.raise_for_status()
+        res_perp = res.json()
 
         account_value = float(res_perp.get("marginSummary", {}).get("accountValue", 0))
         asset_positions = res_perp.get("assetPositions", [])
@@ -92,7 +151,6 @@ def get_hyperliquid_positions(address):
             direction = "LONG" if szi > 0 else "SHORT"
             color_icon = "🟢" if szi > 0 else "🔴"
 
-            # Aktualna cena rynkowa wyliczona z wartości pozycji
             mark_px = position_value / abs(szi)
 
             leverage_obj = pos.get("leverage", {})
@@ -110,8 +168,6 @@ def get_hyperliquid_positions(address):
                 margin_used = position_value / leverage_val_num
 
             pnl_pct = (upnl / margin_used * 100) if margin_used > 0 else 0.0
-
-            # Udział pozycji w portfelu (zaangażowany margin / wartość konta)
             portfolio_pct = (margin_used / account_value * 100) if account_value > 0 else 0.0
 
             positions.append({
@@ -128,10 +184,13 @@ def get_hyperliquid_positions(address):
             })
     except Exception as e:
         print(f"Błąd pobierania danych dla {address}: {e}")
+        return None
 
     positions.sort(key=lambda x: x["val"], reverse=True)
-    return positions[:5]
+    return account_value, positions
 
+
+# ---------------------------------------------------------------- Telegram
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -147,39 +206,119 @@ def send_telegram_message(message):
     res.raise_for_status()
 
 
-def process_wallet(config):
-    top5 = get_hyperliquid_positions(config["address"])
-    header_link = f'<a href="{config["link"]}">{config["name"]}</a>'
-    if config["description"]:
-        header = f'{header_link} - <i>{config["description"]}</i>\n\n'
+def build_position_block(p, prev_pos, prev_label):
+    msg = (
+        f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
+        f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
+        f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
+        f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
+        f"(<b>{p['pnl_pct']:+.2f}%</b>)\n"
+    )
+
+    if prev_pos is None:
+        msg += "<i>Nowa pozycja (brak w poprzednim zestawieniu)</i>\n"
     else:
-        header = f'{header_link}\n\n'
+        msg += (
+            f"<i>{prev_label}:</i> Price {fmt_usd(prev_pos['mark_px'], 4)} / "
+            f"Position: {fmt_usd(prev_pos['val'], 2)} / "
+            f"uPnL: {fmt_usd(prev_pos['upnl'], 2, True)} ({prev_pos['pnl_pct']:+.2f}%)\n"
+            f"<i>Zmiana:</i> Price {fmt_change_pct(prev_pos['mark_px'], p['mark_px'])} / "
+            f"Position {fmt_change_pct(prev_pos['val'], p['val'])} / "
+            f"uPnL {fmt_usd(p['upnl'] - prev_pos['upnl'], 2, True)}\n"
+        )
+    return msg + "\n"
 
-    msg = header
 
-    if not top5:
-        msg += "<i>Brak aktywnych pozycji na portfelu.</i>"
+def process_wallet(config, history, today_iso):
+    address = config["address"]
+    today_label = fmt_date(today_iso)
+
+    header_link = f'<a href="{config["link"]}">{config["name"]}</a>'
+    parts = [header_link]
+    if config["description"]:
+        parts.append(f'<i>{config["description"]}</i>')
+    parts.append(today_label)
+    msg = " - ".join(parts) + "\n\n"
+
+    data = get_hyperliquid_data(address)
+    if data is None:
+        msg += "<i>Nie udało się pobrać danych portfela.</i>"
         send_telegram_message(msg)
         return
 
+    account_value, all_positions = data
+
+    prev_date, prev_snap = get_previous_snapshot(history, address, today_iso)
+    prev_label = fmt_date(prev_date) if prev_date else None
+    prev_positions = prev_snap["positions"] if prev_snap else {}
+
+    # Zmiana wartości konta
+    if prev_snap:
+        msg += (
+            f"Wartość konta: <b>{fmt_usd(account_value, 2)}</b> "
+            f"({prev_label}: {fmt_usd(prev_snap['account_value'], 2)}, "
+            f"zmiana {fmt_change_pct(prev_snap['account_value'], account_value)})\n\n"
+        )
+    else:
+        msg += f"Wartość konta: <b>{fmt_usd(account_value, 2)}</b>\n\n"
+
+    top5 = all_positions[:5]
+
+    if not top5:
+        msg += "<i>Brak aktywnych pozycji na portfelu.</i>\n\n"
     for p in top5:
-        val_str = fmt_usd(p["val"], 2)
-        upnl_str = fmt_usd(p["upnl"], 2, signed=True)
-        pct_str = f"{p['pnl_pct']:+.2f}%"
-        avg_str = fmt_usd(p["entry_px"], 4)
-        mark_str = fmt_usd(p["mark_px"], 4)
-        share_str = fmt_pct_portfolio(p["portfolio_pct"])
+        prev_pos = prev_positions.get(p["coin"])
+        # zmiana kierunku = traktujemy jako nową pozycję
+        if prev_pos and prev_pos["direction"] != p["direction"]:
+            prev_pos = None
+        if prev_snap is None:
+            msg += build_position_block_no_history(p)
+        else:
+            msg += build_position_block(p, prev_pos, prev_label)
 
-        msg += (
-            f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
-            f"<b>{p['leverage']}</b> - {share_str} portfela\n"
-        )
-        msg += f"Price <b>{mark_str}</b> / Avg. Price: <b>{avg_str}</b>\n"
-        msg += (
-            f"Position: <b>{val_str}</b> / uPnL: <b>{upnl_str}</b> (<b>{pct_str}</b>)\n\n"
-        )
+    # Pozycje zamknięte od poprzedniego zestawienia
+    if prev_snap:
+        current = {p["coin"]: p for p in all_positions}
+        closed = [
+            c for c, pp in prev_positions.items()
+            if c not in current or current[c]["direction"] != pp["direction"]
+        ]
+        if closed:
+            lines = ", ".join(
+                f"{c} {prev_positions[c]['direction']} ({fmt_usd(prev_positions[c]['val'], 2)})"
+                for c in closed
+            )
+            msg += f"<b>Zamknięte od {prev_label}:</b> {lines}\n"
+    else:
+        msg += "<i>Brak danych historycznych. Porównanie będzie dostępne od kolejnego uruchomienia.</i>\n"
 
-    send_telegram_message(msg)
+    send_telegram_message(msg.rstrip() + "\n")
+
+    # Zapis dzisiejszego snapshotu (nadpisuje poprzedni zapis z tej samej daty)
+    history.setdefault(address, {})[today_iso] = {
+        "account_value": account_value,
+        "positions": {
+            p["coin"]: {
+                "direction": p["direction"],
+                "val": p["val"],
+                "upnl": p["upnl"],
+                "pnl_pct": p["pnl_pct"],
+                "entry_px": p["entry_px"],
+                "mark_px": p["mark_px"],
+            }
+            for p in all_positions
+        },
+    }
+
+
+def build_position_block_no_history(p):
+    return (
+        f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
+        f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
+        f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
+        f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
+        f"(<b>{p['pnl_pct']:+.2f}%</b>)\n\n"
+    )
 
 
 def main():
@@ -187,8 +326,14 @@ def main():
     if not wallets:
         print("Brak poprawnych konfiguracji w pliku 01_Wallet_Address.txt")
         return
+
+    today_iso = datetime.now(TZ).strftime("%Y-%m-%d")
+    history = load_history()
+
     for wallet in wallets:
-        process_wallet(wallet)
+        process_wallet(wallet, history, today_iso)
+
+    save_history(history)
 
 
 if __name__ == "__main__":
