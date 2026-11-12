@@ -1,5 +1,5 @@
 """
-01_Wallet_Analysis.py
+02_Wallet_Analysis.py
 
 Analiza pozycji portfeli z 01_Wallet_Address.txt i propozycja max 3 pozycji
 (waluta, kierunek, wejście, dźwignia, stop-loss) wysyłana jako OSOBNY komunikat
