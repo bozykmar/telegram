@@ -6,9 +6,8 @@
 name: 02_Wallet_Analysis
 
 on:
-  workflow_run:
-    workflows: ["01_Whale_Wallet_bot"]
-    types: [completed]
+  schedule:
+    - cron: "15 7 * * *"   # codziennie 07:15 UTC (08:15 zimą / 09:15 latem w Polsce)
   workflow_dispatch:
 
 permissions:
@@ -16,7 +15,6 @@ permissions:
 
 jobs:
   analysis:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
