@@ -19,6 +19,9 @@ Metodyka (heurystyka konsensusu, nie model predykcyjny):
    (+-ENTRY_TOLERANCE), w przeciwnym razie zlecenie limit na krawędzi strefy.
 5. Dźwignia: mediana ważona dźwigni portfeli, ucięta do MAX_LEVERAGE.
 6. Stop-loss: poziom, przy którym strata = MAX_LOSS_ON_MARGIN marginu.
+7. Wielkość pozycji (% kapitału wpłaconego jako margin):
+   RISK_PER_TRADE / MAX_LOSS_ON_MARGIN x zgodność portfeli, ucięte do MAX_MARGIN_PCT.
+   Wartość nominalna pozycji = margin x dźwignia.
 """
 
 import os
@@ -43,6 +46,8 @@ MIN_EQUITY = 50_000       # portfele poniżej tej wartości są pomijane (USD)
 MAX_LEVERAGE = 5          # górny limit proponowanej dźwigni
 MAX_LOSS_ON_MARGIN = 0.15 # stop-loss: strata maks. 15% marginu pozycji
 ENTRY_TOLERANCE = 0.03    # strefa wejścia: +-3% od średniego wejścia portfeli
+RISK_PER_TRADE = 0.02     # ryzyko na jedną pozycję: 2% kapitału (przy trafieniu w stop-loss)
+MAX_MARGIN_PCT = 0.20     # maks. margin jednej pozycji: 20% kapitału
 
 
 # ---------------------------------------------------------------- narzędzia
@@ -157,9 +162,13 @@ def build_pick(coin, direction, entries, agreement, dom, total_wallets):
     sl_dist = MAX_LOSS_ON_MARGIN / leverage
     stop = entry * (1 - sl_dist) if direction == "LONG" else entry * (1 + sl_dist)
 
+    size_pct = min(MAX_MARGIN_PCT, RISK_PER_TRADE / MAX_LOSS_ON_MARGIN * agreement) * 100
+    size_pct = max(1, round(size_pct))
+
     return {
         "coin": coin,
         "direction": direction,
+        "size_pct": size_pct,
         "icon": "🟢" if direction == "LONG" else "🔴",
         "wallets_n": len(entries),
         "wallets_total": total_wallets,
@@ -232,13 +241,17 @@ def build_message(picks, wallets, today_iso):
 
     for i, p in enumerate(picks, 1):
         if p["market_ok"]:
-            entry_line = f"Wejście: <b>{fmt_px(p['entry'])}</b> (cena rynkowa w strefie wejścia portfeli)"
+            entry_line = (
+                f"Wejście: <b>{fmt_px(p['entry'])}</b> (cena rynkowa w strefie wejścia portfeli) "
+                f"/ śr. wejście {fmt_px(p['avg_entry'])}"
+            )
         else:
             gap = abs(p["price"] / p["avg_entry"] - 1) * 100
             side = "powyżej" if p["direction"] == "LONG" else "poniżej"
             entry_line = (
                 f"Wejście: zlecenie limit <b>{fmt_px(p['entry'])}</b> "
-                f"(cena {fmt_px(p['price'])} jest {gap:.1f}% {side} średniego wejścia portfeli)"
+                f"(cena {fmt_px(p['price'])} jest {gap:.1f}% {side} średniego wejścia portfeli) "
+                f"/ śr. wejście {fmt_px(p['avg_entry'])}"
             )
 
         trend_parts = []
@@ -248,26 +261,21 @@ def build_message(picks, wallets, today_iso):
             trend_parts.append(f"{p['down']} redukuje")
         trend_line = f"Trend (vs poprzedni zapis): {', '.join(trend_parts)}\n" if trend_parts else ""
 
+        if p["market_ok"]:
+            size_txt = f"<b>{p['size_pct']}% kapitału</b>"
+        else:
+            size_txt = f"<b>0% teraz</b> (limit: {p['size_pct']}% kapitału)"
+
         msg += (
-            f"<b>{i}. {p['coin']}</b> | {p['icon']} <b>{p['direction']}</b>\n"
+            f"<b>{i}. {p['coin']}</b> | {p['icon']} <b>{p['direction']}</b> - {size_txt}\n"
             f"Zgodność: {p['wallets_n']}/{p['wallets_total']} portfeli "
             f"({p['agreement']:.0%} wagi)\n"
             f"{entry_line}\n"
-            f"Dźwignia: <b>{p['leverage']}x Isolated</b> "
-            f"(portfele: mediana ważona {p['whale_leverage']:.1f}x)\n"
-            f"Stop-loss: <b>{fmt_px(p['stop'])}</b> "
-            f"({p['sl_dist'] * 100:.1f}% od wejścia, strata ok. {MAX_LOSS_ON_MARGIN:.0%} marginu)\n"
-            f"Portfele: śr. wejście {fmt_px(p['avg_entry'])}, "
-            f"śr. uPnL {p['avg_upnl']:+.1f}%\n"
+            f"Dźwignia: <b>{p['leverage']}x Isolated</b>\n"
+            f"Stop-loss: <b>{fmt_px(p['stop'])}</b>\n"
             f"{trend_line}\n"
         )
 
-    msg += (
-        "<i>Analiza automatyczna na podstawie pozycji portfeli (konsensus ważony "
-        "wielkością konta, udziałem marginu i trendem). To nie jest rekomendacja "
-        "inwestycyjna. Portfele mogą być zabezpieczone innymi pozycjami, "
-        "a handel dźwignią niesie ryzyko utraty całego depozytu.</i>"
-    )
     return msg
 
 
