@@ -1,0 +1,27 @@
+name: 02_Wallet_Analysis
+
+on:
+  workflow_run:
+    workflows: ["01_Whale_Wallet"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    # po workflow 01 uruchamia się tylko, jeśli zakończył się sukcesem
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Analiza portfeli
+        run: python 02_Wallet_Analysis.py
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
