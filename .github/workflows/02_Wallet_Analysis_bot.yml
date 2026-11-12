@@ -1,8 +1,13 @@
+# Analiza automatyczna na podstawie pozycji portfeli (konsensus ważony
+# wielkością konta, udziałem marginu i trendem). To nie jest rekomendacja
+# inwestycyjna. Portfele mogą być zabezpieczone innymi pozycjami, a handel
+# dźwignią niesie ryzyko utraty całego depozytu.
+
 name: 02_Wallet_Analysis
 
 on:
   workflow_run:
-    workflows: ["01_Whale_Wallet"]
+    workflows: ["01_Whale_Wallet_bot"]
     types: [completed]
   workflow_dispatch:
 
@@ -11,7 +16,6 @@ permissions:
 
 jobs:
   analysis:
-    # po workflow 01 uruchamia się tylko, jeśli zakończył się sukcesem
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
