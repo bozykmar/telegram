@@ -16,6 +16,8 @@ TZ = ZoneInfo("Europe/Warsaw")
 
 NBSP = "\u00a0"  # twarda spacja, żeby kwota nie łamała się w nowej linii
 
+POSITION_CHANGE_THRESHOLD = 10.0  # % zmiany pozycji, od którego pojawia się 🟢 / 🔴
+
 
 # ---------------------------------------------------------------- formatowanie
 
@@ -43,10 +45,35 @@ def fmt_pct_portfolio(value):
     return f"{value:.0f}%" if value >= 1 else f"{value:.1f}%"
 
 
-def fmt_change_pct(old, new):
+def change_pct_value(old, new):
+    """Zmiana procentowa jako liczba (None, gdy brak punktu odniesienia)."""
     if old == 0:
+        return None
+    return (new - old) / abs(old) * 100
+
+
+def fmt_change_pct(old, new, auto=False):
+    """auto=True: bez miejsc po przecinku przy zmianach >= 100% (np. uPnL)."""
+    change = change_pct_value(old, new)
+    if change is None:
         return "n/d"
-    return f"{(new - old) / abs(old) * 100:+.1f}%"
+    if auto and abs(change) >= 100:
+        return f"{change:+.0f}%"
+    return f"{change:+.1f}%"
+
+
+def change_marker(change):
+    """
+    Telegram nie obsługuje kolorów tekstu, więc kolor zastępuje znacznik:
+    🟢 przy wzroście o więcej niż 10%, 🔴 przy spadku o więcej niż 10%.
+    """
+    if change is None:
+        return ""
+    if change > POSITION_CHANGE_THRESHOLD:
+        return "🟢 "
+    if change < -POSITION_CHANGE_THRESHOLD:
+        return "🔴 "
+    return ""
 
 
 def fmt_date(iso_date):
@@ -234,13 +261,14 @@ def build_position_block(p, prev_pos, prev_label):
     if prev_pos is None:
         msg += "<i>Nowa pozycja (brak w poprzednim zestawieniu)</i>\n"
     else:
+        pos_change = change_pct_value(prev_pos["val"], p["val"])
         msg += (
             f"<i>{prev_label}:</i> Price {fmt_usd(prev_pos['mark_px'], 4)} / "
             f"Position: {fmt_usd(prev_pos['val'], 2)} / "
-            f"uPnL: {fmt_usd(prev_pos['upnl'], 2, True)} ({prev_pos['pnl_pct']:+.2f}%)\n"
+            f"uPnL: {prev_pos['pnl_pct']:+.2f}%\n"
             f"<i>Zmiana:</i> Price {fmt_change_pct(prev_pos['mark_px'], p['mark_px'])} / "
-            f"Position {fmt_change_pct(prev_pos['val'], p['val'])} / "
-            f"uPnL {fmt_usd(p['upnl'] - prev_pos['upnl'], 2, True)}\n"
+            f"{change_marker(pos_change)}<b>Position {fmt_change_pct(prev_pos['val'], p['val'])}</b> / "
+            f"uPnL {fmt_change_pct(prev_pos['upnl'], p['upnl'], auto=True)}\n"
         )
     return msg + "\n"
 
@@ -273,8 +301,7 @@ def process_wallet(config, history, today_iso):
     if prev_snap:
         msg += (
             f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b> "
-            f"({prev_label}: {fmt_usd(prev_snap['account_value'], 2)}, "
-            f"zmiana {fmt_change_pct(prev_snap['account_value'], account_equity)})\n\n"
+            f"(zmiana {fmt_change_pct(prev_snap['account_value'], account_equity)})\n\n"
         )
     else:
         msg += f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b>\n\n"
