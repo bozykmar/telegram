@@ -259,7 +259,7 @@ def build_message(picks, wallets, today_iso):
             trend_parts.append(f"{p['up']} zwiększa")
         if p["down"]:
             trend_parts.append(f"{p['down']} redukuje")
-        trend_line = f"Trend (vs poprzedni zapis): {', '.join(trend_parts)}\n" if trend_parts else ""
+        trend_line = f"Trend (zmiany): <b>{', '.join(trend_parts)}</b>\n" if trend_parts else ""
 
         if p["market_ok"]:
             size_txt = f"<b>{p['size_pct']}% kapitału</b>"
