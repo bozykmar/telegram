@@ -401,6 +401,59 @@
           "mark_px": 3.3739
         }
       }
+    },
+    "2026-11-13": {
+      "account_value": 2493543.396379,
+      "positions": {
+        "USELESS": {
+          "direction": "SHORT",
+          "val": 1120636.847071,
+          "upnl": 47251.149934,
+          "pnl_pct": 12.649365418656936,
+          "entry_px": 0.142481,
+          "mark_px": 0.13671699999999998
+        },
+        "CC": {
+          "direction": "LONG",
+          "val": 344454.115824,
+          "upnl": -57275.820217,
+          "pnl_pct": -49.883991149287304,
+          "entry_px": 0.103584,
+          "mark_px": 0.08881599999999999
+        },
+        "NIL": {
+          "direction": "LONG",
+          "val": 64674.743674,
+          "upnl": -18582.702765,
+          "pnl_pct": -86.1976486166939,
+          "entry_px": 0.071989,
+          "mark_px": 0.055922
+        },
+        "PONS": {
+          "direction": "LONG",
+          "val": 56024.585276,
+          "upnl": -772.92421,
+          "pnl_pct": -2.7592322413178416,
+          "entry_px": 0.157171,
+          "mark_px": 0.155033
+        },
+        "SKR": {
+          "direction": "SHORT",
+          "val": 29794.9685,
+          "upnl": 19326.956659,
+          "pnl_pct": 64.86651146820309,
+          "entry_px": 0.017047,
+          "mark_px": 0.01034
+        },
+        "ENA": {
+          "direction": "LONG",
+          "val": 1905.08202,
+          "upnl": -155.618047,
+          "pnl_pct": -24.505723958278708,
+          "entry_px": 0.15328,
+          "mark_px": 0.141705
+        }
+      }
     }
   },
   "0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00": {
@@ -1789,6 +1842,699 @@
           "mark_px": 0.041139999999999996
         }
       }
+    },
+    "2026-11-13": {
+      "account_value": 33063372.308645,
+      "positions": {
+        "BTC": {
+          "direction": "SHORT",
+          "val": 23353363.34232,
+          "upnl": -67006.634915,
+          "pnl_pct": -5.738499755499744,
+          "entry_px": 69528.9,
+          "mark_px": 69728.99999999999
+        },
+        "ETH": {
+          "direction": "SHORT",
+          "val": 21259086.83808,
+          "upnl": -104317.928581,
+          "pnl_pct": -7.360471033554145,
+          "entry_px": 1964.71,
+          "mark_px": 1974.3999999999999
+        },
+        "SOL": {
+          "direction": "SHORT",
+          "val": 13964081.86272,
+          "upnl": 525286.278006,
+          "pnl_pct": 75.23391557999388,
+          "entry_px": 84.987,
+          "mark_px": 81.906
+        },
+        "HYPE": {
+          "direction": "SHORT",
+          "val": 8669134.81071,
+          "upnl": -147339.072174,
+          "pnl_pct": -5.098746601286258,
+          "entry_px": 73.2151,
+          "mark_px": 74.481
+        },
+        "XRP": {
+          "direction": "SHORT",
+          "val": 3022291.1091,
+          "upnl": -21875.44242,
+          "pnl_pct": -7.238032879802312,
+          "entry_px": 1.030387,
+          "mark_px": 1.0379
+        },
+        "LINK": {
+          "direction": "SHORT",
+          "val": 2859832.7204,
+          "upnl": 142564.58811,
+          "pnl_pct": 49.85067381495647,
+          "entry_px": 10.66858,
+          "mark_px": 10.161999999999999
+        },
+        "ZEC": {
+          "direction": "SHORT",
+          "val": 2678836.731454,
+          "upnl": -55529.271155,
+          "pnl_pct": -10.364437388639047,
+          "entry_px": 958.4994,
+          "mark_px": 978.7886
+        },
+        "UNI": {
+          "direction": "SHORT",
+          "val": 1621413.72516,
+          "upnl": 160916.204724,
+          "pnl_pct": 99.24438298936991,
+          "entry_px": 6.59612,
+          "mark_px": 6.0006
+        },
+        "TRX": {
+          "direction": "LONG",
+          "val": 1441177.2466,
+          "upnl": -28925.681053,
+          "pnl_pct": -20.07086992334979,
+          "entry_px": 0.31971,
+          "mark_px": 0.31342
+        },
+        "AAVE": {
+          "direction": "SHORT",
+          "val": 1358516.5619,
+          "upnl": 191299.383864,
+          "pnl_pct": 140.81490739903214,
+          "entry_px": 131.1594,
+          "mark_px": 114.97
+        },
+        "kPEPE": {
+          "direction": "SHORT",
+          "val": 1285095.12075,
+          "upnl": 17752.904419,
+          "pnl_pct": 13.814467219079587,
+          "entry_px": 0.004662,
+          "mark_px": 0.004599
+        },
+        "PUMP": {
+          "direction": "SHORT",
+          "val": 1184184.186724,
+          "upnl": -50734.498685,
+          "pnl_pct": -12.85302554800986,
+          "entry_px": 0.00339,
+          "mark_px": 0.0035419999999999996
+        },
+        "VVV": {
+          "direction": "SHORT",
+          "val": 1176421.811292,
+          "upnl": -6887.519929,
+          "pnl_pct": -1.7563904025468073,
+          "entry_px": 19.3852,
+          "mark_px": 19.4994
+        },
+        "PAXG": {
+          "direction": "LONG",
+          "val": 1006136.21196,
+          "upnl": -32067.173016,
+          "pnl_pct": -15.935801054974288,
+          "entry_px": 4002.171,
+          "mark_px": 3878.5559999999996
+        },
+        "ZRO": {
+          "direction": "LONG",
+          "val": 959495.9334,
+          "upnl": 196671.177085,
+          "pnl_pct": 102.48671736840527,
+          "entry_px": 1.29271,
+          "mark_px": 1.626
+        },
+        "XPL": {
+          "direction": "SHORT",
+          "val": 947010.008,
+          "upnl": 42668.148315,
+          "pnl_pct": 22.527823335843774,
+          "entry_px": 0.053314,
+          "mark_px": 0.051016
+        },
+        "VIRTUAL": {
+          "direction": "SHORT",
+          "val": 921215.822544,
+          "upnl": 136233.448569,
+          "pnl_pct": 73.9421996646636,
+          "entry_px": 0.60535,
+          "mark_px": 0.52737
+        },
+        "SUI": {
+          "direction": "SHORT",
+          "val": 919315.014156,
+          "upnl": -21655.949905,
+          "pnl_pct": -23.556615057596034,
+          "entry_px": 0.80492,
+          "mark_px": 0.8243400000000001
+        },
+        "DOGE": {
+          "direction": "SHORT",
+          "val": 862297.621162,
+          "upnl": 5882.084802,
+          "pnl_pct": 6.82140905606021,
+          "entry_px": 0.066813,
+          "mark_px": 0.066361
+        },
+        "LTC": {
+          "direction": "SHORT",
+          "val": 812667.87174,
+          "upnl": 42258.017169,
+          "pnl_pct": 51.99912367462186,
+          "entry_px": 52.5063,
+          "mark_px": 49.911
+        },
+        "FARTCOIN": {
+          "direction": "LONG",
+          "val": 762156.467376,
+          "upnl": -106435.191006,
+          "pnl_pct": -41.89501587742543,
+          "entry_px": 0.12531,
+          "mark_px": 0.10996
+        },
+        "LDO": {
+          "direction": "SHORT",
+          "val": 694135.910677,
+          "upnl": 80471.589168,
+          "pnl_pct": 57.965297523468315,
+          "entry_px": 0.34751,
+          "mark_px": 0.31140999999999996
+        },
+        "LIT": {
+          "direction": "LONG",
+          "val": 672593.5432,
+          "upnl": 27344.545345,
+          "pnl_pct": 12.196613670245824,
+          "entry_px": 3.224165,
+          "mark_px": 3.3608
+        },
+        "AVAX": {
+          "direction": "LONG",
+          "val": 643056.411536,
+          "upnl": 7543.298913,
+          "pnl_pct": 11.730384423121624,
+          "entry_px": 8.5014,
+          "mark_px": 8.6024
+        },
+        "kBONK": {
+          "direction": "SHORT",
+          "val": 603034.385828,
+          "upnl": 52090.312623,
+          "pnl_pct": 86.38033559590158,
+          "entry_px": 0.002974,
+          "mark_px": 0.002738
+        },
+        "CASHCAT": {
+          "direction": "SHORT",
+          "val": 530121.025863,
+          "upnl": 70339.569365,
+          "pnl_pct": 10.468197219637075,
+          "entry_px": 0.058796,
+          "mark_px": 0.051909
+        },
+        "ENA": {
+          "direction": "SHORT",
+          "val": 481410.853875,
+          "upnl": 140459.373822,
+          "pnl_pct": 145.88305673979542,
+          "entry_px": 0.183049,
+          "mark_px": 0.141705
+        },
+        "JUP": {
+          "direction": "LONG",
+          "val": 481144.40175,
+          "upnl": 23731.200849,
+          "pnl_pct": 24.661204373038306,
+          "entry_px": 0.25346,
+          "mark_px": 0.26661
+        },
+        "TAO": {
+          "direction": "SHORT",
+          "val": 471802.74725,
+          "upnl": 7978.417951,
+          "pnl_pct": 8.455247449812301,
+          "entry_px": 219.398,
+          "mark_px": 215.75000000000003
+        },
+        "CRV": {
+          "direction": "SHORT",
+          "val": 426587.963922,
+          "upnl": 39574.494239,
+          "pnl_pct": 92.76983315549332,
+          "entry_px": 0.26118,
+          "mark_px": 0.23901000000000003
+        },
+        "ADA": {
+          "direction": "SHORT",
+          "val": 387464.05698,
+          "upnl": 21711.257371,
+          "pnl_pct": 56.03424880290427,
+          "entry_px": 0.183771,
+          "mark_px": 0.17402
+        },
+        "NEAR": {
+          "direction": "SHORT",
+          "val": 370427.081865,
+          "upnl": -14699.720133,
+          "pnl_pct": -39.68316803185476,
+          "entry_px": 3.46391,
+          "mark_px": 3.60705
+        },
+        "WLD": {
+          "direction": "SHORT",
+          "val": 366562.437792,
+          "upnl": 68137.664944,
+          "pnl_pct": 185.88283446280278,
+          "entry_px": 0.36254,
+          "mark_px": 0.30572
+        },
+        "TIA": {
+          "direction": "SHORT",
+          "val": 347366.37394,
+          "upnl": 7623.265179,
+          "pnl_pct": 10.972946362846212,
+          "entry_px": 0.42809,
+          "mark_px": 0.41890000000000005
+        },
+        "XLM": {
+          "direction": "SHORT",
+          "val": 330747.31296,
+          "upnl": 11589.753576,
+          "pnl_pct": 17.52055590758744,
+          "entry_px": 0.155659,
+          "mark_px": 0.15039
+        },
+        "GRAM": {
+          "direction": "SHORT",
+          "val": 318199.4396,
+          "upnl": 5829.765785,
+          "pnl_pct": 9.16055319319299,
+          "entry_px": 1.15335,
+          "mark_px": 1.1326
+        },
+        "EIGEN": {
+          "direction": "SHORT",
+          "val": 284284.66815,
+          "upnl": 102177.60948,
+          "pnl_pct": 179.71002471734948,
+          "entry_px": 0.2141,
+          "mark_px": 0.1575
+        },
+        "SEI": {
+          "direction": "SHORT",
+          "val": 255872.474459,
+          "upnl": 19978.657464,
+          "pnl_pct": 39.04026313606786,
+          "entry_px": 0.047641,
+          "mark_px": 0.044191
+        },
+        "APT": {
+          "direction": "SHORT",
+          "val": 238572.519168,
+          "upnl": 6680.358459,
+          "pnl_pct": 28.001374519249556,
+          "entry_px": 0.5723,
+          "mark_px": 0.5568
+        },
+        "PENGU": {
+          "direction": "SHORT",
+          "val": 232226.435952,
+          "upnl": 17358.277032,
+          "pnl_pct": 37.37360253794999,
+          "entry_px": 0.006681,
+          "mark_px": 0.006217
+        },
+        "MON": {
+          "direction": "LONG",
+          "val": 223113.566098,
+          "upnl": 13901.84175,
+          "pnl_pct": 18.692509818909112,
+          "entry_px": 0.015741,
+          "mark_px": 0.016787
+        },
+        "BNB": {
+          "direction": "SHORT",
+          "val": 207252.1022,
+          "upnl": -1450.818157,
+          "pnl_pct": -3.5001289289696764,
+          "entry_px": 641.835,
+          "mark_px": 646.36
+        },
+        "ATOM": {
+          "direction": "SHORT",
+          "val": 186440.428555,
+          "upnl": -3466.390456,
+          "pnl_pct": -9.296241386232959,
+          "entry_px": 1.3991,
+          "mark_px": 1.4257
+        },
+        "MELANIA": {
+          "direction": "LONG",
+          "val": 171669.559411,
+          "upnl": -56345.841538,
+          "pnl_pct": -98.46680168281094,
+          "entry_px": 0.07141,
+          "mark_px": 0.05377
+        },
+        "SNX": {
+          "direction": "LONG",
+          "val": 166176.33725,
+          "upnl": -22283.214884,
+          "pnl_pct": -40.22813702545039,
+          "entry_px": 0.18655,
+          "mark_px": 0.1645
+        },
+        "WIF": {
+          "direction": "SHORT",
+          "val": 162447.759,
+          "upnl": 31794.56299,
+          "pnl_pct": 97.86088520310089,
+          "entry_px": 0.182156,
+          "mark_px": 0.15234
+        },
+        "MET": {
+          "direction": "SHORT",
+          "val": 159150.15501,
+          "upnl": 6123.002819,
+          "pnl_pct": 11.541935636723576,
+          "entry_px": 0.30611,
+          "mark_px": 0.29477
+        },
+        "POPCAT": {
+          "direction": "SHORT",
+          "val": 157542.61705,
+          "upnl": 69738.086949,
+          "pnl_pct": 132.79851811902347,
+          "entry_px": 0.045948,
+          "mark_px": 0.03185
+        },
+        "MORPHO": {
+          "direction": "SHORT",
+          "val": 146888.4112,
+          "upnl": -3088.638457,
+          "pnl_pct": -10.513553900431868,
+          "entry_px": 1.99906,
+          "mark_px": 2.042
+        },
+        "AVNT": {
+          "direction": "SHORT",
+          "val": 138460.470452,
+          "upnl": 19157.682373,
+          "pnl_pct": 69.18105330256734,
+          "entry_px": 0.094206,
+          "mark_px": 0.08275600000000001
+        },
+        "ARB": {
+          "direction": "SHORT",
+          "val": 133360.506384,
+          "upnl": -2622.668614,
+          "pnl_pct": -19.666006715113372,
+          "entry_px": 0.14657,
+          "mark_px": 0.14952000000000001
+        },
+        "TRUMP": {
+          "direction": "SHORT",
+          "val": 130942.44576,
+          "upnl": -1001.623691,
+          "pnl_pct": -7.649343077307738,
+          "entry_px": 1.10587,
+          "mark_px": 1.1144
+        },
+        "PONS": {
+          "direction": "SHORT",
+          "val": 80408.795648,
+          "upnl": -720.284261,
+          "pnl_pct": -2.6873338490395526,
+          "entry_px": 0.153644,
+          "mark_px": 0.155033
+        },
+        "ONDO": {
+          "direction": "SHORT",
+          "val": 75389.04209,
+          "upnl": 1832.282033,
+          "pnl_pct": 24.304354879753053,
+          "entry_px": 0.361978,
+          "mark_px": 0.35339000000000004
+        },
+        "GRASS": {
+          "direction": "LONG",
+          "val": 67770.381,
+          "upnl": -2855.504696,
+          "pnl_pct": -12.640498639073607,
+          "entry_px": 0.46505,
+          "mark_px": 0.44625
+        },
+        "PYTH": {
+          "direction": "LONG",
+          "val": 65863.608832,
+          "upnl": 477.692298,
+          "pnl_pct": 3.626375068764965,
+          "entry_px": 0.065823,
+          "mark_px": 0.066304
+        },
+        "2Z": {
+          "direction": "LONG",
+          "val": 41533.890784,
+          "upnl": 352.271682,
+          "pnl_pct": 2.54446435447497,
+          "entry_px": 0.018815,
+          "mark_px": 0.018976
+        },
+        "kFLOKI": {
+          "direction": "SHORT",
+          "val": 32241.34585,
+          "upnl": -13.997611,
+          "pnl_pct": -0.21707547608469327,
+          "entry_px": 0.020326,
+          "mark_px": 0.020335000000000002
+        },
+        "SPX": {
+          "direction": "SHORT",
+          "val": 23196.88206,
+          "upnl": -645.589645,
+          "pnl_pct": -13.915440086519974,
+          "entry_px": 0.34006,
+          "mark_px": 0.3498
+        },
+        "BCH": {
+          "direction": "LONG",
+          "val": 23121.9168,
+          "upnl": 194.990063,
+          "pnl_pct": 8.433127092646576,
+          "entry_px": 225.283,
+          "mark_px": 227.2
+        },
+        "ASTER": {
+          "direction": "LONG",
+          "val": 15121.557,
+          "upnl": 114.73435,
+          "pnl_pct": 2.2762407998065277,
+          "entry_px": 0.661939,
+          "mark_px": 0.667
+        },
+        "STBL": {
+          "direction": "LONG",
+          "val": 9532.62402,
+          "upnl": 160.015747,
+          "pnl_pct": 5.03583525368076,
+          "entry_px": 0.021341,
+          "mark_px": 0.021706
+        },
+        "USELESS": {
+          "direction": "SHORT",
+          "val": 9524.799956,
+          "upnl": -337.327967,
+          "pnl_pct": -10.624726040309234,
+          "entry_px": 0.131875,
+          "mark_px": 0.136717
+        },
+        "STRK": {
+          "direction": "SHORT",
+          "val": 5985.533808,
+          "upnl": -48.038637,
+          "pnl_pct": -2.407736980908554,
+          "entry_px": 0.03743,
+          "mark_px": 0.037739999999999996
+        },
+        "AIXBT": {
+          "direction": "SHORT",
+          "val": 3503.774645,
+          "upnl": -70.305408,
+          "pnl_pct": -6.01968578148649,
+          "entry_px": 0.014141,
+          "mark_px": 0.014431
+        },
+        "WLFI": {
+          "direction": "SHORT",
+          "val": 2193.140709,
+          "upnl": -6.854552,
+          "pnl_pct": -1.5627250874448568,
+          "entry_px": 0.047841,
+          "mark_px": 0.04799099999999999
+        },
+        "GRIFFAIN": {
+          "direction": "SHORT",
+          "val": 34.90459,
+          "upnl": -6.984131,
+          "pnl_pct": -60.027616999014086,
+          "entry_px": 0.007898,
+          "mark_px": 0.009873999999999999
+        },
+        "PURR": {
+          "direction": "LONG",
+          "val": 11.481932,
+          "upnl": 0.950246,
+          "pnl_pct": 24.828038491786657,
+          "entry_px": 0.087038,
+          "mark_px": 0.094892
+        },
+        "MOODENG": {
+          "direction": "LONG",
+          "val": 7.538895,
+          "upnl": -15.64962,
+          "pnl_pct": -622.7551915764843,
+          "entry_px": 0.094647,
+          "mark_px": 0.030771
+        },
+        "ETHFI": {
+          "direction": "LONG",
+          "val": 5.41224,
+          "upnl": -4.99356,
+          "pnl_pct": -461.32100572036717,
+          "entry_px": 1.1562,
+          "mark_px": 0.60136
+        },
+        "KAITO": {
+          "direction": "LONG",
+          "val": 5.205,
+          "upnl": -3.30575,
+          "pnl_pct": -317.55523535062446,
+          "entry_px": 0.34043,
+          "mark_px": 0.2082
+        },
+        "CHIP": {
+          "direction": "LONG",
+          "val": 4.260432,
+          "upnl": 0.206712,
+          "pnl_pct": 14.555707026893048,
+          "entry_px": 0.03071,
+          "mark_px": 0.032276
+        },
+        "BERA": {
+          "direction": "LONG",
+          "val": 3.925422,
+          "upnl": -5.702046,
+          "pnl_pct": -726.2975681583117,
+          "entry_px": 0.2609,
+          "mark_px": 0.10638
+        },
+        "INJ": {
+          "direction": "SHORT",
+          "val": 3.29472,
+          "upnl": -0.16272,
+          "pnl_pct": -24.694055944055947,
+          "entry_px": 7.83,
+          "mark_px": 8.236799999999999
+        },
+        "BOME": {
+          "direction": "SHORT",
+          "val": 2.994684,
+          "upnl": -0.076696,
+          "pnl_pct": -7.68321465637109,
+          "entry_px": 0.000572,
+          "mark_px": 0.000588
+        },
+        "GOAT": {
+          "direction": "LONG",
+          "val": 2.860416,
+          "upnl": -8.003736,
+          "pnl_pct": -839.4306282722513,
+          "entry_px": 0.046428,
+          "mark_px": 0.012223999999999999
+        },
+        "kSHIB": {
+          "direction": "SHORT",
+          "val": 2.540984,
+          "upnl": 5.984832,
+          "pnl_pct": 2355.324323686137,
+          "entry_px": 0.014599,
+          "mark_px": 0.004351
+        },
+        "PNUT": {
+          "direction": "SHORT",
+          "val": 1.635765,
+          "upnl": 7.158288,
+          "pnl_pct": 1312.8330781010718,
+          "entry_px": 0.17553,
+          "mark_px": 0.03265
+        },
+        "STX": {
+          "direction": "SHORT",
+          "val": 1.228975,
+          "upnl": 1.243735,
+          "pnl_pct": 506.0050041701418,
+          "entry_px": 0.6031,
+          "mark_px": 0.29975
+        },
+        "ZORA": {
+          "direction": "LONG",
+          "val": 0.678598,
+          "upnl": -3.041224,
+          "pnl_pct": -1344.4904707801538,
+          "entry_px": 0.026761,
+          "mark_px": 0.004882
+        },
+        "TURBO": {
+          "direction": "LONG",
+          "val": 0.586011,
+          "upnl": -1.649702,
+          "pnl_pct": -844.5414847161572,
+          "entry_px": 0.002621,
+          "mark_px": 0.0006869999999999999
+        },
+        "0G": {
+          "direction": "LONG",
+          "val": 0.48306,
+          "upnl": -4.95444,
+          "pnl_pct": -3076.9097006583033,
+          "entry_px": 1.8125,
+          "mark_px": 0.16102
+        },
+        "LAYER": {
+          "direction": "LONG",
+          "val": 0.297888,
+          "upnl": -6.548112,
+          "pnl_pct": -6594.537544311956,
+          "entry_px": 1.141,
+          "mark_px": 0.049648
+        },
+        "SOPH": {
+          "direction": "LONG",
+          "val": 0.211008,
+          "upnl": -5.796318,
+          "pnl_pct": -8240.897975432212,
+          "entry_px": 0.053636,
+          "mark_px": 0.001884
+        },
+        "USUAL": {
+          "direction": "LONG",
+          "val": 0.197709,
+          "upnl": -2.488089,
+          "pnl_pct": -3775.3804834377797,
+          "entry_px": 0.15174,
+          "mark_px": 0.01117
+        },
+        "ME": {
+          "direction": "LONG",
+          "val": 0.08946,
+          "upnl": -3.06054,
+          "pnl_pct": -10263.38028169014,
+          "entry_px": 1.5,
+          "mark_px": 0.0426
+        }
+      }
     }
   },
   "0x082e843a431aef031264dc232693dd710aedca88": {
@@ -1817,6 +2563,19 @@
           "mark_px": 70.69800000000001
         }
       }
+    },
+    "2026-11-13": {
+      "account_value": 20882919.827194,
+      "positions": {
+        "HYPE": {
+          "direction": "LONG",
+          "val": 102784197.27414,
+          "upnl": 49410267.227392,
+          "pnl_pct": 240.35926016724062,
+          "entry_px": 38.6755,
+          "mark_px": 74.479
+        }
+      }
     }
   },
   "0x15a4f009bb324a3fb9e36137136b201e3fe0dfdb": {
@@ -1843,6 +2602,19 @@
           "pnl_pct": 283.2311142163333,
           "entry_px": 2283.23,
           "mark_px": 2000.0
+        }
+      }
+    },
+    "2026-11-13": {
+      "account_value": 20827629.983109,
+      "positions": {
+        "ETH": {
+          "direction": "SHORT",
+          "val": 59226000.0,
+          "upnl": 9270933.42649,
+          "pnl_pct": 313.069713520751,
+          "entry_px": 2283.23,
+          "mark_px": 1974.2
         }
       }
     }
@@ -2036,6 +2808,195 @@
           "mark_px": 7.313200000000001
         }
       }
+    },
+    "2026-11-13": {
+      "account_value": 60277478.592844,
+      "positions": {
+        "BTC": {
+          "direction": "SHORT",
+          "val": 96227492.45792,
+          "upnl": 9160763.779013,
+          "pnl_pct": 47.59951415661681,
+          "entry_px": 76361.6,
+          "mark_px": 69724.0
+        },
+        "ETH": {
+          "direction": "SHORT",
+          "val": 53405363.4816,
+          "upnl": 9422703.431911,
+          "pnl_pct": 88.21869956149112,
+          "entry_px": 2322.52,
+          "mark_px": 1974.2
+        },
+        "HYPE": {
+          "direction": "SHORT",
+          "val": 41936186.70345,
+          "upnl": 539828.111878,
+          "pnl_pct": 6.436304231657637,
+          "entry_px": 75.4377,
+          "mark_px": 74.479
+        },
+        "ZEC": {
+          "direction": "SHORT",
+          "val": 35701490.366948,
+          "upnl": 18222131.082791,
+          "pnl_pct": 153.1207596279665,
+          "entry_px": 1478.3647,
+          "mark_px": 978.7886
+        },
+        "SOL": {
+          "direction": "SHORT",
+          "val": 29995700.86713,
+          "upnl": 4555438.87753,
+          "pnl_pct": 106.30880833212677,
+          "entry_px": 94.3346,
+          "mark_px": 81.897
+        },
+        "XMR": {
+          "direction": "SHORT",
+          "val": 4182204.5056,
+          "upnl": 550010.72611,
+          "pnl_pct": 39.45364642310032,
+          "entry_px": 607.395,
+          "mark_px": 536.8
+        },
+        "XPL": {
+          "direction": "SHORT",
+          "val": 3093634.194,
+          "upnl": 3369564.336825,
+          "pnl_pct": 326.75786394139527,
+          "entry_px": 0.106548,
+          "mark_px": 0.051000000000000004
+        },
+        "ENA": {
+          "direction": "SHORT",
+          "val": 2921402.21296,
+          "upnl": 1990145.325531,
+          "pnl_pct": 204.36884555330454,
+          "entry_px": 0.238196,
+          "mark_px": 0.14168
+        },
+        "WLD": {
+          "direction": "SHORT",
+          "val": 2732858.285304,
+          "upnl": 1718130.589241,
+          "pnl_pct": 125.73872552999043,
+          "entry_px": 0.49784,
+          "mark_px": 0.30567000000000005
+        },
+        "DOGE": {
+          "direction": "SHORT",
+          "val": 2004260.405825,
+          "upnl": 853636.399356,
+          "pnl_pct": 127.77327689694222,
+          "entry_px": 0.094616,
+          "mark_px": 0.066355
+        },
+        "FARTCOIN": {
+          "direction": "SHORT",
+          "val": 1767107.768925,
+          "upnl": 1477189.496827,
+          "pnl_pct": 250.78088435867693,
+          "entry_px": 0.20186,
+          "mark_px": 0.10994999999999999
+        },
+        "ZRO": {
+          "direction": "SHORT",
+          "val": 1232025.07248,
+          "upnl": 123088.047011,
+          "pnl_pct": 29.972128756250978,
+          "entry_px": 1.78712,
+          "mark_px": 1.6248000000000002
+        },
+        "LINK": {
+          "direction": "SHORT",
+          "val": 884929.3164,
+          "upnl": 298913.273781,
+          "pnl_pct": 101.33462692715918,
+          "entry_px": 13.59454,
+          "mark_px": 10.162
+        },
+        "VVV": {
+          "direction": "SHORT",
+          "val": 831952.820664,
+          "upnl": 203998.406779,
+          "pnl_pct": 73.56128919047995,
+          "entry_px": 24.2807,
+          "mark_px": 19.4994
+        },
+        "PURR": {
+          "direction": "SHORT",
+          "val": 224303.716868,
+          "upnl": 70440.297172,
+          "pnl_pct": 94.21194372906625,
+          "entry_px": 0.124691,
+          "mark_px": 0.09489199999999999
+        },
+        "PUMP": {
+          "direction": "SHORT",
+          "val": 114902.071886,
+          "upnl": 34641.723639,
+          "pnl_pct": 150.74455608455543,
+          "entry_px": 0.004608,
+          "mark_px": 0.0035410000000000003
+        },
+        "BNB": {
+          "direction": "SHORT",
+          "val": 77451.9457,
+          "upnl": 16035.52274,
+          "pnl_pct": 62.11150383097621,
+          "entry_px": 780.108,
+          "mark_px": 646.3
+        },
+        "LIT": {
+          "direction": "LONG",
+          "val": 29980.28056,
+          "upnl": -11.89554,
+          "pnl_pct": -0.11903364256305124,
+          "entry_px": 3.362351,
+          "mark_px": 3.361018
+        },
+        "NEAR": {
+          "direction": "SHORT",
+          "val": 24707.77085,
+          "upnl": 11302.79987,
+          "pnl_pct": 137.23779380423045,
+          "entry_px": 5.25632,
+          "mark_px": 3.6065000000000005
+        },
+        "XRP": {
+          "direction": "SHORT",
+          "val": 14034.4838,
+          "upnl": 4783.415089,
+          "pnl_pct": 170.4164954396114,
+          "entry_px": 1.39165,
+          "mark_px": 1.0379
+        },
+        "ONDO": {
+          "direction": "SHORT",
+          "val": 621.9664,
+          "upnl": 283.942873,
+          "pnl_pct": 136.95733730464755,
+          "entry_px": 0.514721,
+          "mark_px": 0.35339000000000004
+        },
+        "SUI": {
+          "direction": "SHORT",
+          "val": 501.63855,
+          "upnl": 193.095275,
+          "pnl_pct": 115.47872965504745,
+          "entry_px": 1.14152,
+          "mark_px": 0.82425
+        },
+        "INJ": {
+          "direction": "SHORT",
+          "val": 147.477205,
+          "upnl": -46.991861,
+          "pnl_pct": -95.59144001672286,
+          "entry_px": 5.6137,
+          "mark_px": 8.23895
+        }
+      }
     }
   },
   "0xfc27136e42af1732ddc9ce2605ea9bff1b959d9d": {
@@ -2217,6 +3178,187 @@
           "pnl_pct": 45.943400197211496,
           "entry_px": 0.360003,
           "mark_px": 0.34419
+        }
+      }
+    },
+    "2026-11-13": {
+      "account_value": 21357085.665066,
+      "positions": {
+        "BTC": {
+          "direction": "SHORT",
+          "val": 69479967.39448,
+          "upnl": 7744808.158268,
+          "pnl_pct": 278.6705452197673,
+          "entry_px": 77496.0,
+          "mark_px": 69724.00000000001
+        },
+        "ETH": {
+          "direction": "SHORT",
+          "val": 9551692.892,
+          "upnl": 850037.721847,
+          "pnl_pct": 222.48352503014078,
+          "entry_px": 2149.89,
+          "mark_px": 1974.2
+        },
+        "SOL": {
+          "direction": "SHORT",
+          "val": 3649501.48473,
+          "upnl": 398696.649977,
+          "pnl_pct": 218.49375957033712,
+          "entry_px": 90.8439,
+          "mark_px": 81.897
+        },
+        "XRP": {
+          "direction": "SHORT",
+          "val": 3566324.0384,
+          "upnl": 599954.596722,
+          "pnl_pct": 336.45545960605665,
+          "entry_px": 1.212503,
+          "mark_px": 1.0379
+        },
+        "ZEC": {
+          "direction": "SHORT",
+          "val": 2365634.16734,
+          "upnl": 575055.240479,
+          "pnl_pct": 243.08713850105227,
+          "entry_px": 1216.7195,
+          "mark_px": 978.7886
+        },
+        "NEAR": {
+          "direction": "SHORT",
+          "val": 1154071.70505,
+          "upnl": 449470.917168,
+          "pnl_pct": 389.4653297548151,
+          "entry_px": 5.0111,
+          "mark_px": 3.6065
+        },
+        "LINK": {
+          "direction": "SHORT",
+          "val": 991375.2502,
+          "upnl": 156504.787574,
+          "pnl_pct": 157.86634530408813,
+          "entry_px": 11.76623,
+          "mark_px": 10.161999999999999
+        },
+        "BNB": {
+          "direction": "LONG",
+          "val": 825197.7789,
+          "upnl": -62584.022665,
+          "pnl_pct": -75.84123984001188,
+          "entry_px": 695.316,
+          "mark_px": 646.3
+        },
+        "AAVE": {
+          "direction": "SHORT",
+          "val": 725711.2174,
+          "upnl": 91974.762478,
+          "pnl_pct": 126.73741327510035,
+          "entry_px": 129.5522,
+          "mark_px": 114.97999999999999
+        },
+        "SUI": {
+          "direction": "LONG",
+          "val": 585964.6002,
+          "upnl": -45474.507852,
+          "pnl_pct": -77.60623736737467,
+          "entry_px": 0.88821,
+          "mark_px": 0.8242499999999999
+        },
+        "ENA": {
+          "direction": "LONG",
+          "val": 196449.52096,
+          "upnl": -9841.277645,
+          "pnl_pct": -50.09570701373116,
+          "entry_px": 0.148777,
+          "mark_px": 0.14168
+        },
+        "HBAR": {
+          "direction": "SHORT",
+          "val": 172280.051496,
+          "upnl": 1913.224718,
+          "pnl_pct": 5.55265888707819,
+          "entry_px": 0.064945,
+          "mark_px": 0.064232
+        },
+        "HYPE": {
+          "direction": "LONG",
+          "val": 134498.64694,
+          "upnl": -1059.90966,
+          "pnl_pct": -7.880448496056819,
+          "entry_px": 75.0659,
+          "mark_px": 74.47900000000001
+        },
+        "LTC": {
+          "direction": "SHORT",
+          "val": 118316.76803,
+          "upnl": 10444.321144,
+          "pnl_pct": 88.27422619718426,
+          "entry_px": 54.3059,
+          "mark_px": 49.900999999999996
+        },
+        "ADA": {
+          "direction": "LONG",
+          "val": 103369.572,
+          "upnl": -168.182148,
+          "pnl_pct": -1.6269985910360545,
+          "entry_px": 0.174283,
+          "mark_px": 0.174
+        },
+        "WLD": {
+          "direction": "SHORT",
+          "val": 50111.111862,
+          "upnl": 9072.382212,
+          "pnl_pct": 181.0453185981254,
+          "entry_px": 0.36101,
+          "mark_px": 0.30567
+        },
+        "DOT": {
+          "direction": "LONG",
+          "val": 44356.843904,
+          "upnl": 254.862134,
+          "pnl_pct": 5.745722905231316,
+          "entry_px": 0.84121,
+          "mark_px": 0.8460799999999999
+        },
+        "BCH": {
+          "direction": "LONG",
+          "val": 38221.80684,
+          "upnl": -4240.486419,
+          "pnl_pct": -110.944164328784,
+          "entry_px": 252.373,
+          "mark_px": 227.16999999999996
+        },
+        "XLM": {
+          "direction": "SHORT",
+          "val": 28896.56966,
+          "upnl": 907.032279,
+          "pnl_pct": 15.694462866565734,
+          "entry_px": 0.1551,
+          "mark_px": 0.15038
+        },
+        "AVAX": {
+          "direction": "LONG",
+          "val": 28869.912472,
+          "upnl": 546.09049,
+          "pnl_pct": 18.91555752264461,
+          "entry_px": 8.4396,
+          "mark_px": 8.6024
+        },
+        "DOGE": {
+          "direction": "SHORT",
+          "val": 25137.79549,
+          "upnl": 2090.973089,
+          "pnl_pct": 83.18044793672559,
+          "entry_px": 0.071874,
+          "mark_px": 0.066355
+        },
+        "ONDO": {
+          "direction": "SHORT",
+          "val": 9976.1997,
+          "upnl": -63.647906,
+          "pnl_pct": -6.379975132213923,
+          "entry_px": 0.351135,
+          "mark_px": 0.35339
         }
       }
     }
