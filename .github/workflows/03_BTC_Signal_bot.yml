@@ -1,0 +1,50 @@
+# Sygnał BTC: ocena 10 wskaźników z wagami + dodatki, alokacja LONG/SHORT.
+# To nie jest rekomendacja inwestycyjna. Wagi są heurystyczne i nie były
+# backtestowane, a handel dźwignią niesie ryzyko utraty całego depozytu.
+
+name: 03_BTC_Signal
+
+on:
+  schedule:
+    - cron: "30 7 * * *"   # codziennie 07:30 UTC (08:30 zimą / 09:30 latem w Polsce)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-writes
+  cancel-in-progress: false
+
+jobs:
+  btc-signal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+
+      - name: Sygnał BTC
+        run: python 03_BTC_Signal.py
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Zapisz historię
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          [ -f 03_BTC_History.json ] && git add 03_BTC_History.json
+          if git diff --staged --quiet; then
+            echo "Brak zmian w historii"
+            exit 0
+          fi
+          git commit -m "Aktualizacja historii sygnałów BTC"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "Próba $i nieudana, ponawiam..."
+            sleep 5
+          done
+          exit 1
