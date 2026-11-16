@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_WHALE")  # ID tematu (opcjonalnie)
 
 API_URL = "https://api.hyperliquid.xyz/info"
 HEADERS = {"Content-Type": "application/json"}
@@ -225,7 +226,8 @@ def get_hyperliquid_data(address):
 
 # ---------------------------------------------------------------- Telegram
 
-def send_telegram_message(message):
+def send_telegram_message(message, thread_id=None):
+    """thread_id: ID tematu w grupie z tematami (forum); domyślnie TELEGRAM_THREAD_WHALE."""
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -233,6 +235,9 @@ def send_telegram_message(message):
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
+    thread = thread_id or TELEGRAM_THREAD_ID
+    if thread:
+        payload["message_thread_id"] = int(thread)
     res = requests.post(url, json=payload, timeout=30)
     if not res.ok:
         print(f"Błąd Telegrama: {res.text}")
