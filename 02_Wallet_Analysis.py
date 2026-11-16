@@ -288,7 +288,7 @@ def main():
     picks = analyze(wallets)
     message = build_message(picks, wallets, today_iso)
     print(message)
-    whale.send_telegram_message(message)
+    whale.send_telegram_message(message, thread_id=os.environ.get("TELEGRAM_THREAD_ANALYSIS"))
 
 
 if __name__ == "__main__":
