@@ -40,6 +40,7 @@ import requests
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_BTC")  # ID tematu #3 BTC_Signal (opcjonalnie)
 
 STATE_FILE = "03_BTC_History.json"
 STATE_DAYS = 400
@@ -616,6 +617,8 @@ def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message,
                "parse_mode": "HTML", "disable_web_page_preview": True}
+    if TELEGRAM_THREAD_ID:
+        payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
     res = requests.post(url, json=payload, timeout=HTTP_TIMEOUT)
     if not res.ok:
         print(f"Błąd Telegrama: {res.text}")
