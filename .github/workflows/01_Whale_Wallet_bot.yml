@@ -1,13 +1,8 @@
-# Analiza automatyczna na podstawie pozycji portfeli (konsensus ważony
-# wielkością konta, udziałem marginu i trendem). To nie jest rekomendacja
-# inwestycyjna. Portfele mogą być zabezpieczone innymi pozycjami, a handel
-# dźwignią niesie ryzyko utraty całego depozytu.
-
 name: 01_Whale_Wallet
 
 on:
   schedule:
-    - cron: "0 7 * * *"   # codziennie 07:00 UTC (08:00 zimą / 09:00 latem w Polsce)
+    - cron: "10 7 * * *"   # 07:10 UTC (08:10 zimą / 09:10 latem w Polsce)
   workflow_dispatch:
 
 permissions:
@@ -27,24 +22,18 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
 
-      - name: Analiza portfeli
-        continue-on-error: true   # błąd analizy nie blokuje raportu i zapisu historii
-        run: python 02_Wallet_Analysis.py
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
       - name: Raport portfeli
         run: python 01_Wallet_Whale.py
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_WHALE: ${{ secrets.TELEGRAM_THREAD_WHALE }}
 
       - name: Zapisz historię
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 01_Wallet_History.json
+          [ -f 01_Wallet_History.json ] && git add 01_Wallet_History.json
           if git diff --staged --quiet; then
             echo "Brak zmian w historii"
             exit 0
