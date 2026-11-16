@@ -1,6 +1,8 @@
-Wallet #1 - najlepszy portfel - https://hyperbot.network/trader/0x936cf4fb95c30ce83f658b5bbb247e4bb381bb0f
-Wallet #2 - nowy portfel - https://hyperbot.network/trader/0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00
-Wallet #3 - nie mój typ #3 - https://hyperbot.network/trader/0x082e843a431aef031264dc232693dd710aedca88
-Wallet #4 - #4 - https://hyperbot.network/trader/0x15a4f009bb324a3fb9e36137136b201e3fe0dfdb
-Wallet #5 - #4 - https://hyperbot.network/trader/0x5b5d51203a0f9079f8aeb098a6523a13f298c060
-Wallet #6 - #4 - https://hyperbot.network/trader/0xfc27136e42af1732ddc9ce2605ea9bff1b959d9d
+Wallet #1 - najlepszy portfel #bb0f - https://hyperbot.network/trader/0x936cf4fb95c30ce83f658b5bbb247e4bb381bb0f
+Wallet #2 - nowy portfel #2b00 - https://hyperbot.network/trader/0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00
+Wallet #3 - nie mój typ #ca88 - https://hyperbot.network/trader/0x082e843a431aef031264dc232693dd710aedca88
+Wallet #4 - #dfdb - https://hyperbot.network/trader/0x15a4f009bb324a3fb9e36137136b201e3fe0dfdb
+Wallet #5 - #c060 - https://hyperbot.network/trader/0x5b5d51203a0f9079f8aeb098a6523a13f298c060
+Wallet #6 - #9d9d - https://hyperbot.network/trader/0xfc27136e42af1732ddc9ce2605ea9bff1b959d9d
+Wallet #7 - #b7ae - https://hyperbot.network/trader/0xfe7ce058edc7cfcde9ef8262ba51f8d4796ab7ae
+Wallet #8 - #0ea7 - https://hyperbot.network/trader/0x6ea486a3426563e23023125f18867117878f0ea7
