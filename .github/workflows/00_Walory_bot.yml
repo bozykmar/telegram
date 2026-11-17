@@ -3,7 +3,7 @@ name: Walory Raport
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 9,18 * * *'
+    - cron: '0 8 * * *'
 
 jobs:
   run-script:
@@ -24,12 +24,14 @@ jobs:
 
       - name: Obsłuż Menu Telegrama (menu.py)
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_WALORY: ${{ vars.TELEGRAM_THREAD_WALORY }}
         run: python menu.py
 
-      - name: Uruchom Główny Raport (Walory.py)
+      - name: Uruchom Główny Raport (00_Walory.py)
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python walory.py
+          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_WALORY: ${{ vars.TELEGRAM_THREAD_WALORY }}
+        run: python 00_Walory.py
