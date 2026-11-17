@@ -6,8 +6,8 @@ name: 03_BTC_Signal
 
 on:
   schedule:
-    - cron: "30 8 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
-    - cron: "30 18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
+    - cron: "30 8 * * *"    # 08:30 UTC (09:30 zimą / 10:30 latem w Polsce)
+    - cron: "30 18 * * *"   # 18:30 UTC (19:30 zimą / 20:30 latem w Polsce)
   workflow_dispatch:
 
 permissions:
@@ -22,12 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - run: pip install requests
 
-- name: Pobierz najnowszy stan z repozytorium
+      - name: Pobierz najnowszy stan z repozytorium
         run: git pull --rebase origin main
 
       - name: Sygnał BTC
