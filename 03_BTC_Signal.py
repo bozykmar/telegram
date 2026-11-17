@@ -40,7 +40,7 @@ import requests
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_BTC")  # ID tematu #3 BTC_Signal (opcjonalnie)
+TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_SIGNAL")  # ID tematu #3 BTC_Signal (8)
 
 STATE_FILE = "03_BTC_History.json"
 STATE_DAYS = 400
