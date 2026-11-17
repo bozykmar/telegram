@@ -30,9 +30,9 @@ jobs:
       - name: Analiza portfeli
         run: python 02_Wallet_Analysis.py
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TELEGRAM_THREAD_ANALYSIS: ${{ secrets.TELEGRAM_THREAD_ANALYSIS }}
+          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ANALYSIS: ${{ vars.TELEGRAM_THREAD_ANALYSIS }}
 
       - name: Zapisz historię
         run: |
