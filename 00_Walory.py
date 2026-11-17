@@ -5,6 +5,7 @@ import pandas as pd
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+THREAD_ID = os.environ.get("TELEGRAM_THREAD_WALORY")  # ID tematu Walory (31)
 
 GROUPS = {
     "COINBASE": [
@@ -18,6 +19,7 @@ GROUPS = {
         {"name": "BTCUSDT", "ticker": "BTC-USD"}
     ]
 }
+
 
 def get_asset_data(asset_info):
     ticker_symbol = asset_info["ticker"]
@@ -54,6 +56,7 @@ def get_asset_data(asset_info):
         "change_30d": change_30d
     }
 
+
 def format_colored_val(val, max_pos, max_neg):
     """
     Formatowanie wartości procentowych z emoji i pogrubieniem:
@@ -61,7 +64,7 @@ def format_colored_val(val, max_pos, max_neg):
     - Spadki: Największy minus = 🔴, Pozostałe = 🟠
     """
     val_str = f"{val:+.1f}%"
-    
+
     if val >= 0:
         if val == max_pos and max_pos > 0:
             return f"🟢 <b>{val_str}</b>"
@@ -72,6 +75,7 @@ def format_colored_val(val, max_pos, max_neg):
             return f"🔴 <b>{val_str}</b>"
         else:
             return f"🟠 <b>{val_str}</b>"
+
 
 def main():
     raport_parts = ["📊 <b>RAPORT SYGNAŁÓW I POTENCJAŁU WALORÓW</b>"]
@@ -104,7 +108,7 @@ def main():
         for a in parsed_assets:
             formatted_t = format_colored_val(a["change_7d"], max_pos_t, max_neg_t)
             formatted_m = format_colored_val(a["change_30d"], max_pos_m, max_neg_m)
-            
+
             msg = (
                 f"📌 <b>{a['name']}</b>\n"
                 f"• <b>Cena rynkowa (Mark Price):</b> ${a['latest_close']:,.2f}\n"
@@ -118,11 +122,23 @@ def main():
     pelny_raport = "\n".join(raport_parts)
     wyslij_telegram(pelny_raport)
 
+
 def wyslij_telegram(tekst):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    payload = {"chat_id": CHAT_ID, "text": tekst, "parse_mode": "HTML"}
-    response = requests.post(url, json=payload)
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": tekst,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+    }
+    if THREAD_ID:
+        payload["message_thread_id"] = int(THREAD_ID)
+
+    response = requests.post(url, json=payload, timeout=30)
+    if not response.ok:
+        print(f"Błąd Telegrama: {response.text}")
     response.raise_for_status()
+
 
 if __name__ == "__main__":
     main()
