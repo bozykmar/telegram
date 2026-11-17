@@ -7,8 +7,7 @@ name: 02_Wallet_Analysis
 
 on:
   schedule:
-    - cron: "15 8 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
-    - cron: "15 18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
+    - cron: "10 8,18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
   workflow_dispatch:
 
 permissions:
