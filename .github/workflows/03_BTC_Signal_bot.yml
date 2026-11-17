@@ -27,6 +27,9 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
 
+- name: Pobierz najnowszy stan z repozytorium
+        run: git pull --rebase origin main
+
       - name: Sygnał BTC
         run: python 03_BTC_Signal.py
         env:
@@ -45,8 +48,11 @@ jobs:
           fi
           git commit -m "Aktualizacja historii sygnałów BTC"
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push origin main && exit 0
-            echo "Próba $i nieudana, ponawiam..."
+            if git push origin main; then
+              exit 0
+            fi
+            echo "Próba $i nieudana, pobieram zmiany i ponawiam..."
+            git pull --rebase -X theirs origin main || git rebase --abort
             sleep 5
           done
           exit 1
