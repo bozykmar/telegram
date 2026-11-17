@@ -6,7 +6,8 @@ name: 03_BTC_Signal
 
 on:
   schedule:
-    - cron: "30 7 * * *"   # codziennie 07:30 UTC (08:30 zimą / 09:30 latem w Polsce)
+    - cron: "30 8 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
+    - cron: "30 18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
   workflow_dispatch:
 
 permissions:
