@@ -2,8 +2,8 @@ name: 01_Whale_Wallet
 
 on:
   schedule:
-    - cron: "* 8 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
-    - cron: "* 18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
+    - cron: "0 8 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
+    - cron: "0 18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
   workflow_dispatch:
 
 permissions:
