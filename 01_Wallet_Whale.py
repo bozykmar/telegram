@@ -1,23 +1,69 @@
+"""
+01_Wallet_Whale.py
+
+Raport pozycji portfeli z Hyperliquid wysyłany na Telegram (2x dziennie: 09:00 i 19:00).
+Zestawia top 5 pozycji każdego portfela i porównuje je z poprzednim uruchomieniem.
+
+Konfiguracja (GitHub Actions secrets / variables, przekazane jako zmienne środowiskowe):
+  TELEGRAM_TOKEN         - token bota
+  TELEGRAM_CHAT_ID       - ID czatu / grupy
+  TELEGRAM_THREAD_WHALE  - ID tematu w grupie (opcjonalnie)
+
+Lista portfeli: 01_Wallet_Address.txt (patrz opis formatu w pliku).
+Historia: 01_Wallet_History.json (zatwierdzana do repozytorium przez workflow).
+
+Lokalnie bez wysyłki i bez zapisu:  python 01_Wallet_Whale.py --dry-run
+"""
+
 import os
+import re
+import sys
 import json
-import requests
+import time
+import html
+import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_WHALE")  # ID tematu (opcjonalnie)
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+
+def env(name):
+    return (os.environ.get(name) or "").strip() or None
+
+
+TELEGRAM_TOKEN = env("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = env("TELEGRAM_CHAT_ID")
+TELEGRAM_THREAD_ID = env("TELEGRAM_THREAD_WHALE")
 
 API_URL = "https://api.hyperliquid.xyz/info"
-HEADERS = {"Content-Type": "application/json"}
-
+HYPERBOT_URL = "https://hyperbot.network/trader/"
+WALLET_FILE = "01_Wallet_Address.txt"
 HISTORY_FILE = "01_Wallet_History.json"
-HISTORY_DAYS = 30  # ile dni historii przechowywać
+HISTORY_KEEP = 60            # liczba przechowywanych zestawień (2 dziennie = 30 dni)
+MIN_TRACK_USD = 100          # pozycje poniżej tej wartości nie trafiają do historii
+MAX_CLOSED_SHOWN = 10        # ile zamkniętych pozycji pokazać w raporcie
+TOP_N = 5                    # ile największych pozycji pokazać
 TZ = ZoneInfo("Europe/Warsaw")
+NBSP = "\u00a0"              # twarda spacja, żeby kwota nie łamała się w nowej linii
 
-NBSP = "\u00a0"  # twarda spacja, żeby kwota nie łamała się w nowej linii
+POSITION_CHANGE_THRESHOLD = 10.0  # % zmiany wielkości pozycji, od którego pojawia się 🟢 / 🔴
 
-POSITION_CHANGE_THRESHOLD = 10.0  # % zmiany pozycji, od którego pojawia się 🟢 / 🔴
+ADDRESS_RE = re.compile(r"0x[a-fA-F0-9]{40}")
+
+
+def make_session():
+    session = requests.Session()
+    retry = Retry(total=3, backoff_factor=1.5, status_forcelist=(429, 500, 502, 503, 504),
+                  allowed_methods=frozenset(["GET", "POST"]))
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    return session
+
+
+SESSION = make_session()
 
 
 # ---------------------------------------------------------------- formatowanie
@@ -26,20 +72,15 @@ def fmt_usd(value, decimals, signed=False):
     """
     >= 1000 USD: bez miejsc po przecinku, spacja jako separator tysięcy ($2 129).
     <  1000 USD: podana liczba miejsc po przecinku ($75.3510).
+    signed=True: znak przed symbolem waluty (+$1 234 / -$56.20).
     """
-    sign = ""
-    if signed:
-        sign = "+" if value >= 0 else "-"
-    elif value < 0:
-        sign = "-"
-
+    sign = "-" if value < 0 else ("+" if signed else "")
     abs_val = abs(value)
     if abs_val >= 1000:
         number = f"{abs_val:,.0f}".replace(",", NBSP)
     else:
         number = f"{abs_val:.{decimals}f}"
-
-    return f"${sign}{number}"
+    return f"{sign}${number}"
 
 
 def fmt_pct_portfolio(value):
@@ -48,7 +89,7 @@ def fmt_pct_portfolio(value):
 
 def change_pct_value(old, new):
     """Zmiana procentowa jako liczba (None, gdy brak punktu odniesienia)."""
-    if old == 0:
+    if not old:
         return None
     return (new - old) / abs(old) * 100
 
@@ -64,10 +105,7 @@ def fmt_change_pct(old, new, auto=False):
 
 
 def change_marker(change):
-    """
-    Telegram nie obsługuje kolorów tekstu, więc kolor zastępuje znacznik:
-    🟢 przy wzroście o więcej niż 10%, 🔴 przy spadku o więcej niż 10%.
-    """
+    """Telegram nie obsługuje kolorów tekstu - znacznik 🟢 / 🔴 przy zmianie powyżej progu."""
     if change is None:
         return ""
     if change > POSITION_CHANGE_THRESHOLD:
@@ -77,8 +115,15 @@ def change_marker(change):
     return ""
 
 
-def fmt_date(iso_date):
-    return datetime.strptime(iso_date, "%Y-%m-%d").strftime("%d.%m.%Y")
+def run_key(now):
+    """Klucz zestawienia: data + slot (09 / 19). Zgodny wstecz z kluczami samej daty."""
+    return f"{now:%Y-%m-%d}T{'09' if now.hour < 14 else '19'}"
+
+
+def fmt_key(key):
+    date_part, _, slot = key.partition("T")
+    label = datetime.strptime(date_part, "%Y-%m-%d").strftime("%d.%m.%Y")
+    return f"{label} {slot}:00" if slot else label
 
 
 # ---------------------------------------------------------------- historia
@@ -95,17 +140,21 @@ def load_history():
 
 
 def save_history(history):
-    cutoff = sorted({d for w in history.values() for d in w})[-HISTORY_DAYS:]
-    for address in history:
-        history[address] = {d: s for d, s in history[address].items() if d in cutoff}
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
+    keep = set(sorted({k for w in history.values() for k in w})[-HISTORY_KEEP:])
+    for address in list(history):
+        history[address] = {k: s for k, s in history[address].items() if k in keep}
+        if not history[address]:
+            del history[address]
+    tmp = HISTORY_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, HISTORY_FILE)
 
 
-def get_previous_snapshot(history, address, today_iso):
-    """Zwraca (data, snapshot) z ostatniego dnia wcześniejszego niż dzisiaj."""
+def get_previous_snapshot(history, address, key):
+    """Zwraca (klucz, snapshot) z ostatniego zestawienia wcześniejszego niż bieżące."""
     days = history.get(address, {})
-    older = sorted(d for d in days if d < today_iso)
+    older = sorted(k for k in days if k < key)
     if not older:
         return None, None
     return older[-1], days[older[-1]]
@@ -113,39 +162,43 @@ def get_previous_snapshot(history, address, today_iso):
 
 # ---------------------------------------------------------------- konfiguracja
 
-def load_wallet_configs(file_path="01_Wallet_Address.txt"):
+def load_wallet_configs(file_path=WALLET_FILE):
     """
-    Format linii: Nazwa - Opis - Link
-    Przykład: Wallet #1 - najlepszy portfel - https://hyperbot.network/trader/0x...
+    Format linii (wszystko poza adresem opcjonalne):
+        Nazwa - Opis - 0xAdres
+        0xAdres
+    Nadal działa też pełny link (https://hyperbot.network/trader/0x...).
+    Linie zaczynające się od '#' oraz puste są pomijane.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Nie znaleziono pliku {file_path}")
 
-    wallets = []
+    wallets, seen = [], set()
     with open(file_path, "r", encoding="utf-8") as f:
-        lines = [line.strip() for line in f if line.strip()]
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            match = ADDRESS_RE.search(line)
+            if not match:
+                print(f"Pominięto linię bez poprawnego adresu 0x…: {line[:60]}")
+                continue
 
-    for line in lines:
-        parts = [p.strip() for p in line.split(" - ") if p.strip()]
-        if len(parts) < 2:
-            continue
+            address = match.group(0).lower()
+            if address in seen:
+                continue
+            seen.add(address)
 
-        link = parts[-1]
-        if "/trader/" not in link:
-            continue
-
-        wallet_address = link.split("/trader/")[-1].strip().split("?")[0].strip("/")
-        name = parts[0]
-        description = " - ".join(parts[1:-1])
-
-        if wallet_address:
+            head = re.sub(r"https?://\S*$", "", line[:match.start()])
+            head = head.rstrip(" \t-–—|:")
+            parts = [p.strip() for p in head.split(" - ") if p.strip()]
+            name = parts[0] if parts else f"Wallet {address[:6]}…{address[-4:]}"
             wallets.append({
                 "name": name,
-                "description": description,
-                "link": link,
-                "address": wallet_address,
+                "description": " - ".join(parts[1:]),
+                "link": HYPERBOT_URL + address,
+                "address": address,
             })
-
     return wallets
 
 
@@ -159,64 +212,51 @@ def get_hyperliquid_data(address):
     """
     positions = []
     try:
-        payload = {"type": "clearinghouseState", "user": address}
-        res = requests.post(API_URL, json=payload, headers=HEADERS, timeout=30)
+        res = SESSION.post(API_URL, json={"type": "clearinghouseState", "user": address}, timeout=30)
         res.raise_for_status()
-        res_perp = res.json()
+        data = res.json()
 
-        account_equity = float(res_perp.get("marginSummary", {}).get("accountValue", 0))
-        asset_positions = res_perp.get("assetPositions", [])
+        account_equity = float(data.get("marginSummary", {}).get("accountValue", 0))
 
-        for item in asset_positions:
+        for item in data.get("assetPositions", []):
             pos = item.get("position", {})
             szi = float(pos.get("szi", 0))
             if szi == 0:
                 continue
 
-            coin = pos.get("coin")
-            entry_px = float(pos.get("entryPx", 0))
             position_value = float(pos.get("positionValue", 0))
             upnl = float(pos.get("unrealizedPnl", 0))
-            direction = "LONG" if szi > 0 else "SHORT"
-            color_icon = "🟢" if szi > 0 else "🔴"
-
-            mark_px = position_value / abs(szi)
-
             leverage_obj = pos.get("leverage", {})
             lev_type = leverage_obj.get("type", "").capitalize()
             lev_val = leverage_obj.get("value", 1)
             leverage_str = f"{lev_type}{lev_val}x" if lev_type else f"{lev_val}x"
-
             try:
-                leverage_val_num = float(lev_val)
+                lev_num = float(lev_val)
             except (ValueError, TypeError):
-                leverage_val_num = 1.0
+                lev_num = 1.0
 
             margin_used = float(pos.get("marginUsed", 0))
-            if margin_used <= 0 and leverage_val_num > 0:
-                margin_used = position_value / leverage_val_num
-
-            pnl_pct = (upnl / margin_used * 100) if margin_used > 0 else 0.0
+            if margin_used <= 0 and lev_num > 0:
+                margin_used = position_value / lev_num
 
             positions.append({
-                "coin": coin,
-                "direction": direction,
-                "color_icon": color_icon,
-                "entry_px": entry_px,
-                "mark_px": mark_px,
+                "coin": pos.get("coin"),
+                "direction": "LONG" if szi > 0 else "SHORT",
+                "color_icon": "🟢" if szi > 0 else "🔴",
+                "entry_px": float(pos.get("entryPx", 0)),
+                "mark_px": position_value / abs(szi),
                 "val": position_value,
                 "upnl": upnl,
-                "pnl_pct": pnl_pct,
+                "pnl_pct": (upnl / margin_used * 100) if margin_used > 0 else 0.0,
                 "leverage": leverage_str,
                 "margin": margin_used,
             })
 
-        # Udział w całkowitym marginie portfela (suma wszystkich pozycji = 100%)
         total_margin = sum(p["margin"] for p in positions)
         for p in positions:
             p["portfolio_pct"] = (p["margin"] / total_margin * 100) if total_margin > 0 else 0.0
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Błąd pobierania danych dla {address}: {e}")
         return None
 
@@ -226,8 +266,7 @@ def get_hyperliquid_data(address):
 
 # ---------------------------------------------------------------- Telegram
 
-def send_telegram_message(message, thread_id=None):
-    """thread_id: ID tematu w grupie z tematami (forum); domyślnie TELEGRAM_THREAD_WHALE."""
+def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -235,145 +274,179 @@ def send_telegram_message(message, thread_id=None):
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
-    thread = thread_id or TELEGRAM_THREAD_ID
-    if thread:
-        payload["message_thread_id"] = int(thread)
-    res = requests.post(url, json=payload, timeout=30)
+    if TELEGRAM_THREAD_ID:
+        payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
+
+    res = None
+    for _ in range(3):
+        res = requests.post(url, json=payload, timeout=30)
+        if res.status_code == 429:  # limit Telegrama - odczekaj zalecany czas
+            try:
+                wait = int(res.json().get("parameters", {}).get("retry_after", 5))
+            except Exception:  # noqa: BLE001
+                wait = 5
+            time.sleep(wait + 1)
+            continue
+        break
     if not res.ok:
         print(f"Błąd Telegrama: {res.text}")
     res.raise_for_status()
 
 
-def build_position_block_no_history(p):
-    return (
-        f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
-        f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
-        f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
-        f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
-        f"(<b>{p['pnl_pct']:+.2f}%</b>)\n\n"
-    )
+# ---------------------------------------------------------------- komunikat
+
+def size_change_pct(prev_pos, p):
+    """Zmiana wielkości pozycji w jednostkach monety (bez wpływu ruchu ceny)."""
+    if not prev_pos.get("mark_px") or not p["mark_px"]:
+        return None
+    return change_pct_value(prev_pos["val"] / prev_pos["mark_px"], p["val"] / p["mark_px"])
 
 
-def build_position_block(p, prev_pos, prev_label):
+def build_position_block(p, prev_pos, prev_label, has_history):
     msg = (
-        f"<b>{p['coin']}</b> | {p['color_icon']} <b>{p['direction']}</b> "
+        f"<b>{html.escape(p['coin'])}</b> | {p['color_icon']} <b>{p['direction']}</b> "
         f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
         f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
         f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
         f"(<b>{p['pnl_pct']:+.2f}%</b>)\n"
     )
+    if not has_history:
+        return msg + "\n"
 
     if prev_pos is None:
         msg += "<i>Nowa pozycja (brak w poprzednim zestawieniu)</i>\n"
     else:
-        pos_change = change_pct_value(prev_pos["val"], p["val"])
         msg += (
             f"<i>{prev_label}:</i> Price {fmt_usd(prev_pos['mark_px'], 4)} / "
             f"Position: {fmt_usd(prev_pos['val'], 2)} / "
             f"uPnL: {prev_pos['pnl_pct']:+.2f}%\n"
             f"<i>Zmiana:</i> Price {fmt_change_pct(prev_pos['mark_px'], p['mark_px'])} / "
-            f"{change_marker(pos_change)}<b>Position {fmt_change_pct(prev_pos['val'], p['val'])}</b> / "
+            f"Position {fmt_change_pct(prev_pos['val'], p['val'])} / "
+            f"{change_marker(size_change_pct(prev_pos, p))}<b>Size {fmt_change_pct(prev_pos['val'] / prev_pos['mark_px'] if prev_pos.get('mark_px') else 0, p['val'] / p['mark_px'] if p['mark_px'] else 0)}</b> / "
             f"uPnL {fmt_change_pct(prev_pos['upnl'], p['upnl'], auto=True)}\n"
         )
     return msg + "\n"
 
 
-def process_wallet(config, history, today_iso):
-    address = config["address"]
-    today_label = fmt_date(today_iso)
-
-    header_link = f'<a href="{config["link"]}">{config["name"]}</a>'
-    parts = [header_link]
+def build_wallet_message(config, data, history, key):
+    name = html.escape(config["name"])
+    parts = [f'<a href="{config["link"]}">{name}</a>']
     if config["description"]:
-        parts.append(f'<i>{config["description"]}</i>')
-    parts.append(today_label)
-    header = " - ".join(parts) + "\n"  # bez pustej linii przed Account Equity
-
-    data = get_hyperliquid_data(address)
-    if data is None:
-        send_telegram_message(header + "\n<i>Nie udało się pobrać danych portfela.</i>")
-        return
+        parts.append(f'<i>{html.escape(config["description"])}</i>')
+    parts.append(fmt_key(key))
+    msg = " - ".join(parts) + "\n"
 
     account_equity, all_positions = data
-
-    prev_date, prev_snap = get_previous_snapshot(history, address, today_iso)
-    prev_label = fmt_date(prev_date) if prev_date else None
+    prev_key, prev_snap = get_previous_snapshot(history, config["address"], key)
+    prev_label = fmt_key(prev_key) if prev_key else None
     prev_positions = prev_snap["positions"] if prev_snap else {}
 
-    msg = header
-
-    # Account Equity (tuż pod nagłówkiem)
     if prev_snap:
-        msg += (
-            f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b> "
-            f"(zmiana {fmt_change_pct(prev_snap['account_value'], account_equity)})\n\n"
-        )
+        msg += (f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b> "
+                f"(zmiana {fmt_change_pct(prev_snap['account_value'], account_equity)})\n\n")
     else:
         msg += f"Account Equity: <b>{fmt_usd(account_equity, 2)}</b>\n\n"
 
-    top5 = all_positions[:5]
-
-    if not top5:
+    if not all_positions:
         msg += "<i>Brak aktywnych pozycji na portfelu.</i>\n\n"
 
-    for p in top5:
+    for p in all_positions[:TOP_N]:
         prev_pos = prev_positions.get(p["coin"])
-        # zmiana kierunku = traktujemy jako nową pozycję
         if prev_pos and prev_pos["direction"] != p["direction"]:
-            prev_pos = None
-        if prev_snap is None:
-            msg += build_position_block_no_history(p)
-        else:
-            msg += build_position_block(p, prev_pos, prev_label)
+            prev_pos = None  # zmiana kierunku = nowa pozycja
+        msg += build_position_block(p, prev_pos, prev_label, bool(prev_snap))
 
-    # Pozycje zamknięte od poprzedniego zestawienia
     if prev_snap:
         current = {p["coin"]: p for p in all_positions}
-        closed = [
-            c for c, pp in prev_positions.items()
-            if c not in current or current[c]["direction"] != pp["direction"]
-        ]
+        closed = sorted(
+            ((c, pp) for c, pp in prev_positions.items()
+             if c not in current or current[c]["direction"] != pp["direction"]),
+            key=lambda x: x[1]["val"], reverse=True,
+        )
         if closed:
-            lines = ", ".join(
-                f"{c} {prev_positions[c]['direction']} ({fmt_usd(prev_positions[c]['val'], 2)})"
-                for c in closed
+            shown = ", ".join(
+                f"{html.escape(c)} {pp['direction']} ({fmt_usd(pp['val'], 2)})"
+                for c, pp in closed[:MAX_CLOSED_SHOWN]
             )
-            msg += f"<b>Zamknięte od {prev_label}:</b> {lines}\n"
+            more = len(closed) - MAX_CLOSED_SHOWN
+            if more > 0:
+                shown += f" i {more} mniejszych"
+            msg += f"<b>Zamknięte od {prev_label}:</b> {shown}\n"
     else:
         msg += "<i>Brak danych historycznych. Porównanie będzie dostępne od kolejnego uruchomienia.</i>\n"
 
-    send_telegram_message(msg.rstrip() + "\n")
+    return msg.rstrip() + "\n"
 
-    # Zapis dzisiejszego snapshotu (nadpisuje poprzedni zapis z tej samej daty)
-    history.setdefault(address, {})[today_iso] = {
-        "account_value": account_equity,
+
+def snapshot_of(account_equity, positions):
+    return {
+        "account_value": round(account_equity, 2),
         "positions": {
             p["coin"]: {
                 "direction": p["direction"],
-                "val": p["val"],
-                "upnl": p["upnl"],
-                "pnl_pct": p["pnl_pct"],
+                "val": round(p["val"], 2),
+                "upnl": round(p["upnl"], 2),
+                "pnl_pct": round(p["pnl_pct"], 2),
                 "entry_px": p["entry_px"],
                 "mark_px": p["mark_px"],
             }
-            for p in all_positions
+            for p in positions if p["val"] >= MIN_TRACK_USD
         },
     }
 
 
-def main():
-    wallets = load_wallet_configs("01_Wallet_Address.txt")
-    if not wallets:
-        print("Brak poprawnych konfiguracji w pliku 01_Wallet_Address.txt")
-        return
+def process_wallet(config, data, history, key, dry_run):
+    """Zwraca True, gdy portfel przetworzony i wysłany bez błędu."""
+    if data is None:
+        header = f'<a href="{config["link"]}">{html.escape(config["name"])}</a> - {fmt_key(key)}\n'
+        message, ok = header + "\n<i>Nie udało się pobrać danych portfela.</i>\n", False
+    else:
+        message, ok = build_wallet_message(config, data, history, key), True
 
-    today_iso = datetime.now(TZ).strftime("%Y-%m-%d")
+    if dry_run:
+        print(message)
+    else:
+        send_telegram_message(message)
+
+    if ok and not dry_run:
+        history.setdefault(config["address"], {})[key] = snapshot_of(*data)
+    return ok
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true", help="bez wysyłki i bez zapisu historii")
+    args = parser.parse_args()
+
+    if not args.dry_run and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
+        sys.exit("Brak TELEGRAM_TOKEN lub TELEGRAM_CHAT_ID w zmiennych środowiskowych.")
+
+    wallets = load_wallet_configs()
+    if not wallets:
+        sys.exit(f"Brak poprawnych adresów w pliku {WALLET_FILE}")
+
+    key = run_key(datetime.now(TZ))
     history = load_history()
 
-    for wallet in wallets:
-        process_wallet(wallet, history, today_iso)
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(lambda w: get_hyperliquid_data(w["address"]), wallets))
 
-    save_history(history)
+    errors = 0
+    for config, data in zip(wallets, results):
+        try:
+            if not process_wallet(config, data, history, key, args.dry_run):
+                errors += 1
+        except Exception as e:  # noqa: BLE001
+            print(f"Błąd przetwarzania {config['name']}: {e}")
+            errors += 1
+        if not args.dry_run:
+            time.sleep(1.1)  # limit Telegrama: ok. 20 wiadomości/min na grupę
+
+    if not args.dry_run:
+        save_history(history)
+
+    if errors:
+        sys.exit(f"Błędy: {errors}/{len(wallets)} portfeli")
 
 
 if __name__ == "__main__":
