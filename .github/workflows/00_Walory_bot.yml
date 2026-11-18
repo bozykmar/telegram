@@ -1,4 +1,4 @@
-name: Walory Raport
+name: 00_Walory
 
 on:
   workflow_dispatch:
