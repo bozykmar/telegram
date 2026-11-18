@@ -1,7 +1,7 @@
 """
 03_BTC_Signal.py
 
-Dzienny sygnał dla BTC wysyłany na Telegram. Zasady z promptu (10 wskaźników, wagi,
+Dzienny sygnał dla BTC wysyłany na Telegram. Zasady z promptu (11 wskaźników, wagi,
 mnożniki M = +1 / 0 / -1, alokacja LONG/SHORT, transze P1-P3, filtr anty-FOMO) zostały
 zamienione na deterministyczny kod, więc wynik jest powtarzalny.
 
@@ -12,7 +12,7 @@ zamienione na deterministyczny kod, więc wynik jest powtarzalny.
   - alternative.me    : Fear and Greed Index (dodatek)
 
 Gdy któreś źródło nie odpowie, wskaźnik dostaje status N/D i jest pomijany, a wagi
-pozostałych są przeskalowane do 100%. W komunikacie widać pokrycie danych (np. 9/10).
+pozostałych są przeskalowane do 100%. W komunikacie widać pokrycie danych (np. 10/11).
 
 Przybliżenia (zaznaczone w komunikacie):
   - STH Realized Price = VWAP z 155 dni (proxy; prawdziwa wartość wymaga danych UTXO),
@@ -68,12 +68,14 @@ HTTP_TIMEOUT = 30
 
 # Wagi rdzenia (suma = 100). Grupy: trend/struktura 50, wycena on-chain 30,
 # pochodne 10, szczyt cyklu 7, krótki termin 3.
+# Bollinger rozdzielony: W1 = 6, D1 = 6 (razem jak dotychczasowe 12).
 WEIGHTS = {
     "sma200w": 10,
     "sma200d": 18,
     "mvrv": 15,
     "rsi_w1": 10,
-    "bb": 12,
+    "bb_w1": 6,
+    "bb_d1": 6,
     "sth": 12,
     "funding": 10,
     "rsi_d1": 3,
@@ -86,7 +88,8 @@ NAMES = {
     "sma200d": "200D SMA",
     "mvrv": "MVRV Z-Score",
     "rsi_w1": "RSI W1",
-    "bb": "Bollinger W1+D1",
+    "bb_w1": "Bollinger W1",
+    "bb_d1": "Bollinger D1",
     "sth": "STH Realized Price (proxy)",
     "funding": "Funding + OI",
     "rsi_d1": "RSI D1",
@@ -260,6 +263,18 @@ def bollinger(closes, n=20, k=2.0, lookback=100):
     return {"lower": lower, "mid": mid, "upper": upper, "squeeze": squeeze, "expanding": expanding}
 
 
+def bb_signal(spot, closes):
+    """Sygnał Bollingera dla jednego interwału: (M, opis)."""
+    b = bollinger(closes)
+    if spot > b["upper"] and b["expanding"]:
+        return 1, "wybicie w górę"
+    if spot < b["lower"] and b["expanding"]:
+        return -1, "wybicie w dół"
+    if b["squeeze"]:
+        return 0, "squeeze"
+    return 0, "w kanale"
+
+
 def swing_points(candles, k=5):
     highs, lows = [], []
     for i in range(k, len(candles) - k):
@@ -391,24 +406,11 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
         m = 1 if r > 50 else (0 if r >= 45 else -1)
         out["rsi_w1"] = (m, "RSI W1", f"{r:.1f}")
 
-    # 5. Wstegi Bollingera W1 + D1
-    if len(w_close) >= 125 and len(d_close) >= 125:
-        parts, texts = [], []
-        for name, closes in (("W1", w_close), ("D1", d_close)):
-            b = bollinger(closes)
-            if spot > b["upper"] and b["expanding"]:
-                parts.append(1)
-                texts.append(f"{name} wybicie w górę")
-            elif spot < b["lower"] and b["expanding"]:
-                parts.append(-1)
-                texts.append(f"{name} wybicie w dół")
-            elif b["squeeze"]:
-                parts.append(0)
-                texts.append(f"{name} squeeze")
-            else:
-                parts.append(0)
-                texts.append(f"{name} w kanale")
-        out["bb"] = (sum(parts) / 2, "Bollinger W1+D1", ", ".join(texts))
+    # 5. Wstegi Bollingera - osobno W1 i D1 (min. 20 + lookback 100 - 1 = 119 swiec)
+    for key, closes in (("bb_w1", w_close), ("bb_d1", d_close)):
+        if len(closes) >= 120:
+            m, why = bb_signal(spot, closes)
+            out[key] = (m, NAMES[key], why)
 
     # 6. STH Realized Price (proxy)
     p = sth_proxy(daily)
