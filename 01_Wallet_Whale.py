@@ -14,6 +14,8 @@ Historia: 01_Wallet_History.json (zatwierdzana do repozytorium przez workflow).
 
 Lokalnie bez wysyłki i bez zapisu:  python 01_Wallet_Whale.py --dry-run
 Wymuszenie slotu (np. przy opóźnionym cronie):  python 01_Wallet_Whale.py --slot 09
+
+Kod wyjścia: 0 = OK lub błędy częściowe (ostrzeżenie w logu), 1 = zawiodły wszystkie portfele.
 """
 
 import os
@@ -152,7 +154,8 @@ def load_history():
         return {}
     try:
         with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
     except (json.JSONDecodeError, OSError) as e:
         print(f"Nie udało się wczytać historii: {e}")
         return {}
@@ -500,21 +503,27 @@ def main():
         results = list(pool.map(lambda w: get_hyperliquid_data(w["address"]), wallets))
 
     errors = 0
-    for config, data in zip(wallets, results):
-        try:
-            if not process_wallet(config, data, history, key, args.dry_run):
+    try:
+        for config, data in zip(wallets, results):
+            try:
+                if not process_wallet(config, data, history, key, args.dry_run):
+                    errors += 1
+            except Exception as e:  # noqa: BLE001
+                print(f"Błąd przetwarzania {config['name']}: {e}")
                 errors += 1
-        except Exception as e:  # noqa: BLE001
-            print(f"Błąd przetwarzania {config['name']}: {e}")
-            errors += 1
+            if not args.dry_run:
+                time.sleep(1.1)  # limit Telegrama: ok. 20 wiadomości/min na grupę
+    finally:
         if not args.dry_run:
-            time.sleep(1.1)  # limit Telegrama: ok. 20 wiadomości/min na grupę
-
-    if not args.dry_run:
-        save_history(history)
+            try:
+                save_history(history)
+            except OSError as e:
+                print(f"Nie udało się zapisać historii: {e}")
 
     if errors:
-        sys.exit(f"Błędy: {errors}/{len(wallets)} portfeli")
+        print(f"Ostrzeżenie: błędy w {errors}/{len(wallets)} portfelach.")
+    if errors == len(wallets):
+        sys.exit(1)  # awaria całkowita - workflow powinien to zgłosić
 
 
 if __name__ == "__main__":
