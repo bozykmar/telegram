@@ -2,7 +2,8 @@ name: 01_Whale_Wallet
 
 on:
   schedule:
-    - cron: "5 8,18 * * *"   # 08:0 UTC (09:00 zimą / 10:00 latem w Polsce)
+    - cron: "5 8 * * *"    # 08:05 UTC = 09:05 zimą / 10:05 latem (slot 09)
+    - cron: "5 18 * * *"   # 18:05 UTC = 19:05 zimą / 20:05 latem (slot 19)
   workflow_dispatch:
 
 permissions:
@@ -15,21 +16,28 @@ concurrency:
 jobs:
   run-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/workflows/01_Whale_Wallet_bot.yml
+
       - run: pip install requests
 
       - name: Raport portfeli
-        run: python 01_Wallet_Whale.py
         env:
-          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
           TELEGRAM_THREAD_WHALE: ${{ vars.TELEGRAM_THREAD_WHALE }}
+          SLOT: ${{ github.event.schedule == '5 8 * * *' && '09' || github.event.schedule == '5 18 * * *' && '19' || '' }}
+        run: python 01_Wallet_Whale.py ${SLOT:+--slot "$SLOT"}
 
       - name: Zapisz historię
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -42,6 +50,7 @@ jobs:
           for i in 1 2 3 4 5; do
             git pull --rebase origin main && git push origin main && exit 0
             echo "Próba $i nieudana, ponawiam..."
+            git rebase --abort 2>/dev/null || true
             sleep 5
           done
           exit 1
