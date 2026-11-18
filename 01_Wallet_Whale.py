@@ -13,6 +13,7 @@ Lista portfeli: 01_Wallet_Address.txt (patrz opis formatu w pliku).
 Historia: 01_Wallet_History.json (zatwierdzana do repozytorium przez workflow).
 
 Lokalnie bez wysyłki i bez zapisu:  python 01_Wallet_Whale.py --dry-run
+Wymuszenie slotu (np. przy opóźnionym cronie):  python 01_Wallet_Whale.py --slot 09
 """
 
 import os
@@ -35,9 +36,20 @@ def env(name):
     return (os.environ.get(name) or "").strip() or None
 
 
+def env_int(name):
+    value = env(name)
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        print(f"Ignoruję {name}: '{value}' nie jest liczbą całkowitą.")
+        return None
+
+
 TELEGRAM_TOKEN = env("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = env("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = env("TELEGRAM_THREAD_WHALE")
+TELEGRAM_THREAD_ID = env_int("TELEGRAM_THREAD_WHALE")
 
 API_URL = "https://api.hyperliquid.xyz/info"
 HYPERBOT_URL = "https://hyperbot.network/trader/"
@@ -51,6 +63,8 @@ TZ = ZoneInfo("Europe/Warsaw")
 NBSP = "\u00a0"              # twarda spacja, żeby kwota nie łamała się w nowej linii
 
 POSITION_CHANGE_THRESHOLD = 10.0  # % zmiany wielkości pozycji, od którego pojawia się 🟢 / 🔴
+TELEGRAM_MAX_LEN = 4000           # limit Telegrama to 4096 znaków; zapas na bezpieczeństwo
+TELEGRAM_ATTEMPTS = 3
 
 ADDRESS_RE = re.compile(r"0x[a-fA-F0-9]{40}")
 
@@ -94,14 +108,17 @@ def change_pct_value(old, new):
     return (new - old) / abs(old) * 100
 
 
-def fmt_change_pct(old, new, auto=False):
-    """auto=True: bez miejsc po przecinku przy zmianach >= 100% (np. uPnL)."""
-    change = change_pct_value(old, new)
+def fmt_pct_signed(change, auto=False):
+    """Formatuje gotową zmianę procentową. auto=True: bez miejsc po przecinku przy >= 100%."""
     if change is None:
         return "n/d"
     if auto and abs(change) >= 100:
         return f"{change:+.0f}%"
     return f"{change:+.1f}%"
+
+
+def fmt_change_pct(old, new, auto=False):
+    return fmt_pct_signed(change_pct_value(old, new), auto=auto)
 
 
 def change_marker(change):
@@ -115,9 +132,11 @@ def change_marker(change):
     return ""
 
 
-def run_key(now):
-    """Klucz zestawienia: data + slot (09 / 19). Zgodny wstecz z kluczami samej daty."""
-    return f"{now:%Y-%m-%d}T{'09' if now.hour < 14 else '19'}"
+def run_key(now, slot=None):
+    """Klucz zestawienia: data + slot (09 / 19). Slot można wymusić (--slot)."""
+    if slot is None:
+        slot = "09" if now.hour < 14 else "19"
+    return f"{now:%Y-%m-%d}T{slot}"
 
 
 def fmt_key(key):
@@ -266,45 +285,92 @@ def get_hyperliquid_data(address):
 
 # ---------------------------------------------------------------- Telegram
 
-def send_telegram_message(message):
+def split_message(message, limit=TELEGRAM_MAX_LEN):
+    """Dzieli tekst na części po liniach (tagi HTML w liniach są zamknięte)."""
+    if len(message) <= limit:
+        return [message]
+    chunks, current = [], ""
+    for line in message.splitlines(keepends=True):
+        while len(line) > limit:  # awaryjnie: pojedyncza zbyt długa linia
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.append(line[:limit])
+            line = line[limit:]
+        if len(current) + len(line) > limit:
+            chunks.append(current)
+            current = ""
+        current += line
+    if current.strip():
+        chunks.append(current)
+    return chunks
+
+
+def send_telegram_chunk(text):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
+        "text": text,
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
-    if TELEGRAM_THREAD_ID:
-        payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
+    if TELEGRAM_THREAD_ID is not None:
+        payload["message_thread_id"] = TELEGRAM_THREAD_ID
 
-    res = None
-    for _ in range(3):
-        res = requests.post(url, json=payload, timeout=30)
+    last_error = None
+    for attempt in range(TELEGRAM_ATTEMPTS):
+        try:
+            res = requests.post(url, json=payload, timeout=30)
+        except requests.RequestException as e:
+            last_error = e
+            time.sleep(2 * (attempt + 1))
+            continue
+
         if res.status_code == 429:  # limit Telegrama - odczekaj zalecany czas
             try:
                 wait = int(res.json().get("parameters", {}).get("retry_after", 5))
             except Exception:  # noqa: BLE001
                 wait = 5
+            last_error = requests.HTTPError(f"429 Too Many Requests: {res.text}")
             time.sleep(wait + 1)
             continue
-        break
-    if not res.ok:
-        print(f"Błąd Telegrama: {res.text}")
-    res.raise_for_status()
+
+        if not res.ok:
+            print(f"Błąd Telegrama: {res.text}")
+        res.raise_for_status()
+        return
+
+    raise last_error or RuntimeError("Nie udało się wysłać wiadomości na Telegram")
+
+
+def send_telegram_message(message):
+    chunks = split_message(message)
+    for i, chunk in enumerate(chunks):
+        send_telegram_chunk(chunk)
+        if i < len(chunks) - 1:
+            time.sleep(1.1)
 
 
 # ---------------------------------------------------------------- komunikat
 
+def size_of(pos):
+    """Wielkość pozycji w jednostkach monety (None, gdy brak ceny)."""
+    if not pos.get("mark_px"):
+        return None
+    return pos["val"] / pos["mark_px"]
+
+
 def size_change_pct(prev_pos, p):
     """Zmiana wielkości pozycji w jednostkach monety (bez wpływu ruchu ceny)."""
-    if not prev_pos.get("mark_px") or not p["mark_px"]:
+    old, new = size_of(prev_pos), size_of(p)
+    if old is None or new is None:
         return None
-    return change_pct_value(prev_pos["val"] / prev_pos["mark_px"], p["val"] / p["mark_px"])
+    return change_pct_value(old, new)
 
 
 def build_position_block(p, prev_pos, prev_label, has_history):
     msg = (
-        f"<b>{html.escape(p['coin'])}</b> | {p['color_icon']} <b>{p['direction']}</b> "
+        f"<b>{html.escape(str(p['coin']))}</b> | {p['color_icon']} <b>{p['direction']}</b> "
         f"<b>{p['leverage']}</b> - {fmt_pct_portfolio(p['portfolio_pct'])} portfela\n"
         f"Price <b>{fmt_usd(p['mark_px'], 4)}</b> / Avg. Price: <b>{fmt_usd(p['entry_px'], 4)}</b>\n"
         f"Position: <b>{fmt_usd(p['val'], 2)}</b> / uPnL: <b>{fmt_usd(p['upnl'], 2, True)}</b> "
@@ -316,13 +382,14 @@ def build_position_block(p, prev_pos, prev_label, has_history):
     if prev_pos is None:
         msg += "<i>Nowa pozycja (brak w poprzednim zestawieniu)</i>\n"
     else:
+        size_chg = size_change_pct(prev_pos, p)
         msg += (
             f"<i>{prev_label}:</i> Price {fmt_usd(prev_pos['mark_px'], 4)} / "
             f"Position: {fmt_usd(prev_pos['val'], 2)} / "
             f"uPnL: {prev_pos['pnl_pct']:+.2f}%\n"
             f"<i>Zmiana:</i> Price {fmt_change_pct(prev_pos['mark_px'], p['mark_px'])} / "
             f"Position {fmt_change_pct(prev_pos['val'], p['val'])} / "
-            f"{change_marker(size_change_pct(prev_pos, p))}<b>Size {fmt_change_pct(prev_pos['val'] / prev_pos['mark_px'] if prev_pos.get('mark_px') else 0, p['val'] / p['mark_px'] if p['mark_px'] else 0)}</b> / "
+            f"{change_marker(size_chg)}<b>Size {fmt_pct_signed(size_chg)}</b> / "
             f"uPnL {fmt_change_pct(prev_pos['upnl'], p['upnl'], auto=True)}\n"
         )
     return msg + "\n"
@@ -365,7 +432,7 @@ def build_wallet_message(config, data, history, key):
         )
         if closed:
             shown = ", ".join(
-                f"{html.escape(c)} {pp['direction']} ({fmt_usd(pp['val'], 2)})"
+                f"{html.escape(str(c))} {pp['direction']} ({fmt_usd(pp['val'], 2)})"
                 for c, pp in closed[:MAX_CLOSED_SHOWN]
             )
             more = len(closed) - MAX_CLOSED_SHOWN
@@ -416,6 +483,7 @@ def process_wallet(config, data, history, key, dry_run):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="bez wysyłki i bez zapisu historii")
+    parser.add_argument("--slot", choices=["09", "19"], help="wymuś slot zestawienia (domyślnie wg godziny)")
     args = parser.parse_args()
 
     if not args.dry_run and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
@@ -425,7 +493,7 @@ def main():
     if not wallets:
         sys.exit(f"Brak poprawnych adresów w pliku {WALLET_FILE}")
 
-    key = run_key(datetime.now(TZ))
+    key = run_key(datetime.now(TZ), args.slot)
     history = load_history()
 
     with ThreadPoolExecutor(max_workers=4) as pool:
