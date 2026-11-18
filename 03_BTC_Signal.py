@@ -1,10 +1,9 @@
 """
 03_BTC_Signal.py
 
-Dzienny sygnał dla BTC wysyłany na Telegram. Zasady z Twojego promptu (10 wskaźników,
-wagi, mnożniki M = +1 / 0 / -1, alokacja LONG/SHORT, transze P1-P3, filtr anty-FOMO)
-zostały zamienione na deterministyczny kod, więc wynik jest powtarzalny i nie zależy od
-"interpretacji" modelu językowego.
+Dzienny sygnał dla BTC wysyłany na Telegram. Zasady z promptu (10 wskaźników, wagi,
+mnożniki M = +1 / 0 / -1, alokacja LONG/SHORT, transze P1-P3, filtr anty-FOMO) zostały
+zamienione na deterministyczny kod, więc wynik jest powtarzalny.
 
 Źródła danych (darmowe, bez kluczy):
   - Kraken            : świece D1 i W1, cena spot
@@ -17,8 +16,25 @@ pozostałych są przeskalowane do 100%. W komunikacie widać pokrycie danych (np
 
 Przybliżenia (zaznaczone w komunikacie):
   - STH Realized Price = VWAP z 155 dni (proxy; prawdziwa wartość wymaga danych UTXO),
-  - Puell Multiple = przychód z emisji (nagroda za blok x cena) / średnia 365 dni,
-    bez opłat transakcyjnych.
+  - Puell Multiple = przychód z emisji (nagroda za blok x cena) / średnia 365 dni.
+    Uwaga: oba proxy wynikają wyłącznie z ceny, więc NIE wnoszą niezależnej informacji
+    on-chain (dlatego mają umiarkowane wagi).
+
+Przegląd reguł i wag (backtest kodu produkcyjnego na dziennych danych Bitstamp 2016-2024,
+tylko wskaźniki cenowe; MVRV, funding/OI i Fear/Greed nie mają darmowej historii):
+  - cena poniżej 200W SMA NIE poprzedzała spadków (śr. +8% w 30 dni) -> M = 0, nie -1,
+  - RSI D1 powyżej 75 poprzedzał wzrosty (śr. +15% w 30 dni) -> M = 0, nie -1
+    (zostaje tylko jako filtr anty-FOMO przy wejściu),
+  - Pi Cycle Top był najsilniejszym sygnałem szczytu (śr. -18% w 30 dni) -> wyższa waga
+    i blokada nowych LONG, gdy aktywny,
+  - noga SHORT miała w próbie ujemny wynik (zysk tylko w bessie 2022) -> SHORT x0.5,
+  - sizing "tylko strona dominująca" podwajał ekspozycję netto względem wzoru
+    (100 +/- wynik) / 2 i pogłębiał obsunięcie -> wielkość liczona netto,
+  - stop 4-5% (~1 ATR) był wybijany w ok. 55-62% wejść w ciągu 10 dni -> SL = 2 x ATR,
+    a wielkość pozycji ograniczona budżetem ryzyka.
+Wagi nie są "zoptymalizowane" - próba obejmuje ok. 2,5 cyklu BTC, więc różnice między
+zestawami wag mieszczą się w szumie. Traktuj wynik jako uporządkowany przegląd wskaźników,
+a nie prognozę kursu.
 
 Stan (historia sygnałów i Open Interest do oceny trendu OI) zapisuje się w
 03_BTC_History.json - workflow powinien go zatwierdzać do repozytorium.
@@ -50,23 +66,24 @@ HTTP_TIMEOUT = 30
 
 # ---------------------------------------------------------------- parametry
 
-# Wagi rdzenia (suma = 100) - zgodnie z promptem
+# Wagi rdzenia (suma = 100). Grupy: trend/struktura 50, wycena on-chain 30,
+# pochodne 10, szczyt cyklu 7, krótki termin 3.
 WEIGHTS = {
-    "sma200w": 20,
-    "sma200d": 15,
+    "sma200w": 10,
+    "sma200d": 18,
     "mvrv": 15,
     "rsi_w1": 10,
-    "bb": 10,
-    "sth": 10,
+    "bb": 12,
+    "sth": 12,
     "funding": 10,
-    "rsi_d1": 4,
+    "rsi_d1": 3,
     "puell": 3,
-    "pi": 3,
+    "pi": 7,
 }
 
 NAMES = {
     "sma200w": "200W SMA",
-    "sma200d": "200D SMA + struktura",
+    "sma200d": "200D SMA",
     "mvrv": "MVRV Z-Score",
     "rsi_w1": "RSI W1",
     "bb": "Bollinger W1+D1",
@@ -82,9 +99,13 @@ STRONG_LEVEL = 50      # |wynik netto| od tej wartosci = sygnal "MOCNY"
 SMA_NEUTRAL_PCT = 3.0  # odchylenie od SMA uznawane za konsolidację
 
 TRANCHES = [(0.50, 1), (0.30, 3), (0.20, 5)]  # (udzial alokacji, dzwignia)
-SL_MIN, SL_MAX = 4.0, 5.0                      # stop-loss w % od wejscia transzy
-TP1_R = 1.5                                    # TP1 = 1.5 x odleglosc SL od P1
-ATR_STEP = 1.0                                 # P2 = P1 +/- 1 ATR, P3 = P1 +/- 2 ATR
+SL_ATR_MULT = 2.0      # stop-loss = 2 x ATR(14) dzienny (wczesniej sztywne 4-5% ~ 1 ATR)
+SL_MIN, SL_MAX = 6.0, 12.0   # granice stop-lossu w % od wejscia transzy
+TP1_R = 1.5            # TP1 = 1.5 x odleglosc SL od P1
+ATR_STEP = 1.0         # P2 = P1 +/- 1 ATR, P3 = P1 +/- 2 ATR (po wypelnieniu P1)
+
+SHORT_SIZE_SCALE = 0.5   # noga SHORT historycznie bez przewagi -> polowa wielkosci
+RISK_BUDGET_PCT = 5.0    # maks. strata przy SL wszystkich transz (% kapitalu)
 
 RSI_FOMO_LONG = 75     # zakaz LONG po rynkowej, gdy RSI D1 powyzej
 RSI_FOMO_SHORT = 30    # zakaz SHORT po rynkowej, gdy RSI D1 ponizej
@@ -106,8 +127,16 @@ def http_get(url, params=None, retries=3):
         try:
             r = requests.get(url, params=params, timeout=HTTP_TIMEOUT,
                              headers={"User-Agent": "btc-signal-bot"})
-            r.raise_for_status()
+            if r.status_code >= 400:
+                err = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]!r}")
+                if r.status_code < 500 and r.status_code != 429:
+                    raise err            # bledu klienta nie ma sensu ponawiac
+                last = err
+                time.sleep(2 * (i + 1))
+                continue
             return r.json()
+        except RuntimeError:
+            raise
         except Exception as e:  # noqa: BLE001
             last = e
             time.sleep(2 * (i + 1))
@@ -135,15 +164,30 @@ def fetch_spot():
 
 
 def fetch_mvrv_z():
-    data = http_get(
-        "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
-        {"assets": "btc", "metrics": "CapMrktCurUSD,CapRealUSD", "frequency": "1d",
-         "start_time": "2010-07-18", "page_size": 10000},
-    )
-    rows = [r for r in data["data"] if r.get("CapMrktCurUSD") and r.get("CapRealUSD")]
-    caps = [float(r["CapMrktCurUSD"]) for r in rows]
-    market_cap, realized_cap = caps[-1], float(rows[-1]["CapRealUSD"])
-    return (market_cap - realized_cap) / statistics.pstdev(caps)
+    """
+    MVRV Z-Score = (kapitalizacja rynkowa - kapitalizacja zrealizowana) / odch. std. kapitalizacji.
+    Dwa warianty zapytania do CoinMetrics (jeśli darmowe API nie udostępnia CapRealUSD,
+    kapitalizacja zrealizowana jest wyliczana z CapMVRVCur).
+    """
+    url = "https://community-api.coinmetrics.io/v4/timeseries/asset-metrics"
+    errors = []
+    for metrics in ("CapMrktCurUSD,CapRealUSD", "CapMrktCurUSD,CapMVRVCur"):
+        try:
+            data = http_get(url, {"assets": "btc", "metrics": metrics, "frequency": "1d",
+                                  "start_time": "2010-07-18", "page_size": 10000})
+            second = metrics.split(",")[1]
+            rows = [r for r in data["data"] if r.get("CapMrktCurUSD") and r.get(second)]
+            caps = [float(r["CapMrktCurUSD"]) for r in rows]
+            market_cap = caps[-1]
+            if second == "CapRealUSD":
+                realized_cap = float(rows[-1]["CapRealUSD"])
+            else:
+                realized_cap = market_cap / float(rows[-1]["CapMVRVCur"])
+            print(f"MVRV: źródło {metrics}")
+            return (market_cap - realized_cap) / statistics.pstdev(caps)
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"{metrics}: {e}")
+    raise RuntimeError(" | ".join(errors))
 
 
 def fetch_hyperliquid_btc():
@@ -288,7 +332,7 @@ def label_of(m):
 
 def icon_of(m):
     if m is None:
-        return "⚪"
+        return "⚪️"
     return "🟢" if m > 0.25 else ("🔴" if m < -0.25 else "🟡")
 
 
@@ -303,12 +347,13 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
     w_close = [c["c"] for c in weekly]
     out = {}
 
-    # 1. 200W SMA
+    # 1. 200W SMA (powyzej = WZROST; ponizej = strefa wartosci, NIE sygnal spadku)
     s = sma(w_close, 200)
     if s:
         dev = (spot / s - 1) * 100
-        m = 0 if abs(dev) < SMA_NEUTRAL_PCT else (1 if dev > 0 else -1)
-        out["sma200w"] = (m, "200W SMA", f"cena {pct(dev)} vs {usd(s)}")
+        m = 1 if dev > SMA_NEUTRAL_PCT else 0
+        note = " (strefa wartości)" if dev < -SMA_NEUTRAL_PCT else ""
+        out["sma200w"] = (m, "200W SMA", f"cena {pct(dev)} vs {usd(s)}{note}")
 
     # 2. 200D SMA + struktura rynku
     s = sma(d_close, 200)
@@ -323,7 +368,7 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
             m = -1
         else:
             m = 0
-        out["sma200d"] = (m, "200D SMA + struktura", f"{struct}, cena {pct(dev)} vs {usd(s)}")
+        out["sma200d"] = (m, "200D SMA", f"{struct}, cena {pct(dev)} vs {usd(s)}")
 
     # 3. MVRV Z-Score
     if mvrv_z is not None:
@@ -372,7 +417,7 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
         out["sth"] = (1 if spot > p else -1, "STH Realized Price (proxy)",
                       f"cena {pct(dev)} vs {usd(p)}")
 
-    # 7. Funding Rate + Open Interest
+    # 7. Funding Rate + Open Interest (z kontekstem kierunku ceny)
     if hl:
         f = hl["funding_8h_pct"]
         chg3 = (spot / d_close[-4] - 1) * 100
@@ -381,8 +426,10 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
             m, why = -1, "skrajnie wysoki funding przy spadku ceny"
         elif f < -0.02 and support_break:
             m, why = -1, "skrajnie ujemny funding przy wybiciu wsparcia"
-        elif 0.005 <= f <= 0.03 and oi_trend == "up":
-            m, why = 1, "lekko dodatni funding, rosnące OI"
+        elif oi_trend == "up" and chg3 < -1.0:
+            m, why = -1, "rosnące OI przy spadku ceny (nowe shorty)"
+        elif 0.005 <= f <= 0.03 and oi_trend == "up" and chg3 > 0:
+            m, why = 1, "lekko dodatni funding, rosnące OI i cena"
         elif abs(f) < 0.005 and oi_trend in ("flat", None):
             m, why = 0, "funding ~0, płaskie OI"
         else:
@@ -390,18 +437,18 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
         oi_txt = {"up": "OI rośnie", "down": "OI spada", "flat": "OI płaskie", None: "OI bez historii"}[oi_trend]
         out["funding"] = (m, "Funding + OI", f"{f:.4f}%/8h, {oi_txt} - {why}")
 
-    # 8. RSI D1
+    # 8. RSI D1 (wyprzedanie = WZROST; wykupienie tylko jako filtr wejscia, nie sygnal spadku)
     r = rsi(d_close)
     if r is not None:
         if r < 30:
             m, why = 1, "wyprzedanie"
         elif r > 75:
-            m, why = -1, "wykupienie"
+            m, why = 0, "wykupienie (filtr wejścia, nie sygnał spadku)"
         else:
             m, why = 0, "neutralnie"
         out["rsi_d1"] = (m, "RSI D1", f"{r:.1f} - {why}")
 
-    # 9. Puell Multiple
+    # 9. Puell Multiple (proxy)
     if len(daily) >= 365:
         pm = puell_multiple(daily)
         m = 1 if pm < 0.6 else (-1 if pm > 4.0 else 0)
@@ -429,7 +476,8 @@ def evaluate_extras(spot, daily, fear_greed):
     s50, s200 = sma(d_close, 50), sma(d_close, 200)
     if s50 and s200:
         pts = EXTRA_MA_CROSS_PTS if s50 > s200 else -EXTRA_MA_CROSS_PTS
-        extras.append(("50D vs 200D SMA", pts, "golden cross" if s50 > s200 else "death cross"))
+        extras.append(("50D vs 200D SMA", pts,
+                       "SMA50 powyżej SMA200" if s50 > s200 else "SMA50 poniżej SMA200"))
 
     if len(d_close) > 90:
         mom = (spot / d_close[-90] - 1) * 100
@@ -470,6 +518,7 @@ def signal_of(n):
 # ---------------------------------------------------------------- plan pozycji
 
 def build_plan(final_score, spot, daily):
+    # rozklad kierunkowy wg wzoru z promptu (po zaokragleniu do 5%)
     long_alloc = round5((100 + final_score) / 2)
     short_alloc = 100 - long_alloc
 
@@ -480,32 +529,48 @@ def build_plan(final_score, spot, daily):
     else:
         direction = 0
 
-    plan = {"long_alloc": long_alloc, "short_alloc": short_alloc, "direction": direction}
+    plan = {"long_alloc": long_alloc, "short_alloc": short_alloc,
+            "direction": direction, "open_alloc": 0.0}
     if direction == 0:
         return plan
 
     d_close = [c["c"] for c in daily]
     a = atr(daily)
     rsi_d1 = rsi(d_close)
-    sl_pct = max(SL_MIN, min(SL_MAX, 1.5 * a / spot * 100))
+    sma20 = sma(d_close, 20)
+    sl_pct = max(SL_MIN, min(SL_MAX, SL_ATR_MULT * a / spot * 100))
 
+    # P1: rynkowo albo - przy filtrze anty-FOMO - limit na retescie sredniej 20D
+    # (ograniczony do 0.5-1.5 ATR od ceny)
     p1, p1_limit = spot, False
     if direction == 1 and rsi_d1 is not None and rsi_d1 > RSI_FOMO_LONG:
-        p1, p1_limit = spot - a, True        # czekaj na retest wsparcia
-    if direction == -1 and rsi_d1 is not None and rsi_d1 < RSI_FOMO_SHORT:
-        p1, p1_limit = spot + a, True        # czekaj na retest oporu
+        p1 = min(spot - 0.5 * a, max(sma20, spot - 1.5 * a))
+        p1_limit = True
+    elif direction == -1 and rsi_d1 is not None and rsi_d1 < RSI_FOMO_SHORT:
+        p1 = max(spot + 0.5 * a, min(sma20, spot + 1.5 * a))
+        p1_limit = True
 
     levels = [p1, p1 + direction * ATR_STEP * a, p1 + direction * 2 * ATR_STEP * a]
-    alloc = long_alloc if direction == 1 else short_alloc
     eff_lev = sum(share * lev for share, lev in TRANCHES)
+
+    # wielkosc: ekspozycja NETTO wg wzoru (= |wynik|), SHORT x SHORT_SIZE_SCALE,
+    # ograniczona budzetem ryzyka przy stop-lossie wszystkich transz
+    target = round5(abs(final_score)) * (SHORT_SIZE_SCALE if direction == -1 else 1.0)
+    risk_cap = RISK_BUDGET_PCT / (eff_lev * sl_pct / 100)
+    open_alloc = math.floor(min(target, risk_cap) * 2) / 2
+    if open_alloc <= 0:
+        plan["direction"] = 0
+        return plan
 
     plan.update({
         "levels": levels,
         "p1_limit": p1_limit,
         "sl_pct": sl_pct,
         "tp1": p1 + direction * TP1_R * sl_pct / 100 * p1,
-        "alloc": alloc,
-        "max_loss_pct": alloc * eff_lev * sl_pct / 100,
+        "open_alloc": open_alloc,
+        "target": target,
+        "risk_cap": risk_cap,
+        "max_loss_pct": open_alloc * eff_lev * sl_pct / 100,
         "rsi_d1": rsi_d1,
     })
     return plan
@@ -556,16 +621,16 @@ def build_message(today_iso, spot, daily, indicators, extras, score, plan, prev_
     lo, hi = weekly_range(daily, spot)
 
     msg = f"<b>₿ BTC - sygnał dnia</b> {fmt_date(today_iso)}\n"
-    msg += f"Cena: <b>{usd(spot)}</b> (7D {pct(chg7)}) | zmienność 7D ±1σ: {usd(lo)} - {usd(hi)}\n\n"
+    msg += f"Cena: <b>{usd(spot)}</b> (7D: {pct(chg7)}) | (zmienność 7D: {usd(lo)} - {usd(hi)})\n\n"
 
     msg += "<b>Wskaźniki (waga):</b>\n"
     for key in WEIGHTS:
         if key in indicators:
             m, name, why = indicators[key]
-            msg += (f"{icon_of(m)} <b>{name}</b> ({WEIGHTS[key]}%) "
-                    f"{label_of(m)}: {why}\n")
+            msg += (f"{icon_of(m)} <b>{name}</b>: {label_of(m)}: {why} "
+                    f"(waga {WEIGHTS[key]}%)\n")
         else:
-            msg += f"⚪ <b>{NAMES[key]}</b> ({WEIGHTS[key]}%) N/D - brak danych\n"
+            msg += f"⚪️ <b>{NAMES[key]}</b>: N/D - brak danych (waga {WEIGHTS[key]}%)\n"
 
     if extras:
         msg += "\n<b>Dodatki (korekta wyniku):</b>\n"
@@ -582,27 +647,45 @@ def build_message(today_iso, spot, daily, indicators, extras, score, plan, prev_
             f"dodatki {score['overlay']:+d}) | dane: {score['coverage'][0]}/{score['coverage'][1]}\n\n")
 
     d = plan["direction"]
+    open_alloc = plan["open_alloc"]
     short_status = "AKTYWNY" if d == -1 else "WSTRZYMANY"
     long_status = "AKTYWNY" if d == 1 else "WSTRZYMANY"
-    msg += f"<b>Pozycja SHORT:</b> {plan['short_alloc']}% kapitału - <b>{short_status}</b>\n"
-    msg += f"<b>Pozycja LONG:</b> {plan['long_alloc']}% kapitału - <b>{long_status}</b>\n"
+    short_open = open_alloc if d == -1 else 0
+    long_open = open_alloc if d == 1 else 0
+    msg += (f"<b>Pozycja SHORT:</b> {plan['short_alloc']}% kapitału "
+            f"(do otwarcia: {short_open:g}%) - <b>{short_status}</b>\n")
+    msg += (f"<b>Pozycja LONG:</b> {plan['long_alloc']}% kapitału "
+            f"(do otwarcia: {long_open:g}%) - <b>{long_status}</b>\n")
 
     if d != 0:
         side = "LONG" if d == 1 else "SHORT"
         p1, p2, p3 = plan["levels"]
-        a = plan["alloc"]
+        a = plan["open_alloc"]
         p1_txt = f"{usd(p1)} (limit, retest)" if plan["p1_limit"] else f"{usd(p1)} (rynkowo)"
+
+        size_txt = f"|wynik| {round5(abs(n)):g}%"
+        if d == -1:
+            size_txt += f" x{SHORT_SIZE_SCALE:g} (SHORT)"
+        size_txt += f" = {plan['target']:g}%"
+        if plan["target"] > plan["risk_cap"]:
+            size_txt += f", ograniczone budżetem ryzyka do {open_alloc:g}%"
+
         msg += (
-            f"\n<b>Plan {side}:</b>\n"
+            f"\n<b>Plan {side} (margin {open_alloc:g}% kapitału):</b>\n"
+            f"<i>Wielkość: {size_txt}</i>\n"
             f"P1 (50%, x1): {p1_txt} - {a * 0.5:.1f}% kapitału\n"
             f"P2 (30%, x3): {usd(p2)} - {a * 0.3:.1f}% kapitału\n"
             f"P3 (20%, x5): {usd(p3)} - {a * 0.2:.1f}% kapitału\n"
-            f"SL: {plan['sl_pct']:.1f}% od wejścia każdej transzy | "
+            f"P2/P3 tylko po wypełnieniu P1 (zlecenia stop zgodne z trendem)\n"
+            f"SL: {plan['sl_pct']:.1f}% od wejścia każdej transzy ({SL_ATR_MULT:g} x ATR) | "
             f"TP1: {usd(plan['tp1'])}, potem SL na break-even\n"
             f"Maks. strata przy SL ≈ {plan['max_loss_pct']:.1f}% kapitału (gdy wejdą wszystkie transze)\n"
         )
         if plan["p1_limit"]:
             msg += "Filtr anty-FOMO: P1 tylko na retest, bez wejścia po cenie rynkowej.\n"
+
+    if score.get("long_blocked"):
+        msg += "\n⚠️ Pi Cycle Top aktywny - blokada nowych pozycji LONG.\n"
 
     msg += f"\n<b>{sig_icon} SYGNAŁ KOŃCOWY: {sig_text}</b>"
 
@@ -619,6 +702,7 @@ def send_telegram_message(message):
                "parse_mode": "HTML", "disable_web_page_preview": True}
     if TELEGRAM_THREAD_ID:
         payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
+    print(f"Telegram: temat = {TELEGRAM_THREAD_ID or 'BRAK (wiadomość trafi do General)'}")
     res = requests.post(url, json=payload, timeout=HTTP_TIMEOUT)
     if not res.ok:
         print(f"Błąd Telegrama: {res.text}")
@@ -656,6 +740,11 @@ def main():
     score = compute_score(indicators, extras)
     if score is None:
         sys.exit("Żaden wskaźnik nie zwrócił wyniku - przerywam.")
+
+    pi = indicators.get("pi")
+    if pi and pi[0] == -1 and score["final"] >= NEUTRAL_BAND:
+        score["final"] = NEUTRAL_BAND - 1      # Pi Cycle Top aktywny: bez nowych LONG
+        score["long_blocked"] = True
 
     plan = build_plan(score["final"], spot, daily)
     message = build_message(today_iso, spot, daily, indicators, extras, score, plan, prev_date, prev)
