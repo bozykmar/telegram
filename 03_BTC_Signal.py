@@ -74,11 +74,11 @@ WEIGHTS = {
     "sma200d": 18,
     "mvrv": 15,
     "rsi_w1": 10,
+    "rsi_d1": 3,
     "bb_w1": 6,
     "bb_d1": 6,
     "sth": 12,
     "funding": 10,
-    "rsi_d1": 3,
     "puell": 3,
     "pi": 7,
 }
