@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: repo-writes
+  group: whale-wallet
   cancel-in-progress: false
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
 
       - name: Raport portfeli
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
           TELEGRAM_THREAD_WHALE: ${{ vars.TELEGRAM_THREAD_WHALE }}
           SLOT: ${{ github.event.schedule == '5 8 * * *' && '09' || github.event.schedule == '5 18 * * *' && '19' || '' }}
