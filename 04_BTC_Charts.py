@@ -1,21 +1,19 @@
 """
 04_BTC_Charts.py
 
-Trzy wykresy BTC/USDT wysylane na Telegram jako jeden album: D1, W1, M1.
+Trzy wykresy BTC/USDT wysylane na Telegram, kazdy OSOBNYM zdjeciem: D1, W1, M1.
 Na kazdym wykresie: swiece + wolumen + SMA 50 + panel RSI 14 + strefy SMC/ICT:
   - FVG (Fair Value Gap)      - 3-swiecowa luka: low[i] > high[i-2] (bycza) / high[i] < low[i-2] (niedzwiedzia)
   - OB  (Order Block)         - ostatnia swieca przeciwna przed impulsem zamykajacym sie poza jej zakresem
   - RB  (Rejection Block)     - dlugi knot na swing high/low (od ciala do ekstremum)
+Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, FVG, OB, RB.
 Zakres wykresu: ostatnie 12 miesiecy. SMA, RSI i strefy liczone na pelnej pobranej historii,
 dopiero potem wykres jest przycinany. Pokazywane sa tylko strefy AKTYWNE (niewygasniete).
 
 Zrodlo glowne: OKX (BTC-USDT spot, swiece UTC: 1Dutc / 1Wutc / 1Mutc), bez kluczy API.
 OKX domyslnie otwiera swiece D1/W1/M1 o polnocy UTC+8 (16:00 UTC), dlatego uzywamy
 wariantow *utc. Zapas: Kraken XBT/USD (D1, W1; M1 skladane z W1 - przyblizenie).
-Zrodlo jest podane w podpisie kazdego wykresu. Swieca biezaca (w trakcie) jest pokazywana.
-
-Uwaga: OB / FVG / RB nie maja jednej scislej definicji - to deterministyczna interpretacja
-regul (parametry ponizej). Traktuj strefy jako mape poziomow, a nie sygnal wejscia.
+Zrodlo jest zapisywane tylko w logu. Swieca biezaca (w trakcie) jest pokazywana.
 
 Zmienne srodowiskowe:
   TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
@@ -26,7 +24,6 @@ Uruchomienie lokalne bez wysylki:  python 04_BTC_Charts.py --dry-run
 
 import os
 import sys
-import json
 import time
 import argparse
 from datetime import datetime
@@ -269,7 +266,7 @@ def prepare(df):
     return view, zones
 
 
-def build_chart(df, zones, label, source, path):
+def build_chart(df, zones, label, path):
     n = len(df)
     ap = []
     if df["SMA"].notna().any():
@@ -291,7 +288,7 @@ def build_chart(df, zones, label, source, path):
 
     kwargs = dict(
         type="candle", style="yahoo", volume=True, addplot=ap, returnfig=True,
-        title=f"BTC {label} - {source.split(' (')[0]} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB",
+        title=f"BTC {label} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB",
         ylabel="USD(T)", ylabel_lower="Wolumen", figsize=(14, 10), tight_layout=True,
         panel_ratios=(6, 1.5, 2.5),
     )
@@ -314,20 +311,24 @@ def usd(v):
     return "$" + f"{v:,.0f}".replace(",", NBSP)
 
 
-def build_caption(label, df, zones, source, today_iso):
+def build_caption(label, df, zones, today_iso):
+    """Ten sam uklad dla kazdego interwalu (D1 / W1 / M1)."""
     last = df.iloc[-1]
     price = last["Close"]
+
     if pd.notna(last["SMA"]):
         dev = (price / last["SMA"] - 1) * 100
         sma_txt = f"{'🟢' if dev > 0 else '🔴'} SMA {SMA_PERIOD}: {usd(last['SMA'])} (cena {dev:+.1f}%)"
     else:
-        sma_txt = f"⚪️ SMA {SMA_PERIOD}: N/D - za mało świec"
+        sma_txt = f"⚪️ SMA {SMA_PERIOD}: N/D"
+
     r = last["RSI"]
-    if pd.isna(r):
-        rsi_txt = f"⚪️ RSI {RSI_PERIOD}: N/D"
-    else:
+    if pd.notna(r):
         state = "wykupienie" if r > RSI_HIGH else ("wyprzedanie" if r < RSI_LOW else "neutralnie")
-        rsi_txt = f"{'🔴' if r > RSI_HIGH else ('🟢' if r < RSI_LOW else '🟡')} RSI {RSI_PERIOD}: {r:.1f} ({state})"
+        icon = "🔴" if r > RSI_HIGH else ("🟢" if r < RSI_LOW else "🟡")
+        rsi_txt = f"{icon} RSI {RSI_PERIOD}: {r:.1f} ({state})"
+    else:
+        rsi_txt = f"⚪️ RSI {RSI_PERIOD}: N/D"
 
     lines = []
     for kind in ("FVG", "OB", "RB"):
@@ -339,31 +340,22 @@ def build_caption(label, df, zones, source, today_iso):
         arrow = "↑" if near["dir"] == 1 else "↓"
         lines.append(f"<b>{kind}</b>: {len(kz)} akt. | najbliższa {arrow} "
                      f"{usd(near['bottom'])} - {usd(near['top'])}")
+
     return (f"<b>₿ BTC - wykres {label}</b> {today_iso}\n"
             f"Cena: <b>{usd(price)}</b> | świec: {len(df)} (ostatnia w trakcie)\n"
-            f"{sma_txt}\n{rsi_txt}\n" + "\n".join(lines) +
-            f"\n<i>Źródło: {source}. Strefy = reguły deterministyczne, nie rekomendacja.</i>")
+            f"{sma_txt}\n{rsi_txt}\n" + "\n".join(lines))
 
 
 # ---------------------------------------------------------------- telegram
 
-def send_telegram_album(charts):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMediaGroup"
-    media, files = [], {}
-    for i, (path, caption) in enumerate(charts):
-        name = f"photo{i}"
-        media.append({"type": "photo", "media": f"attach://{name}",
-                      "caption": caption, "parse_mode": "HTML"})
-        files[name] = open(path, "rb")
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "media": json.dumps(media)}
+def send_telegram_photo(path, caption):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}
     if TELEGRAM_THREAD_ID:
         payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
     print(f"Telegram: temat = {TELEGRAM_THREAD_ID or 'BRAK (wiadomość trafi do General)'}")
-    try:
-        res = requests.post(url, data=payload, files=files, timeout=HTTP_TIMEOUT * 2)
-    finally:
-        for f in files.values():
-            f.close()
+    with open(path, "rb") as f:
+        res = requests.post(url, data=payload, files={"photo": f}, timeout=HTTP_TIMEOUT * 2)
     if not res.ok:
         print(f"Błąd Telegrama: {res.text}")
     res.raise_for_status()
@@ -382,12 +374,13 @@ def main():
     charts = []
     for label in CHARTS:
         raw, source = get_candles(label)
+        print(f"[{label}] źródło danych: {source}")      # tylko log, nie Telegram
         df, zones = prepare(raw)
         if df.empty:
             sys.exit(f"Brak danych dla {label} - przerywam.")
         path = OUT_DIR / f"BTC_{label}.png"
-        build_chart(df, zones, label, source, path)
-        caption = build_caption(label, df, zones, source, today_iso)
+        build_chart(df, zones, label, path)
+        caption = build_caption(label, df, zones, today_iso)
         print(caption)
         charts.append((path, caption))
 
@@ -397,7 +390,9 @@ def main():
 
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         sys.exit("Brak TELEGRAM_TOKEN / TELEGRAM_CHAT_ID.")
-    send_telegram_album(charts)
+    for path, caption in charts:                          # kazdy wykres osobno
+        send_telegram_photo(path, caption)
+        time.sleep(1)
 
 
 if __name__ == "__main__":
