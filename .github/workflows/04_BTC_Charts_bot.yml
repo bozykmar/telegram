@@ -25,7 +25,7 @@ jobs:
           cache: pip
           cache-dependency-path: .github/workflows/04_BTC_Charts_bot.yml
 
-      - run: pip install requests pandas mplfinance
+      - run: pip install requests pandas matplotlib six mplfinance
 
       - name: Wykresy BTC W1 i M1
         env:
