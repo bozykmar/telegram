@@ -1,1 +1,57 @@
+name: 03_BTC_Signal
 
+on:
+  schedule:
+    - cron: "15 8 * * *"    # 08:15 UTC = 09:15 zimą / 10:15 latem (slot 09)
+    - cron: "15 18 * * *"   # 18:15 UTC = 19:15 zimą / 20:15 latem (slot 19)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: btc-signal
+  cancel-in-progress: false
+
+jobs:
+  btc-signal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/workflows/03_BTC_Signal_bot.yml
+
+      - run: pip install requests
+
+      - name: Sygnał BTC
+        env:
+          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_SIGNAL: ${{ vars.TELEGRAM_THREAD_SIGNAL }}
+        run: python 03_BTC_Signal.py
+
+      - name: Zapisz historię
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          [ -f 03_BTC_History.json ] && git add 03_BTC_History.json
+          if git diff --staged --quiet; then
+            echo "Brak zmian w historii"
+            exit 0
+          fi
+          git commit -m "Aktualizacja historii sygnałów BTC"
+          for i in 1 2 3 4 5; do
+            if git push origin main; then
+              exit 0
+            fi
+            echo "Próba $i nieudana, pobieram zmiany i ponawiam..."
+            git pull --rebase -X theirs origin main || git rebase --abort
+            sleep 5
+          done
+          exit 1
