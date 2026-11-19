@@ -6,8 +6,7 @@ Na kazdym wykresie: swiece + wolumen + SMA 50 + panel RSI 14 + strefy SMC/ICT:
   - FVG (Fair Value Gap)      - 3-swiecowa luka: low[i] > high[i-2] (bycza) / high[i] < low[i-2] (niedzwiedzia)
   - OB  (Order Block)         - ostatnia swieca przeciwna przed impulsem zamykajacym sie poza jej zakresem
   - RB  (Rejection Block)     - dlugi knot na swing high/low (od ciala do ekstremum)
-Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, trend, najsilniejszy opor,
-FVG, OB, RB.
+Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, trend, opor, FVG, OB, RB.
 Zakres wykresu: ostatnie 12 miesiecy. SMA, RSI, trend i strefy liczone na pelnej pobranej
 historii, dopiero potem wykres jest przycinany. Pokazywane sa tylko strefy AKTYWNE.
 
@@ -15,8 +14,12 @@ Trend (punkty -3..+3): struktura swingow (HH/HL = +1, LH/LL = -1), cena vs SMA 5
 nachylenie SMA 50 wzgledem 10 swiec wczesniej (+1 / -1). Wynik >= +2 = WZROSTOWY,
 <= -2 = SPADKOWY, w pozostalych przypadkach BOCZNY.
 
-Najsilniejszy opor = poziom powyzej ceny z najwieksza konfluencja (suma wag nakladajacych sie
-kandydatow): OB↓ 3, RB↓ 2, SMA 50 (gdy nad cena) 2, FVG↓ 1, szczyt swingowy 1.
+Opor zalezy od trendu:
+  - WZROSTOWY -> najsilniejszy opor wzrostu: poziom NAD cena (sufit, ktory moze zatrzymac wzrost),
+  - SPADKOWY  -> najsilniejszy opor spadku: poziom POD cena (dolny, ktory moze zatrzymac spadek),
+  - BOCZNY    -> oba: opor gorny i opor dolny.
+Sila poziomu = konfluencja (suma wag nakladajacych sie kandydatow): OB 3, RB 2, SMA 50 2,
+FVG 1, swing high/low 1. Nad cena licza sie strefy niedzwiedzie (↓), pod cena bycze (↑).
 Remis rozstrzyga poziom blizszy cenie. To poziom orientacyjny, nie gwarancja zatrzymania ruchu.
 
 Zrodlo glowne: OKX (BTC-USDT spot, swiece UTC: 1Dutc / 1Wutc / 1Mutc), bez kluczy API.
@@ -82,8 +85,17 @@ MAX_ZONES = 3           # tyle najnowszych aktywnych stref kazdego typu na wykre
 TREND_SWING = 5         # swing do oceny struktury: ekstremum wzgledem 5 swiec z kazdej strony
 SMA_SLOPE_BARS = 10     # nachylenie SMA 50: porownanie z wartoscia sprzed 10 swiec
 RES_TOL_ATR = 0.5       # poziomy w odleglosci <= 0.5 ATR traktowane jako konfluencja
-RES_SWINGS = 5          # ile ostatnich szczytow swingowych bierzemy jako kandydatow
+RES_SWINGS = 5          # ile ostatnich swingow bierzemy jako kandydatow
 RES_WEIGHTS = {"OB": 3, "RB": 2, "SMA": 2, "FVG": 1, "SWING": 1}
+
+# (trend, strona) -> (opis w podpisie, krotki opis na wykresie)
+LEVEL_TAGS = {
+    ("WZROSTOWY", "up"): ("Najsilniejszy opór wzrostu", "OPÓR WZROSTU"),
+    ("SPADKOWY", "down"): ("Najsilniejszy opór spadku (dolny)", "OPÓR SPADKU"),
+    ("BOCZNY", "up"): ("Opór górny", "OPÓR GÓRNY"),
+    ("BOCZNY", "down"): ("Opór dolny", "OPÓR DOLNY"),
+}
+LEVEL_COLOR = {"up": "#d62728", "down": "#2ca02c"}
 
 ZONE_STYLE = {          # (kolor, etykieta)
     ("FVG", 1): ("#2ca02c", "FVG↑"), ("FVG", -1): ("#d62728", "FVG↓"),
@@ -282,7 +294,7 @@ def detect_zones(df):
 # ---------------------------------------------------------------- trend i opor
 
 def detect_trend(df):
-    """Zwraca (etykieta, ikona, opis). Wejscie: pelna historia ze kolumna SMA."""
+    """Zwraca (etykieta, ikona, opis). Wejscie: pelna historia z kolumna SMA."""
     price = df["Close"].iloc[-1]
     sma = df["SMA"]
     highs, lows = swing_points(df)
@@ -316,23 +328,29 @@ def detect_trend(df):
     return "BOCZNY", "🟡", ", ".join(parts)
 
 
-def find_resistance(df, zones):
-    """Najsilniejszy opor nad cena (konfluencja wag). Zwraca dict lub None."""
+def find_level(df, zones, side):
+    """
+    Najsilniejszy poziom (konfluencja wag): side='up' = nad cena (opor gorny),
+    side='down' = pod cena (opor dolny). Zwraca dict lub None.
+    """
+    up = side == "up"
     price = df["Close"].iloc[-1]
     atr = atr_series(df).iloc[-1]
     tol = RES_TOL_ATR * atr if pd.notna(atr) else 0.0
 
     cands = []  # (dol, gora, waga, nazwa)
     for z in zones:
-        if z["dir"] == -1 and z["top"] > price:
+        if up and z["dir"] == -1 and z["top"] > price:
             cands.append((z["bottom"], z["top"], RES_WEIGHTS[z["kind"]], f"{z['kind']}↓"))
+        elif not up and z["dir"] == 1 and z["bottom"] < price:
+            cands.append((z["bottom"], z["top"], RES_WEIGHTS[z["kind"]], f"{z['kind']}↑"))
     s = df["SMA"].iloc[-1]
-    if pd.notna(s) and s > price:
+    if pd.notna(s) and ((up and s > price) or (not up and s < price)):
         cands.append((s, s, RES_WEIGHTS["SMA"], f"SMA {SMA_PERIOD}"))
-    highs, _ = swing_points(df)
-    for _, hp in highs[-RES_SWINGS:]:
-        if hp > price:
-            cands.append((hp, hp, RES_WEIGHTS["SWING"], "szczyt"))
+    highs, lows = swing_points(df)
+    for _, p in (highs if up else lows)[-RES_SWINGS:]:
+        if (up and p > price) or (not up and p < price):
+            cands.append((p, p, RES_WEIGHTS["SWING"], "szczyt" if up else "dołek"))
     if not cands:
         return None
 
@@ -343,32 +361,44 @@ def find_resistance(df, zones):
         bottom = min(c[0] for c in members)
         top = max(c[1] for c in members)
         names = list(dict.fromkeys(c[3] for c in sorted(members, key=lambda c: -c[2])))
-        dist = max(bottom - price, 0.0)
+        dist = max(bottom - price, 0.0) if up else max(price - top, 0.0)
         key = (strength, -dist)
         if best is None or key > best[0]:
-            best = (key, {"bottom": bottom, "top": top, "names": names,
-                          "dist_pct": dist / price * 100})
+            sign = 1 if up else -1
+            best = (key, {"side": side, "bottom": bottom, "top": top, "names": names,
+                          "dist_pct": sign * dist / price * 100})
     return best[1]
 
 
 # ---------------------------------------------------------------- wykres
 
 def prepare(df):
-    """Wskazniki, trend, opor i strefy na pelnej historii, potem przyciecie do 12 miesiecy."""
+    """Wskazniki, trend, poziomy oporu i strefy na pelnej historii, potem przyciecie do 12 mies."""
     df = df.copy()
     df["SMA"] = df["Close"].rolling(SMA_PERIOD).mean()
     df["RSI"] = rsi_wilder(df["Close"])
     zones = detect_zones(df)
     trend = detect_trend(df)
-    resistance = find_resistance(df, zones)
+    sides = {"WZROSTOWY": ["up"], "SPADKOWY": ["down"]}.get(trend[0], ["up", "down"])
+    levels = [(side, find_level(df, zones, side)) for side in sides]
     cut = df.index.get_indexer([df.index[df.index > df.index[-1] - pd.DateOffset(months=LOOKBACK_MONTHS)][0]])[0]
     view = df.iloc[cut:]
     for z in zones:
         z["start"] = max(z["start"] - cut, 0)       # pozycja wzgledem widocznego okna
-    return view, zones, trend, resistance
+    return view, zones, trend, levels
 
 
-def build_chart(df, zones, resistance, label, path):
+def num(v):
+    """Liczba bez znaku $ (matplotlib traktuje $...$ jako mathtext)."""
+    return f"{v:,.0f}".replace(",", " ")
+
+
+def level_range(lvl, fmt):
+    lo, hi = lvl["bottom"], lvl["top"]
+    return fmt(lo) if round(lo) == round(hi) else f"{fmt(lo)} - {fmt(hi)}"
+
+
+def build_chart(df, zones, trend, levels, label, path):
     n = len(df)
     ap = []
     if df["SMA"].notna().any():
@@ -388,17 +418,22 @@ def build_chart(df, zones, resistance, label, path):
         fills.append(dict(y1=np.full(n, z["bottom"]), y2=np.full(n, z["top"]),
                           where=where, alpha=0.18, color=ZONE_STYLE[(z["kind"], z["dir"])][0]))
 
+    h_vals, h_cols = [], []
+    for side, lvl in levels:
+        if lvl:
+            h_vals += [lvl["bottom"], lvl["top"]]
+            h_cols += [LEVEL_COLOR[side]] * 2
+
     kwargs = dict(
         type="candle", style="yahoo", volume=True, addplot=ap, returnfig=True,
-        title=f"BTC {label} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB, opór",
+        title=f"BTC {label} - trend {trend[0]} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB",
         ylabel="USD(T)", ylabel_lower="Wolumen", figsize=(14, 10), tight_layout=True,
         panel_ratios=(6, 1.5, 2.5),
     )
     if fills:
         kwargs["fill_between"] = fills
-    if resistance:
-        kwargs["hlines"] = dict(hlines=[resistance["bottom"], resistance["top"]],
-                                colors=["#d62728", "#d62728"], linestyle="--", linewidths=1.2)
+    if h_vals:
+        kwargs["hlines"] = dict(hlines=h_vals, colors=h_cols, linestyle="--", linewidths=1.2)
     fig, axes = mpf.plot(df, **kwargs)
 
     ax = axes[0]
@@ -406,9 +441,14 @@ def build_chart(df, zones, resistance, label, path):
         color, text = ZONE_STYLE[(z["kind"], z["dir"])]
         ax.text(z["start"], z["top"], text, color=color, fontsize=8, fontweight="bold",
                 va="bottom", ha="left")
-    if resistance:
-        ax.text(0, resistance["top"], "OPÓR", color="#d62728", fontsize=9, fontweight="bold",
-                va="bottom", ha="left")
+    for side, lvl in levels:
+        if not lvl:
+            continue
+        short = LEVEL_TAGS[(trend[0], side)][1]
+        text = f"{short}: {level_range(lvl, num)} USD ({lvl['dist_pct']:+.1f}%)"
+        y, va = (lvl["top"], "bottom") if side == "up" else (lvl["bottom"], "top")
+        ax.text(n - 1, y, text, color=LEVEL_COLOR[side], fontsize=9, fontweight="bold",
+                va=va, ha="right")
     fig.savefig(str(path), dpi=150, bbox_inches="tight")
     plt.close(fig)
 
@@ -419,7 +459,7 @@ def usd(v):
     return "$" + f"{v:,.0f}".replace(",", NBSP)
 
 
-def build_caption(label, df, zones, trend, resistance, today_iso):
+def build_caption(label, df, zones, trend, levels, today_iso):
     """Ten sam uklad dla kazdego interwalu (D1 / W1 / M1)."""
     last = df.iloc[-1]
     price = last["Close"]
@@ -441,13 +481,14 @@ def build_caption(label, df, zones, trend, resistance, today_iso):
     t_label, t_icon, t_why = trend
     trend_txt = f"{t_icon} <b>Trend</b>: {t_label}" + (f" ({t_why})" if t_why else "")
 
-    if resistance:
-        lo, hi = resistance["bottom"], resistance["top"]
-        rng = usd(lo) if round(lo) == round(hi) else f"{usd(lo)} - {usd(hi)}"
-        res_txt = (f"🧱 <b>Najsilniejszy opór</b>: {rng} ({resistance['dist_pct']:+.1f}%) - "
-                   f"{' + '.join(resistance['names'])}")
-    else:
-        res_txt = "🧱 <b>Najsilniejszy opór</b>: brak poziomów nad ceną"
+    level_lines = []
+    for side, lvl in levels:
+        tag = LEVEL_TAGS[(t_label, side)][0]
+        if lvl:
+            level_lines.append(f"🧱 <b>{tag}</b>: {level_range(lvl, usd)} "
+                               f"({lvl['dist_pct']:+.1f}%) - {' + '.join(lvl['names'])}")
+        else:
+            level_lines.append(f"🧱 <b>{tag}</b>: brak poziomów {'nad' if side == 'up' else 'pod'} ceną")
 
     lines = []
     for kind in ("FVG", "OB", "RB"):
@@ -462,7 +503,7 @@ def build_caption(label, df, zones, trend, resistance, today_iso):
 
     return (f"<b>₿ BTC - wykres {label}</b> {today_iso}\n"
             f"Cena: <b>{usd(price)}</b> | świec: {len(df)} (ostatnia w trakcie)\n"
-            f"{sma_txt}\n{rsi_txt}\n{trend_txt}\n{res_txt}\n" + "\n".join(lines))
+            f"{sma_txt}\n{rsi_txt}\n{trend_txt}\n" + "\n".join(level_lines) + "\n" + "\n".join(lines))
 
 
 # ---------------------------------------------------------------- telegram
@@ -494,12 +535,12 @@ def main():
     for label in CHARTS:
         raw, source = get_candles(label)
         print(f"[{label}] źródło danych: {source}")      # tylko log, nie Telegram
-        df, zones, trend, resistance = prepare(raw)
+        df, zones, trend, levels = prepare(raw)
         if df.empty:
             sys.exit(f"Brak danych dla {label} - przerywam.")
         path = OUT_DIR / f"BTC_{label}.png"
-        build_chart(df, zones, resistance, label, path)
-        caption = build_caption(label, df, zones, trend, resistance, today_iso)
+        build_chart(df, zones, trend, levels, label, path)
+        caption = build_caption(label, df, zones, trend, levels, today_iso)
         print(caption)
         charts.append((path, caption))
 
