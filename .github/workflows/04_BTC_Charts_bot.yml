@@ -2,7 +2,8 @@ name: 04_BTC_Charts
 
 on:
   schedule:
-    - cron: "30 7 * * 1"    # poniedziałek 07:30 UTC = 08:30 zimą / 09:30 latem
+    - cron: "0 8 * * *"    # 08:00 UTC = 09:00 zimą / 10:00 latem (slot 09)
+    - cron: "0 18 * * *"   # 18:00 UTC = 19:00 zimą / 20:00 latem (slot 19)
   workflow_dispatch:
 
 permissions:
@@ -25,9 +26,9 @@ jobs:
           cache: pip
           cache-dependency-path: .github/workflows/04_BTC_Charts_bot.yml
 
-      - run: pip install requests pandas matplotlib six mplfinance
+      - run: pip install requests pandas numpy matplotlib six mplfinance
 
-      - name: Wykresy BTC W1 i M1
+      - name: Wykresy BTC D1, W1 i M1 (RSI, FVG, OB, RB)
         env:
           TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
