@@ -1,0 +1,35 @@
+name: 04_BTC_Charts
+
+on:
+  schedule:
+    - cron: "30 7 * * 1"    # poniedziałek 07:30 UTC = 08:30 zimą / 09:30 latem
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: btc-charts
+  cancel-in-progress: false
+
+jobs:
+  btc-charts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/workflows/04_BTC_Charts_bot.yml
+
+      - run: pip install requests pandas mplfinance
+
+      - name: Wykresy BTC W1 i M1
+        env:
+          TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_WYKRESY: ${{ vars.TELEGRAM_THREAD_WYKRESY }}
+        run: python 04_BTC_Charts.py
