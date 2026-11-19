@@ -6,9 +6,18 @@ Na kazdym wykresie: swiece + wolumen + SMA 50 + panel RSI 14 + strefy SMC/ICT:
   - FVG (Fair Value Gap)      - 3-swiecowa luka: low[i] > high[i-2] (bycza) / high[i] < low[i-2] (niedzwiedzia)
   - OB  (Order Block)         - ostatnia swieca przeciwna przed impulsem zamykajacym sie poza jej zakresem
   - RB  (Rejection Block)     - dlugi knot na swing high/low (od ciala do ekstremum)
-Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, FVG, OB, RB.
-Zakres wykresu: ostatnie 12 miesiecy. SMA, RSI i strefy liczone na pelnej pobranej historii,
-dopiero potem wykres jest przycinany. Pokazywane sa tylko strefy AKTYWNE (niewygasniete).
+Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, trend, najsilniejszy opor,
+FVG, OB, RB.
+Zakres wykresu: ostatnie 12 miesiecy. SMA, RSI, trend i strefy liczone na pelnej pobranej
+historii, dopiero potem wykres jest przycinany. Pokazywane sa tylko strefy AKTYWNE.
+
+Trend (punkty -3..+3): struktura swingow (HH/HL = +1, LH/LL = -1), cena vs SMA 50 (+1 / -1),
+nachylenie SMA 50 wzgledem 10 swiec wczesniej (+1 / -1). Wynik >= +2 = WZROSTOWY,
+<= -2 = SPADKOWY, w pozostalych przypadkach BOCZNY.
+
+Najsilniejszy opor = poziom powyzej ceny z najwieksza konfluencja (suma wag nakladajacych sie
+kandydatow): OB↓ 3, RB↓ 2, SMA 50 (gdy nad cena) 2, FVG↓ 1, szczyt swingowy 1.
+Remis rozstrzyga poziom blizszy cenie. To poziom orientacyjny, nie gwarancja zatrzymania ruchu.
 
 Zrodlo glowne: OKX (BTC-USDT spot, swiece UTC: 1Dutc / 1Wutc / 1Mutc), bez kluczy API.
 OKX domyslnie otwiera swiece D1/W1/M1 o polnocy UTC+8 (16:00 UTC), dlatego uzywamy
@@ -68,6 +77,13 @@ RB_WICK_RANGE = 0.5     # knot >= 50% zakresu swiecy
 RB_WICK_BODY = 2.0      # knot >= 2 x korpus
 RB_MIN_ATR = 0.5        # knot >= 0.5 ATR
 MAX_ZONES = 3           # tyle najnowszych aktywnych stref kazdego typu na wykresie
+
+# Trend i opor
+TREND_SWING = 5         # swing do oceny struktury: ekstremum wzgledem 5 swiec z kazdej strony
+SMA_SLOPE_BARS = 10     # nachylenie SMA 50: porownanie z wartoscia sprzed 10 swiec
+RES_TOL_ATR = 0.5       # poziomy w odleglosci <= 0.5 ATR traktowane jako konfluencja
+RES_SWINGS = 5          # ile ostatnich szczytow swingowych bierzemy jako kandydatow
+RES_WEIGHTS = {"OB": 3, "RB": 2, "SMA": 2, "FVG": 1, "SWING": 1}
 
 ZONE_STYLE = {          # (kolor, etykieta)
     ("FVG", 1): ("#2ca02c", "FVG↑"), ("FVG", -1): ("#d62728", "FVG↓"),
@@ -175,6 +191,18 @@ def atr_series(df, n=ATR_PERIOD):
     return tr.rolling(n).mean()
 
 
+def swing_points(df, k=TREND_SWING):
+    """Potwierdzone szczyty i dołki swingowe: listy (indeks, cena)."""
+    h, l = df["High"].to_numpy(), df["Low"].to_numpy()
+    highs, lows = [], []
+    for i in range(k, len(df) - k):
+        if h[i] >= h[i - k:i + k + 1].max():
+            highs.append((i, float(h[i])))
+        if l[i] <= l[i - k:i + k + 1].min():
+            lows.append((i, float(l[i])))
+    return highs, lows
+
+
 # ---------------------------------------------------------------- strefy (FVG / OB / RB)
 
 def _first_break(close, high, low, start, kind, bottom, top, direction):
@@ -251,22 +279,96 @@ def detect_zones(df):
     return picked
 
 
+# ---------------------------------------------------------------- trend i opor
+
+def detect_trend(df):
+    """Zwraca (etykieta, ikona, opis). Wejscie: pelna historia ze kolumna SMA."""
+    price = df["Close"].iloc[-1]
+    sma = df["SMA"]
+    highs, lows = swing_points(df)
+    pts, parts = 0, []
+
+    if len(highs) >= 2 and len(lows) >= 2:
+        hh, hl = highs[-1][1] > highs[-2][1], lows[-1][1] > lows[-2][1]
+        if hh and hl:
+            pts += 1
+            parts.append("HH/HL")
+        elif not hh and not hl:
+            pts -= 1
+            parts.append("LH/LL")
+        else:
+            parts.append("struktura mieszana")
+
+    s = sma.iloc[-1]
+    if pd.notna(s):
+        above = price > s
+        pts += 1 if above else -1
+        parts.append(f"cena {'powyżej' if above else 'poniżej'} SMA {SMA_PERIOD}")
+        if len(sma) > SMA_SLOPE_BARS and pd.notna(sma.iloc[-1 - SMA_SLOPE_BARS]):
+            rising = s > sma.iloc[-1 - SMA_SLOPE_BARS]
+            pts += 1 if rising else -1
+            parts.append(f"SMA {'rośnie' if rising else 'spada'}")
+
+    if pts >= 2:
+        return "WZROSTOWY", "🟢", ", ".join(parts)
+    if pts <= -2:
+        return "SPADKOWY", "🔴", ", ".join(parts)
+    return "BOCZNY", "🟡", ", ".join(parts)
+
+
+def find_resistance(df, zones):
+    """Najsilniejszy opor nad cena (konfluencja wag). Zwraca dict lub None."""
+    price = df["Close"].iloc[-1]
+    atr = atr_series(df).iloc[-1]
+    tol = RES_TOL_ATR * atr if pd.notna(atr) else 0.0
+
+    cands = []  # (dol, gora, waga, nazwa)
+    for z in zones:
+        if z["dir"] == -1 and z["top"] > price:
+            cands.append((z["bottom"], z["top"], RES_WEIGHTS[z["kind"]], f"{z['kind']}↓"))
+    s = df["SMA"].iloc[-1]
+    if pd.notna(s) and s > price:
+        cands.append((s, s, RES_WEIGHTS["SMA"], f"SMA {SMA_PERIOD}"))
+    highs, _ = swing_points(df)
+    for _, hp in highs[-RES_SWINGS:]:
+        if hp > price:
+            cands.append((hp, hp, RES_WEIGHTS["SWING"], "szczyt"))
+    if not cands:
+        return None
+
+    best = None
+    for lo, hi, _, _ in cands:
+        members = [c for c in cands if c[0] <= hi + tol and c[1] >= lo - tol]
+        strength = sum(c[2] for c in members)
+        bottom = min(c[0] for c in members)
+        top = max(c[1] for c in members)
+        names = list(dict.fromkeys(c[3] for c in sorted(members, key=lambda c: -c[2])))
+        dist = max(bottom - price, 0.0)
+        key = (strength, -dist)
+        if best is None or key > best[0]:
+            best = (key, {"bottom": bottom, "top": top, "names": names,
+                          "dist_pct": dist / price * 100})
+    return best[1]
+
+
 # ---------------------------------------------------------------- wykres
 
 def prepare(df):
-    """Wskazniki i strefy na pelnej historii, potem przyciecie do ostatnich 12 miesiecy."""
+    """Wskazniki, trend, opor i strefy na pelnej historii, potem przyciecie do 12 miesiecy."""
     df = df.copy()
     df["SMA"] = df["Close"].rolling(SMA_PERIOD).mean()
     df["RSI"] = rsi_wilder(df["Close"])
     zones = detect_zones(df)
+    trend = detect_trend(df)
+    resistance = find_resistance(df, zones)
     cut = df.index.get_indexer([df.index[df.index > df.index[-1] - pd.DateOffset(months=LOOKBACK_MONTHS)][0]])[0]
     view = df.iloc[cut:]
     for z in zones:
         z["start"] = max(z["start"] - cut, 0)       # pozycja wzgledem widocznego okna
-    return view, zones
+    return view, zones, trend, resistance
 
 
-def build_chart(df, zones, label, path):
+def build_chart(df, zones, resistance, label, path):
     n = len(df)
     ap = []
     if df["SMA"].notna().any():
@@ -288,18 +390,24 @@ def build_chart(df, zones, label, path):
 
     kwargs = dict(
         type="candle", style="yahoo", volume=True, addplot=ap, returnfig=True,
-        title=f"BTC {label} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB",
+        title=f"BTC {label} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB, opór",
         ylabel="USD(T)", ylabel_lower="Wolumen", figsize=(14, 10), tight_layout=True,
         panel_ratios=(6, 1.5, 2.5),
     )
     if fills:
         kwargs["fill_between"] = fills
+    if resistance:
+        kwargs["hlines"] = dict(hlines=[resistance["bottom"], resistance["top"]],
+                                colors=["#d62728", "#d62728"], linestyle="--", linewidths=1.2)
     fig, axes = mpf.plot(df, **kwargs)
 
     ax = axes[0]
     for z in zones:
         color, text = ZONE_STYLE[(z["kind"], z["dir"])]
         ax.text(z["start"], z["top"], text, color=color, fontsize=8, fontweight="bold",
+                va="bottom", ha="left")
+    if resistance:
+        ax.text(0, resistance["top"], "OPÓR", color="#d62728", fontsize=9, fontweight="bold",
                 va="bottom", ha="left")
     fig.savefig(str(path), dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -311,7 +419,7 @@ def usd(v):
     return "$" + f"{v:,.0f}".replace(",", NBSP)
 
 
-def build_caption(label, df, zones, today_iso):
+def build_caption(label, df, zones, trend, resistance, today_iso):
     """Ten sam uklad dla kazdego interwalu (D1 / W1 / M1)."""
     last = df.iloc[-1]
     price = last["Close"]
@@ -330,6 +438,17 @@ def build_caption(label, df, zones, today_iso):
     else:
         rsi_txt = f"⚪️ RSI {RSI_PERIOD}: N/D"
 
+    t_label, t_icon, t_why = trend
+    trend_txt = f"{t_icon} <b>Trend</b>: {t_label}" + (f" ({t_why})" if t_why else "")
+
+    if resistance:
+        lo, hi = resistance["bottom"], resistance["top"]
+        rng = usd(lo) if round(lo) == round(hi) else f"{usd(lo)} - {usd(hi)}"
+        res_txt = (f"🧱 <b>Najsilniejszy opór</b>: {rng} ({resistance['dist_pct']:+.1f}%) - "
+                   f"{' + '.join(resistance['names'])}")
+    else:
+        res_txt = "🧱 <b>Najsilniejszy opór</b>: brak poziomów nad ceną"
+
     lines = []
     for kind in ("FVG", "OB", "RB"):
         kz = [z for z in zones if z["kind"] == kind]
@@ -343,7 +462,7 @@ def build_caption(label, df, zones, today_iso):
 
     return (f"<b>₿ BTC - wykres {label}</b> {today_iso}\n"
             f"Cena: <b>{usd(price)}</b> | świec: {len(df)} (ostatnia w trakcie)\n"
-            f"{sma_txt}\n{rsi_txt}\n" + "\n".join(lines))
+            f"{sma_txt}\n{rsi_txt}\n{trend_txt}\n{res_txt}\n" + "\n".join(lines))
 
 
 # ---------------------------------------------------------------- telegram
@@ -375,12 +494,12 @@ def main():
     for label in CHARTS:
         raw, source = get_candles(label)
         print(f"[{label}] źródło danych: {source}")      # tylko log, nie Telegram
-        df, zones = prepare(raw)
+        df, zones, trend, resistance = prepare(raw)
         if df.empty:
             sys.exit(f"Brak danych dla {label} - przerywam.")
         path = OUT_DIR / f"BTC_{label}.png"
-        build_chart(df, zones, label, path)
-        caption = build_caption(label, df, zones, today_iso)
+        build_chart(df, zones, resistance, label, path)
+        caption = build_caption(label, df, zones, trend, resistance, today_iso)
         print(caption)
         charts.append((path, caption))
 
