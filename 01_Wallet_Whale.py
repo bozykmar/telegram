@@ -1,7 +1,7 @@
 """
 01_Wallet_Whale.py
 
-Raport pozycji portfeli z Hyperliquid wysyłany na Telegram (2x dziennie: 09:00 i 19:00).
+Raport pozycji portfeli z Hyperliquid wysyłany na Telegram (2x dziennie: 09:15 i 20:15, czas polski).
 Zestawia top 5 pozycji każdego portfela i porównuje je z poprzednim uruchomieniem.
 
 Konfiguracja (GitHub Actions secrets / variables, przekazane jako zmienne środowiskowe):
@@ -135,16 +135,19 @@ def change_marker(change):
 
 
 def run_key(now, slot=None):
-    """Klucz zestawienia: data + slot (09 / 19). Slot można wymusić (--slot)."""
+    """Klucz zestawienia: data + slot (09 = 09:15, 20 = 20:15). Slot można wymusić (--slot)."""
     if slot is None:
-        slot = "09" if now.hour < 14 else "19"
+        slot = "09" if now.hour < 14 else "20"
     return f"{now:%Y-%m-%d}T{slot}"
 
 
 def fmt_key(key):
     date_part, _, slot = key.partition("T")
     label = datetime.strptime(date_part, "%Y-%m-%d").strftime("%d.%m.%Y")
-    return f"{label} {slot}:00" if slot else label
+    if not slot:
+        return label
+    minutes = "15" if slot in ("09", "20") else "00"  # starsze wpisy (np. 19) mają pełną godzinę
+    return f"{label} {slot}:{minutes}"
 
 
 # ---------------------------------------------------------------- historia
@@ -486,7 +489,7 @@ def process_wallet(config, data, history, key, dry_run):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="bez wysyłki i bez zapisu historii")
-    parser.add_argument("--slot", choices=["09", "19"], help="wymuś slot zestawienia (domyślnie wg godziny)")
+    parser.add_argument("--slot", choices=["09", "20"], help="wymuś slot zestawienia (domyślnie wg godziny)")
     args = parser.parse_args()
 
     if not args.dry_run and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
