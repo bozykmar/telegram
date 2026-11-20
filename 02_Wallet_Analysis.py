@@ -1,9 +1,12 @@
 """
 02_Wallet_Analysis.py
 
-Analiza pozycji portfeli z 01_Wallet_Address.txt i propozycja max 3 pozycji
-(waluta, kierunek, wejście, dźwignia, stop-loss) wysyłana jako OSOBNY komunikat
+Informacyjna analiza pozycji portfeli z 01_Wallet_Address.txt, wysyłana jako OSOBNY komunikat
 na Telegram (2x dziennie: 09:15 i 20:15, czas polski).
+
+Skrypt NIE zaleca pozycji i nie odnosi się do kapitału użytkownika: pokazuje wyłącznie to,
+co robią obserwowane portfele - kierunek, wielkość portfeli i ich pozycji, dźwignię, średnie
+wejście i zmiany od poprzedniego dnia. Nie ma tu stop-lossów, zleceń limit ani procentów kapitału.
 
 Skrypt nie importuje 01_Wallet_Whale.py - korzysta tylko ze wspólnego common.py i pliku
 01_Wallet_Address.txt. Własną historię pozycji (do oceny trendu) zapisuje w
@@ -13,7 +16,6 @@ Konfiguracja (GitHub Actions variables, przekazane jako zmienne środowiskowe):
   TELEGRAM_TOKEN            - token bota
   TELEGRAM_CHAT_ID          - ID czatu / grupy
   TELEGRAM_THREAD_ANALYSIS  - ID tematu w grupie (opcjonalnie)
-  CAPITAL_USD               - Twój kapitał w USD (opcjonalnie; tylko do przeliczenia % na dolary)
 
 Uruchomienie lokalne bez wysyłki i bez zapisu:  python 02_Wallet_Analysis.py --dry-run
 
@@ -21,27 +23,21 @@ Metodyka (heurystyka konsensusu, nie model predykcyjny):
 1. Waga portfela = log10(Account Equity) x (1 + ROE otwartych pozycji, ucięte do +-50%).
 2. Przekonanie pozycji = waga portfela x udział marginu pozycji w Account Equity
    x współczynnik trendu (zwiększanie pozycji od poprzedniego dnia +15%, redukcja -15%).
-3. Dla każdej waluty sumujemy przekonanie po stronie LONG i SHORT.
-   Kandydat: min. MIN_WALLETS portfeli po tej samej stronie i zgodność >= MIN_AGREEMENT.
-4. Wejście: cena rynkowa, jeśli mieści się w strefie średniego wejścia portfeli
-   (+-ENTRY_TOLERANCE), w przeciwnym razie zlecenie limit na kraędzi strefy.
-5. Dźwignia: mediana ważona dźwigni portfeli, ucięta do MAX_LEVERAGE.
-6. Stop-loss: poziom, przy którym strata = MAX_LOSS_ON_MARGIN marginu.
-7. Wielkość pozycji (% kapitału wpłaconego jako margin):
-   RISK_PER_TRADE / MAX_LOSS_ON_MARGIN x zgodność portfeli, ucięte do MAX_MARGIN_PCT.
-   Wartość nominalna pozycji = margin x dźwignia. Strata na stop-lossie = margin x MAX_LOSS_ON_MARGIN.
-8. Wybór: spośród kandydatów pokazujemy MAX_PICKS walut z największym zaangażowanym kapitałem
-   (suma marginów portfeli po dominującej stronie), od największego.
-
-Twój kapitał nie wpływa na wybór ani na procenty - CAPITAL_USD służy tylko do pokazania kwot.
+3. Dla każdej waluty sumujemy przekonanie po stronie LONG i SHORT. Kierunek portfeli to strona
+   z większym przekonaniem, zgodność = jej udział w sumie obu stron.
+4. Wybór: MAX_COINS walut z największym zaangażowanym kapitałem (suma marginów portfeli po obu
+   stronach), od największego. Portfele z Account Equity poniżej MIN_EQUITY są pomijane.
+5. Średnie wejście = średnia cen wejścia portfeli po dominującej stronie, ważona wagą portfela
+   i marginem pozycji. Dźwignia = mediana ważona dźwigni tych portfeli.
 """
 
 import re
+import html
 import math
 import argparse
 from datetime import datetime
 
-from common import (TZ, Telegram, env, fmt_usd, get_hyperliquid_data, load_json,
+from common import (TZ, Telegram, fmt_usd, get_hyperliquid_data, load_json,
                     load_wallet_configs, save_json)
 
 TG = Telegram("TELEGRAM_THREAD_ANALYSIS")
@@ -52,15 +48,9 @@ HISTORY_DAYS = 30
 
 # ---------------------------------------------------------------- parametry
 
-MAX_PICKS = 3             # maksymalna liczba propozycji
-MIN_WALLETS = 2           # min. liczba portfeli po tej samej stronie
-MIN_AGREEMENT = 0.70      # min. zgodność (udział wagi dominującej strony)
+MAX_COINS = 3             # ile walut pokazać (największy zaangażowany kapitał)
+MAX_WALLET_LINES = 5      # ile największych portfeli wypisać przy każdej walucie
 MIN_EQUITY = 50_000       # portfele poniżej tej wartości są pomijane (USD)
-MAX_LEVERAGE = 5          # górny limit proponowanej dźwigni
-MAX_LOSS_ON_MARGIN = 0.15 # stop-loss: strata maks. 15% marginu pozycji
-ENTRY_TOLERANCE = 0.03    # strefa wejścia: +-3% od średniego wejścia portfeli
-RISK_PER_TRADE = 0.02     # ryzyko na jedną pozycję: 2% kapitału (przy trafieniu w stop-loss)
-MAX_MARGIN_PCT = 0.20     # maks. margin jednej pozycji: 20% kapitału
 
 
 # ---------------------------------------------------------------- narzędzia
@@ -73,27 +63,18 @@ def fmt_px(value):
     return f"${value:.{decimals}f}"
 
 
-def get_capital():
-    """Kapitał z CAPITAL_USD (opcjonalny). Brak lub błędna wartość -> None."""
-    raw = env("CAPITAL_USD")
-    if raw is None:
-        return None
-    try:
-        value = float(raw.replace(" ", "").replace(",", "."))
-    except ValueError:
-        print(f"Ignoruję CAPITAL_USD: '{raw}' nie jest liczbą.")
-        return None
-    return value if value > 0 else None
-
-
-def pct_usd(pct, capital):
-    """' ≈$1 234' dla pct % kapitału albo pusty tekst, gdy kapitał nie jest podany."""
-    return f" ≈{fmt_usd(capital * pct / 100, 0)}" if capital else ""
-
-
 def parse_leverage(text):
     m = re.search(r"(\d+(?:\.\d+)?)x", text or "")
     return float(m.group(1)) if m else 1.0
+
+
+def lev_label(text):
+    """'Isolated5x' -> 'Isolated 5x'."""
+    m = re.match(r"\s*([A-Za-z]*)\s*(\d+(?:\.\d+)?)x", text or "")
+    if not m:
+        return "1x"
+    value = f"{float(m.group(2)):g}x"
+    return f"{m.group(1)} {value}" if m.group(1) else value
 
 
 def weighted_median(pairs):
@@ -195,60 +176,47 @@ def collect_wallets():
 
 # ---------------------------------------------------------------- analiza
 
-def build_pick(coin, direction, entries, agreement, dom, total_wallets):
+def summarize_coin(coin, sides, total_wallets):
+    """Podsumowanie jednej waluty: kierunek portfeli, zaangażowanie, średnie wejście, lista portfeli."""
+    long_s = sum(e["conv"] for e in sides["LONG"])
+    short_s = sum(e["conv"] for e in sides["SHORT"])
+    total = long_s + short_s
+    if total <= 0:
+        return None
+
+    direction = "LONG" if long_s >= short_s else "SHORT"
+    entries = sides[direction]
+    agreement = max(long_s, short_s) / total
+
     weights = [(e["w"]["weight"] * e["p"]["margin"], e) for e in entries]
     total_w = sum(w for w, _ in weights)
     if total_w <= 0:
         return None
-
     avg_entry = sum(e["p"]["entry_px"] * w for w, e in weights) / total_w
-    if avg_entry <= 0:
-        return None
+    lev_med = weighted_median([(parse_leverage(e["p"]["leverage"]), w) for w, e in weights])
 
-    biggest = max(entries, key=lambda e: e["p"]["val"])
-    price = biggest["p"]["mark_px"]
-    avg_upnl = sum(e["p"]["pnl_pct"] * w for w, e in weights) / total_w
-
-    lev_raw = weighted_median([(parse_leverage(e["p"]["leverage"]), w) for w, e in weights])
-    leverage = int(max(1, min(MAX_LEVERAGE, round(lev_raw))))
-
-    if direction == "LONG":
-        limit = avg_entry * (1 + ENTRY_TOLERANCE)
-        market_ok = price <= limit
-    else:
-        limit = avg_entry * (1 - ENTRY_TOLERANCE)
-        market_ok = price >= limit
-
-    entry = price if market_ok else limit
-    sl_dist = MAX_LOSS_ON_MARGIN / leverage
-    stop = entry * (1 - sl_dist) if direction == "LONG" else entry * (1 + sl_dist)
-
-    size_pct = min(MAX_MARGIN_PCT, RISK_PER_TRADE / MAX_LOSS_ON_MARGIN * agreement) * 100
-    size_pct = max(1, round(size_pct))
+    everyone = sides["LONG"] + sides["SHORT"]
+    biggest = max(everyone, key=lambda e: e["p"]["val"])
 
     return {
         "coin": coin,
         "direction": direction,
-        "size_pct": size_pct,
-        "notional_pct": size_pct * leverage,
-        "risk_pct": size_pct * MAX_LOSS_ON_MARGIN,
         "icon": "🟢" if direction == "LONG" else "🔴",
-        "wallets_n": len(entries),
-        "wallets_total": total_wallets,
         "agreement": agreement,
-        "committed_margin": sum(e["p"]["margin"] for e in entries),
-        "committed_notional": sum(e["p"]["val"] for e in entries),
-        "avg_entry": avg_entry,
-        "price": price,
-        "avg_upnl": avg_upnl,
-        "market_ok": market_ok,
-        "entry": entry,
-        "leverage": leverage,
-        "whale_leverage": lev_raw,
-        "stop": stop,
-        "sl_dist": sl_dist,
+        "wallets_total": total_wallets,
+        "n_long": len(sides["LONG"]),
+        "n_short": len(sides["SHORT"]),
+        "margin_long": sum(e["p"]["margin"] for e in sides["LONG"]),
+        "margin_short": sum(e["p"]["margin"] for e in sides["SHORT"]),
+        "notional": sum(e["p"]["val"] for e in everyone),
+        "avg_entry": avg_entry if avg_entry > 0 else None,
+        "price": biggest["p"]["mark_px"],
+        "leverage_median": lev_med,
+        "lev_min": min(parse_leverage(e["p"]["leverage"]) for e in entries),
+        "lev_max": max(parse_leverage(e["p"]["leverage"]) for e in entries),
         "up": sum(1 for e in entries if e["trend"] == "up"),
         "down": sum(1 for e in entries if e["trend"] == "down"),
+        "entries": sorted(entries, key=lambda e: e["p"]["margin"], reverse=True),
     }
 
 
@@ -262,106 +230,76 @@ def analyze(wallets):
             sides = by_coin.setdefault(p["coin"], {"LONG": [], "SHORT": []})
             sides[p["direction"]].append({"w": w, "p": p, "conv": conviction, "trend": trend})
 
-    picks = []
-    for coin, sides in by_coin.items():
-        long_s = sum(e["conv"] for e in sides["LONG"])
-        short_s = sum(e["conv"] for e in sides["SHORT"])
-        total = long_s + short_s
-        if total <= 0:
-            continue
-
-        direction = "LONG" if long_s >= short_s else "SHORT"
-        dom = max(long_s, short_s)
-        agreement = dom / total
-        entries = sides[direction]
-
-        if len(entries) < MIN_WALLETS or agreement < MIN_AGREEMENT:
-            continue
-
-        pick = build_pick(coin, direction, entries, agreement, dom, len(wallets))
-        if pick:
-            picks.append(pick)
-
-    picks.sort(key=lambda x: x["committed_margin"], reverse=True)
-    return picks[:MAX_PICKS]
+    coins = [c for c in (summarize_coin(coin, sides, len(wallets))
+                         for coin, sides in by_coin.items()) if c]
+    coins.sort(key=lambda c: c["margin_long"] + c["margin_short"], reverse=True)
+    return coins[:MAX_COINS]
 
 
 # ---------------------------------------------------------------- komunikat
 
-def build_pick_block(i, p, capital):
-    if p["market_ok"]:
-        entry_line = (
-            f"Wejście: <b>{fmt_px(p['entry'])}</b> (cena rynkowa w strefie wejścia portfeli) "
-            f"/ śr. wejście {fmt_px(p['avg_entry'])}"
-        )
-        size_txt = f"<b>{p['size_pct']}% kapitału</b>{pct_usd(p['size_pct'], capital)}"
-        position_label = "Pozycja"
-    else:
-        gap = abs(p["price"] / p["avg_entry"] - 1) * 100
-        side = "powyżej" if p["direction"] == "LONG" else "poniżej"
-        entry_line = (
-            f"Wejście: zlecenie limit <b>{fmt_px(p['entry'])}</b> "
-            f"(cena {fmt_px(p['price'])} jest {gap:.1f}% {side} średniego wejścia portfeli) "
-            f"/ śr. wejście {fmt_px(p['avg_entry'])}"
-        )
-        size_txt = (f"<b>0% teraz</b> (limit: {p['size_pct']}% kapitału"
-                    f"{pct_usd(p['size_pct'], capital)})")
-        position_label = "Po wypełnieniu limitu"
+TREND_TXT = {"up": " - zwiększa", "down": " - redukuje"}
+
+
+def build_wallet_line(e):
+    w, p = e["w"], e["p"]
+    share = p["margin"] / w["equity"] if w["equity"] > 0 else 0.0
+    return (
+        f"• {html.escape(w['name'])}: equity {fmt_usd(w['equity'], 0)}, "
+        f"margin {fmt_usd(p['margin'], 0)} ({share:.0%} equity), {lev_label(p['leverage'])}, "
+        f"wejście {fmt_px(p['entry_px'])}, PnL {p['pnl_pct']:+.0f}%"
+        f"{TREND_TXT.get(e['trend'], '')}"
+    )
+
+
+def build_coin_block(i, c):
+    lines = [
+        f"<b>{i}. {c['coin']}</b> | {c['icon']} <b>{c['direction']}</b> "
+        f"(zgodność {c['agreement']:.0%} wagi)",
+        f"Zaangażowanie portfeli: <b>{fmt_usd(c['margin_long'] + c['margin_short'], 0)}</b> marginu "
+        f"(nominalnie {fmt_usd(c['notional'], 0)})",
+        f"Portfele: {c['n_long']} LONG / {c['n_short']} SHORT (z {c['wallets_total']} analizowanych), "
+        f"margin LONG {fmt_usd(c['margin_long'], 0)} / SHORT {fmt_usd(c['margin_short'], 0)}",
+    ]
+    if c["avg_entry"]:
+        gap = (c["price"] / c["avg_entry"] - 1) * 100
+        lines.append(f"Śr. wejście portfeli: {fmt_px(c['avg_entry'])} | cena {fmt_px(c['price'])} "
+                     f"({gap:+.1f}% od śr. wejścia)")
+    lines.append(f"Dźwignia portfeli: mediana {c['leverage_median']:g}x "
+                 f"(zakres {c['lev_min']:g}x-{c['lev_max']:g}x)")
 
     trend_parts = []
-    if p["up"]:
-        trend_parts.append(f"{p['up']} zwiększa")
-    if p["down"]:
-        trend_parts.append(f"{p['down']} redukuje")
-    trend_line = f"Trend (zmiany): <b>{', '.join(trend_parts)}</b>\n" if trend_parts else ""
+    if c["up"]:
+        trend_parts.append(f"{c['up']} zwiększa")
+    if c["down"]:
+        trend_parts.append(f"{c['down']} redukuje")
+    if trend_parts:
+        lines.append(f"Zmiany od poprzedniego dnia: <b>{', '.join(trend_parts)}</b>")
 
-    lev_note = ""
-    if round(p["whale_leverage"]) != p["leverage"]:
-        lev_note = f" (portfele: {p['whale_leverage']:.0f}x, ucięte do {MAX_LEVERAGE}x)"
-
-    return (
-        f"<b>{i}. {p['coin']}</b> | {p['icon']} <b>{p['direction']}</b> - {size_txt}\n"
-        f"Zaangażowanie portfeli: <b>{fmt_usd(p['committed_margin'], 0)}</b> marginu "
-        f"(nominalnie {fmt_usd(p['committed_notional'], 0)})\n"
-        f"Zgodność: {p['wallets_n']}/{p['wallets_total']} portfeli "
-        f"({p['agreement']:.0%} wagi)\n"
-        f"{entry_line}\n"
-        f"Dźwignia: <b>{p['leverage']}x Isolated</b>{lev_note}\n"
-        f"{position_label}: margin {p['size_pct']}% kapitału, nominalnie "
-        f"{p['notional_pct']}%{pct_usd(p['notional_pct'], capital)}, "
-        f"strata na stopie ≈ {p['risk_pct']:.1f}% kapitału"
-        f"{pct_usd(p['risk_pct'], capital)}\n"
-        f"Stop-loss: <b>{fmt_px(p['stop'])}</b> ({p['sl_dist']:.1%} od wejścia)\n"
-        f"{trend_line}\n"
-    )
+    shown = c["entries"][:MAX_WALLET_LINES]
+    lines += [build_wallet_line(e) for e in shown]
+    if len(c["entries"]) > len(shown):
+        lines.append(f"… i {len(c['entries']) - len(shown)} kolejnych portfeli po tej stronie")
+    return "\n".join(lines) + "\n\n"
 
 
-def build_message(picks, wallets, today_iso, capital=None):
+def build_message(coins, wallets, today_iso):
     total_equity = sum(w["equity"] for w in wallets)
     msg = (
-        f"<b>📊 Analiza portfeli - propozycja pozycji</b> - {fmt_date(today_iso)}\n"
+        f"<b>📊 Analiza portfeli - pozycje</b> - {fmt_date(today_iso)}\n"
         f"Przeanalizowano: {len(wallets)} portfeli (Account Equity łącznie "
         f"{fmt_usd(total_equity, 2)})\n"
-        f"Ranking: {MAX_PICKS} waluty z największym zaangażowanym kapitałem portfeli\n\n"
+        f"Ranking: {MAX_COINS} waluty z największym zaangażowanym kapitałem portfeli\n\n"
     )
-
-    if not picks:
+    if not coins:
+        msg += "<i>Brak otwartych pozycji w analizowanych portfelach.</i>\n\n"
+    for i, c in enumerate(coins, 1):
+        msg += build_coin_block(i, c)
+    if coins:
         msg += (
-            "<i>Brak walut spełniających kryteria (min. "
-            f"{MIN_WALLETS} portfele po tej samej stronie i zgodność "
-            f"{MIN_AGREEMENT:.0%}).</i>\n\n"
-        )
-
-    for i, p in enumerate(picks, 1):
-        msg += build_pick_block(i, p, capital)
-
-    if picks:
-        capital_note = (f" Kwoty w USD liczone od kapitału {fmt_usd(capital, 0)}."
-                        if capital else "")
-        msg += (
-            "<i>Zgodność = udział przekonania dominującej strony. Margin = część kapitału "
-            "wpłacona jako zabezpieczenie; nominalnie = margin x dźwignia. Zaangażowanie "
-            f"portfeli = suma ich marginów po tej stronie.{capital_note}</i>\n"
+            "<i>Informacja o pozycjach portfeli, nie rekomendacja. Kierunek = strona z większym "
+            "przekonaniem portfeli; zgodność = jej udział w sumie obu stron. Zaangażowanie = "
+            "suma marginów po obu stronach, nominalnie = margin x dźwignia.</i>\n"
         )
     return msg
 
@@ -383,8 +321,7 @@ def main():
         print("Brak portfeli do analizy")
         return
 
-    picks = analyze(wallets)
-    message = build_message(picks, wallets, today_iso, get_capital())
+    message = build_message(analyze(wallets), wallets, today_iso)
     print(message)
 
     if not args.dry_run:
