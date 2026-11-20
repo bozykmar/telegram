@@ -9,7 +9,7 @@ Konfiguracja (GitHub Actions secrets / variables, przekazane jako zmienne środo
   TELEGRAM_CHAT_ID       - ID czatu / grupy
   TELEGRAM_THREAD_WHALE  - ID tematu w grupie (opcjonalnie)
 
-Lista portfeli: 01_Wallet_Address.txt (patrz opis formatu w pliku).
+Lista portfeli: 01_Wallet_Address.txt (patrz opis formatu w common.load_wallet_configs).
 Historia: 01_Wallet_History.json (zatwierdzana do repozytorium przez workflow).
 
 Lokalnie bez wysyłki i bez zapisu:  python 01_Wallet_Whale.py --dry-run
@@ -18,86 +18,28 @@ Wymuszenie slotu (np. przy opóźnionym cronie):  python 01_Wallet_Whale.py --sl
 Kod wyjścia: 0 = OK lub błędy częściowe (ostrzeżenie w logu), 1 = zawiodły wszystkie portfele.
 """
 
-import os
-import re
 import sys
-import json
 import time
 import html
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from common import (TZ, Telegram, fmt_usd, get_hyperliquid_data, load_json, load_wallet_configs,
+                    save_json)
 
+TG = Telegram("TELEGRAM_THREAD_WHALE")
 
-def env(name):
-    return (os.environ.get(name) or "").strip() or None
-
-
-def env_int(name):
-    value = env(name)
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        print(f"Ignoruję {name}: '{value}' nie jest liczbą całkowitą.")
-        return None
-
-
-TELEGRAM_TOKEN = env("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = env("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = env_int("TELEGRAM_THREAD_WHALE")
-
-API_URL = "https://api.hyperliquid.xyz/info"
-HYPERBOT_URL = "https://hyperbot.network/trader/"
 WALLET_FILE = "01_Wallet_Address.txt"
 HISTORY_FILE = "01_Wallet_History.json"
 HISTORY_KEEP = 60            # liczba przechowywanych zestawień (2 dziennie = 30 dni)
 MIN_TRACK_USD = 100          # pozycje poniżej tej wartości nie trafiają do historii
 MAX_CLOSED_SHOWN = 10        # ile zamkniętych pozycji pokazać w raporcie
 TOP_N = 5                    # ile największych pozycji pokazać
-TZ = ZoneInfo("Europe/Warsaw")
-NBSP = "\u00a0"              # twarda spacja, żeby kwota nie łamała się w nowej linii
-
 POSITION_CHANGE_THRESHOLD = 10.0  # % zmiany wielkości pozycji, od którego pojawia się 🟢 / 🔴
-TELEGRAM_MAX_LEN = 4000           # limit Telegrama to 4096 znaków; zapas na bezpieczeństwo
-TELEGRAM_ATTEMPTS = 3
-
-ADDRESS_RE = re.compile(r"0x[a-fA-F0-9]{40}")
-
-
-def make_session():
-    session = requests.Session()
-    retry = Retry(total=3, backoff_factor=1.5, status_forcelist=(429, 500, 502, 503, 504),
-                  allowed_methods=frozenset(["GET", "POST"]))
-    session.mount("https://", HTTPAdapter(max_retries=retry))
-    return session
-
-
-SESSION = make_session()
 
 
 # ---------------------------------------------------------------- formatowanie
-
-def fmt_usd(value, decimals, signed=False):
-    """
-    >= 1000 USD: bez miejsc po przecinku, spacja jako separator tysięcy ($2 129).
-    <  1000 USD: podana liczba miejsc po przecinku ($75.3510).
-    signed=True: znak przed symbolem waluty (+$1 234 / -$56.20).
-    """
-    sign = "-" if value < 0 else ("+" if signed else "")
-    abs_val = abs(value)
-    if abs_val >= 1000:
-        number = f"{abs_val:,.0f}".replace(",", NBSP)
-    else:
-        number = f"{abs_val:.{decimals}f}"
-    return f"{sign}${number}"
-
 
 def fmt_pct_portfolio(value):
     return f"{value:.0f}%" if value >= 1 else f"{value:.1f}%"
@@ -152,28 +94,13 @@ def fmt_key(key):
 
 # ---------------------------------------------------------------- historia
 
-def load_history():
-    if not os.path.exists(HISTORY_FILE):
-        return {}
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, OSError) as e:
-        print(f"Nie udało się wczytać historii: {e}")
-        return {}
-
-
 def save_history(history):
     keep = set(sorted({k for w in history.values() for k in w})[-HISTORY_KEEP:])
     for address in list(history):
         history[address] = {k: s for k, s in history[address].items() if k in keep}
         if not history[address]:
             del history[address]
-    tmp = HISTORY_FILE + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, HISTORY_FILE)
+    save_json(HISTORY_FILE, history, indent=1)
 
 
 def get_previous_snapshot(history, address, key):
@@ -183,178 +110,6 @@ def get_previous_snapshot(history, address, key):
     if not older:
         return None, None
     return older[-1], days[older[-1]]
-
-
-# ---------------------------------------------------------------- konfiguracja
-
-def load_wallet_configs(file_path=WALLET_FILE):
-    """
-    Format linii (wszystko poza adresem opcjonalne):
-        Nazwa - Opis - 0xAdres
-        0xAdres
-    Nadal działa też pełny link (https://hyperbot.network/trader/0x...).
-    Linie zaczynające się od '#' oraz puste są pomijane.
-    """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Nie znaleziono pliku {file_path}")
-
-    wallets, seen = [], set()
-    with open(file_path, "r", encoding="utf-8") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-            match = ADDRESS_RE.search(line)
-            if not match:
-                print(f"Pominięto linię bez poprawnego adresu 0x…: {line[:60]}")
-                continue
-
-            address = match.group(0).lower()
-            if address in seen:
-                continue
-            seen.add(address)
-
-            head = re.sub(r"https?://\S*$", "", line[:match.start()])
-            head = head.rstrip(" \t-–—|:")
-            parts = [p.strip() for p in head.split(" - ") if p.strip()]
-            name = parts[0] if parts else f"Wallet {address[:6]}…{address[-4:]}"
-            wallets.append({
-                "name": name,
-                "description": " - ".join(parts[1:]),
-                "link": HYPERBOT_URL + address,
-                "address": address,
-            })
-    return wallets
-
-
-# ---------------------------------------------------------------- Hyperliquid
-
-def get_hyperliquid_data(address):
-    """
-    Zwraca (account_equity, lista_pozycji) lub None przy błędzie
-    (wtedy snapshot nie jest zapisywany).
-    Udział pozycji = margin pozycji / suma marginów wszystkich otwartych pozycji.
-    """
-    positions = []
-    try:
-        res = SESSION.post(API_URL, json={"type": "clearinghouseState", "user": address}, timeout=30)
-        res.raise_for_status()
-        data = res.json()
-
-        account_equity = float(data.get("marginSummary", {}).get("accountValue", 0))
-
-        for item in data.get("assetPositions", []):
-            pos = item.get("position", {})
-            szi = float(pos.get("szi", 0))
-            if szi == 0:
-                continue
-
-            position_value = float(pos.get("positionValue", 0))
-            upnl = float(pos.get("unrealizedPnl", 0))
-            leverage_obj = pos.get("leverage", {})
-            lev_type = leverage_obj.get("type", "").capitalize()
-            lev_val = leverage_obj.get("value", 1)
-            leverage_str = f"{lev_type}{lev_val}x" if lev_type else f"{lev_val}x"
-            try:
-                lev_num = float(lev_val)
-            except (ValueError, TypeError):
-                lev_num = 1.0
-
-            margin_used = float(pos.get("marginUsed", 0))
-            if margin_used <= 0 and lev_num > 0:
-                margin_used = position_value / lev_num
-
-            positions.append({
-                "coin": pos.get("coin"),
-                "direction": "LONG" if szi > 0 else "SHORT",
-                "color_icon": "🟢" if szi > 0 else "🔴",
-                "entry_px": float(pos.get("entryPx", 0)),
-                "mark_px": position_value / abs(szi),
-                "val": position_value,
-                "upnl": upnl,
-                "pnl_pct": (upnl / margin_used * 100) if margin_used > 0 else 0.0,
-                "leverage": leverage_str,
-                "margin": margin_used,
-            })
-
-        total_margin = sum(p["margin"] for p in positions)
-        for p in positions:
-            p["portfolio_pct"] = (p["margin"] / total_margin * 100) if total_margin > 0 else 0.0
-
-    except Exception as e:  # noqa: BLE001
-        print(f"Błąd pobierania danych dla {address}: {e}")
-        return None
-
-    positions.sort(key=lambda x: x["val"], reverse=True)
-    return account_equity, positions
-
-
-# ---------------------------------------------------------------- Telegram
-
-def split_message(message, limit=TELEGRAM_MAX_LEN):
-    """Dzieli tekst na części po liniach (tagi HTML w liniach są zamknięte)."""
-    if len(message) <= limit:
-        return [message]
-    chunks, current = [], ""
-    for line in message.splitlines(keepends=True):
-        while len(line) > limit:  # awaryjnie: pojedyncza zbyt długa linia
-            if current:
-                chunks.append(current)
-                current = ""
-            chunks.append(line[:limit])
-            line = line[limit:]
-        if len(current) + len(line) > limit:
-            chunks.append(current)
-            current = ""
-        current += line
-    if current.strip():
-        chunks.append(current)
-    return chunks
-
-
-def send_telegram_chunk(text):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": text,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    }
-    if TELEGRAM_THREAD_ID is not None:
-        payload["message_thread_id"] = TELEGRAM_THREAD_ID
-
-    last_error = None
-    for attempt in range(TELEGRAM_ATTEMPTS):
-        try:
-            res = requests.post(url, json=payload, timeout=30)
-        except requests.RequestException as e:
-            last_error = e
-            time.sleep(2 * (attempt + 1))
-            continue
-
-        if res.status_code == 429:  # limit Telegrama - odczekaj zalecany czas
-            try:
-                wait = int(res.json().get("parameters", {}).get("retry_after", 5))
-            except Exception:  # noqa: BLE001
-                wait = 5
-            last_error = requests.HTTPError(f"429 Too Many Requests: {res.text}")
-            time.sleep(wait + 1)
-            continue
-
-        if not res.ok:
-            print(f"Błąd Telegrama: {res.text}")
-        res.raise_for_status()
-        return
-
-    raise last_error or RuntimeError("Nie udało się wysłać wiadomości na Telegram")
-
-
-def send_telegram_message(message):
-    chunks = split_message(message)
-    for i, chunk in enumerate(chunks):
-        send_telegram_chunk(chunk)
-        if i < len(chunks) - 1:
-            time.sleep(1.1)
 
 
 # ---------------------------------------------------------------- komunikat
@@ -479,7 +234,7 @@ def process_wallet(config, data, history, key, dry_run):
     if dry_run:
         print(message)
     else:
-        send_telegram_message(message)
+        TG.send_message(message)
 
     if ok and not dry_run:
         history.setdefault(config["address"], {})[key] = snapshot_of(*data)
@@ -492,15 +247,15 @@ def main():
     parser.add_argument("--slot", choices=["09", "20"], help="wymuś slot zestawienia (domyślnie wg godziny)")
     args = parser.parse_args()
 
-    if not args.dry_run and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
-        sys.exit("Brak TELEGRAM_TOKEN lub TELEGRAM_CHAT_ID w zmiennych środowiskowych.")
+    if not args.dry_run:
+        TG.require()
 
-    wallets = load_wallet_configs()
+    wallets = load_wallet_configs(WALLET_FILE)
     if not wallets:
         sys.exit(f"Brak poprawnych adresów w pliku {WALLET_FILE}")
 
     key = run_key(datetime.now(TZ), args.slot)
-    history = load_history()
+    history = load_json(HISTORY_FILE)
 
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(lambda w: get_hyperliquid_data(w["address"]), wallets))

@@ -17,42 +17,19 @@ Lokalnie bez wysyłki:  python 00_Walory.py --dry-run
 Kod wyjścia: 0 = OK lub błędy częściowe (ostrzeżenie w logu), 1 = brak danych dla wszystkich walorów.
 """
 
-import os
 import sys
 import time
 import html
 import argparse
 
-import requests
 import pandas as pd
 import yfinance as yf
 
+from common import Telegram, fmt_usd
 
-def env(name):
-    return (os.environ.get(name) or "").strip() or None
+TG = Telegram("TELEGRAM_THREAD_WALORY")  # ID tematu Walory (31)
 
-
-def env_int(name):
-    value = env(name)
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        print(f"Ignoruję {name}: '{value}' nie jest liczbą całkowitą.")
-        return None
-
-
-TELEGRAM_TOKEN = env("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = env("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = env_int("TELEGRAM_THREAD_WALORY")  # ID tematu Walory (31)
-
-NBSP = "\u00a0"
-HTTP_TIMEOUT = 30
-TELEGRAM_MAX_LEN = 4000          # limit Telegrama to 4096 znaków; zapas na bezpieczeństwo
-TELEGRAM_ATTEMPTS = 3
 YF_ATTEMPTS = 3
-
 SMA_PERIOD = 200
 HISTORY_PERIOD = "2y"            # zapas ponad 200 sesji dla SMA
 WEEK_DAYS, MONTH_DAYS = 7, 30
@@ -72,11 +49,6 @@ GROUPS = {
 
 
 # ---------------------------------------------------------------- formatowanie
-
-def usd(value):
-    """$1 234.56 (twarda spacja jako separator tysięcy - kwota nie łamie się w nowej linii)."""
-    return "$" + f"{value:,.2f}".replace(",", NBSP)
-
 
 def format_colored_val(val, max_pos, max_neg):
     """
@@ -165,78 +137,14 @@ def build_report(groups_data):
             status = "Wzrostowy (Bullish) 🟢" if a["bullish"] else "Spadkowy / Korekta (Bearish) 🔴"
             parts.append(
                 f"📌 <b>{html.escape(a['name'])}</b>\n"
-                f"• <b>Cena rynkowa (Mark Price):</b> {usd(a['latest_close'])}\n"
-                f"• <b>Poziom 200 SMA (Stop Loss):</b> {usd(a['latest_sma'])}\n"
+                f"• <b>Cena rynkowa (Mark Price):</b> {fmt_usd(a['latest_close'])}\n"
+                f"• <b>Poziom 200 SMA (Stop Loss):</b> {fmt_usd(a['latest_sma'])}\n"
                 f"• <b>Odchylenie od 200 SMA:</b> {a['diff_pct']:+.1f}%\n"
                 f"• <b>Główny trend (D1):</b> {status}\n"
                 f"• <b>Wzrost T / M:</b> {format_colored_val(a['change_7d'], max_pos_t, max_neg_t)} / "
                 f"{format_colored_val(a['change_30d'], max_pos_m, max_neg_m)}\n"
             )
     return "\n".join(parts)
-
-
-# ---------------------------------------------------------------- Telegram
-
-def split_message(message, limit=TELEGRAM_MAX_LEN):
-    """Dzieli tekst na części po liniach (tagi HTML w liniach są zamknięte)."""
-    if len(message) <= limit:
-        return [message]
-    chunks, current = [], ""
-    for line in message.splitlines(keepends=True):
-        while len(line) > limit:  # awaryjnie: pojedyncza zbyt długa linia
-            if current:
-                chunks.append(current)
-                current = ""
-            chunks.append(line[:limit])
-            line = line[limit:]
-        if len(current) + len(line) > limit:
-            chunks.append(current)
-            current = ""
-        current += line
-    if current.strip():
-        chunks.append(current)
-    return chunks
-
-
-def send_telegram_chunk(text):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML",
-               "disable_web_page_preview": True}
-    if TELEGRAM_THREAD_ID is not None:
-        payload["message_thread_id"] = TELEGRAM_THREAD_ID
-
-    last_error = None
-    for attempt in range(TELEGRAM_ATTEMPTS):
-        try:
-            res = requests.post(url, json=payload, timeout=HTTP_TIMEOUT)
-        except requests.RequestException as e:
-            last_error = e
-            time.sleep(2 * (attempt + 1))
-            continue
-
-        if res.status_code == 429:  # limit Telegrama - odczekaj zalecany czas
-            try:
-                wait = int(res.json().get("parameters", {}).get("retry_after", 5))
-            except Exception:  # noqa: BLE001
-                wait = 5
-            last_error = requests.HTTPError(f"429 Too Many Requests: {res.text}")
-            time.sleep(wait + 1)
-            continue
-
-        if not res.ok:
-            print(f"Błąd Telegrama: {res.text}")
-        res.raise_for_status()
-        return
-
-    raise last_error or RuntimeError("Nie udało się wysłać wiadomości na Telegram")
-
-
-def send_telegram_message(message):
-    chunks = split_message(message)
-    for i, chunk in enumerate(chunks):
-        send_telegram_chunk(chunk)
-        if i < len(chunks) - 1:
-            time.sleep(1.1)
 
 
 # ---------------------------------------------------------------- main
@@ -246,8 +154,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="bez wysyłki na Telegram")
     args = parser.parse_args()
 
-    if not args.dry_run and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
-        sys.exit("Brak TELEGRAM_TOKEN lub TELEGRAM_CHAT_ID w zmiennych środowiskowych.")
+    if not args.dry_run:
+        TG.require()
 
     groups_data = {name: [d for d in (get_asset_data(a) for a in assets) if d]
                    for name, assets in GROUPS.items()}
@@ -261,7 +169,7 @@ def main():
     report = build_report(groups_data)
     print(report)
     if not args.dry_run:
-        send_telegram_message(report)
+        TG.send_message(report)
 
 
 if __name__ == "__main__":
