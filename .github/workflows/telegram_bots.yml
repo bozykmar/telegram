@@ -65,7 +65,7 @@ jobs:
           cache: pip
           cache-dependency-path: .github/workflows/telegram_bots.yml
 
-      - run: pip install requests yfinance pandas numpy matplotlib six mplfinance
+      - run: pip install requests yfinance pandas numpy matplotlib
 
       - name: 00 Walory
         run: python 00_Walory.py

@@ -1,14 +1,20 @@
 """
 04_BTC_Charts.py
 
-Trzy wykresy BTC/USDT wysylane na Telegram, kazdy OSOBNYM zdjeciem: D1, W1, M1.
-Na kazdym wykresie: swiece + wolumen + SMA 50 + panel RSI 14 + strefy SMC/ICT:
+Cztery wykresy BTC/USDT wysylane na Telegram, kazdy OSOBNYM zdjeciem, w kolejnosci:
+M1 (miesieczny), W1 (tygodniowy), D1 (dzienny), H4 (4-godzinny).
+Wykres: swiece + SMA 50, pod nim osobno wolumen, pod nim RSI 14 (miedzy panelami jest przerwa).
+Strefy SMC/ICT rysowane tylko, gdy mieszcza sie w zakresie cen widocznych swiec:
   - FVG (Fair Value Gap)      - 3-swiecowa luka: low[i] > high[i-2] (bycza) / high[i] < low[i-2] (niedzwiedzia)
   - OB  (Order Block)         - ostatnia swieca przeciwna przed impulsem zamykajacym sie poza jej zakresem
   - RB  (Rejection Block)     - dlugi knot na swing high/low (od ciala do ekstremum)
+Na wykresie nie ma opisow wskaznikow - przy liniach oporu stoi tylko wartosc. Wszystkie
+szczegoly (SMA, RSI, trend, opor, strefy) sa w podpisie pod wykresem.
+
 Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, trend, opor, FVG, OB, RB.
-Zakres wykresu: ostatnie 12 miesiecy. SMA, RSI, trend i strefy liczone na pelnej pobranej
-historii, dopiero potem wykres jest przycinany. Pokazywane sa tylko strefy AKTYWNE.
+Zakres wykresu: M1/W1/D1 ostatnie 12 miesiecy, H4 ostatnie 30 dni. SMA, RSI, trend i strefy
+liczone na pelnej pobranej historii, dopiero potem wykres jest przycinany. Pokazywane sa
+tylko strefy AKTYWNE.
 
 Trend (punkty -3..+3): struktura swingow (HH/HL = +1, LH/LL = -1), cena vs SMA 50 (+1 / -1),
 nachylenie SMA 50 wzgledem 10 swiec wczesniej (+1 / -1). Wynik >= +2 = WZROSTOWY,
@@ -22,10 +28,11 @@ Sila poziomu = konfluencja (suma wag nakladajacych sie kandydatow): OB 3, RB 2, 
 FVG 1, swing high/low 1. Nad cena licza sie strefy niedzwiedzie (↓), pod cena bycze (↑).
 Remis rozstrzyga poziom blizszy cenie. To poziom orientacyjny, nie gwarancja zatrzymania ruchu.
 
-Zrodlo glowne: OKX (BTC-USDT spot, swiece UTC: 1Dutc / 1Wutc / 1Mutc), bez kluczy API.
+Zrodlo glowne: OKX (BTC-USDT spot, swiece UTC: 1Dutc / 1Wutc / 1Mutc, 4H), bez kluczy API.
 OKX domyslnie otwiera swiece D1/W1/M1 o polnocy UTC+8 (16:00 UTC), dlatego uzywamy
-wariantow *utc. Zapas: Kraken XBT/USD (D1, W1; M1 skladane z W1 - przyblizenie).
+wariantow *utc. Zapas: Kraken XBT/USD (H4, D1, W1; M1 skladane z W1 - przyblizenie).
 Zrodlo jest zapisywane tylko w logu. Swieca biezaca (w trakcie) jest pokazywana.
+Wykresy rysuje sam matplotlib (bez mplfinance).
 
 Zmienne srodowiskowe:
   TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
@@ -45,8 +52,8 @@ matplotlib.use("Agg")
 
 import numpy as np
 import pandas as pd
-import mplfinance as mpf
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 from common import TZ, Telegram, fmt_usd, http_get
 
@@ -61,7 +68,6 @@ OKX_PAGE = 100
 SMA_PERIOD = 50
 RSI_PERIOD = 14
 RSI_HIGH, RSI_LOW = 70, 30
-LOOKBACK_MONTHS = 12
 WARMUP = 150            # swiece ponad okno wykresu: zbieznosc RSI/SMA + historia stref
 OHLC_COLS = {"Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum"}
 
@@ -73,7 +79,7 @@ RB_SWING = 3            # swing: ekstremum wzgledem 3 swiec z kazdej strony
 RB_WICK_RANGE = 0.5     # knot >= 50% zakresu swiecy
 RB_WICK_BODY = 2.0      # knot >= 2 x korpus
 RB_MIN_ATR = 0.5        # knot >= 0.5 ATR
-MAX_ZONES = 3           # tyle najnowszych aktywnych stref kazdego typu na wykresie
+MAX_ZONES = 3           # tyle najnowszych aktywnych stref kazdego typu
 
 # Trend i opor
 TREND_SWING = 5         # swing do oceny struktury: ekstremum wzgledem 5 swiec z kazdej strony
@@ -82,26 +88,36 @@ RES_TOL_ATR = 0.5       # poziomy w odleglosci <= 0.5 ATR traktowane jako konflu
 RES_SWINGS = 5          # ile ostatnich swingow bierzemy jako kandydatow
 RES_WEIGHTS = {"OB": 3, "RB": 2, "SMA": 2, "FVG": 1, "SWING": 1}
 
-# (trend, strona) -> (opis w podpisie, krotki opis na wykresie)
+# (trend, strona) -> opis w podpisie
 LEVEL_TAGS = {
-    ("WZROSTOWY", "up"): ("Najsilniejszy opór wzrostu", "OPÓR WZROSTU"),
-    ("SPADKOWY", "down"): ("Najsilniejszy opór spadku (dolny)", "OPÓR SPADKU"),
-    ("BOCZNY", "up"): ("Opór górny", "OPÓR GÓRNY"),
-    ("BOCZNY", "down"): ("Opór dolny", "OPÓR DOLNY"),
+    ("WZROSTOWY", "up"): "Najsilniejszy opór wzrostu",
+    ("SPADKOWY", "down"): "Najsilniejszy opór spadku (dolny)",
+    ("BOCZNY", "up"): "Opór górny",
+    ("BOCZNY", "down"): "Opór dolny",
 }
 LEVEL_COLOR = {"up": "#d62728", "down": "#2ca02c"}
 
 ZONE_STYLE = {          # (kolor, etykieta)
-    ("FVG", 1): ("#2ca02c", "FVG↑"), ("FVG", -1): ("#d62728", "FVG↓"),
-    ("OB", 1): ("#1f77b4", "OB↑"), ("OB", -1): ("#ff7f0e", "OB↓"),
-    ("RB", 1): ("#9467bd", "RB↑"), ("RB", -1): ("#8c564b", "RB↓"),
+    ("FVG", 1): ("#2ca02c", "FVG"), ("FVG", -1): ("#d62728", "FVG"),
+    ("OB", 1): ("#1f77b4", "OB"), ("OB", -1): ("#ff7f0e", "OB"),
+    ("RB", 1): ("#9467bd", "RB"), ("RB", -1): ("#8c564b", "RB"),
 }
 
-# etykieta -> (bar OKX, interwal Kraken [min], ile swiec potrzeba: okno + zapas)
+# Wyglad wykresu
+UP_COLOR, DOWN_COLOR = "#26a69a", "#ef5350"
+SMA_COLOR, RSI_COLOR = "#1f77b4", "#7f3fbf"
+PANEL_GAP = 0.22        # odstep miedzy panelami (cena / wolumen / RSI)
+Y_PAD = 0.04            # zapas osi Y ponad najwyzsza / ponizej najnizszej widocznej swiecy
+X_TICKS = 8
+DATE_FMT = {"M1": "%Y-%m", "W1": "%d.%m.%y", "D1": "%d.%m.%y", "H4": "%d.%m %H:%M"}
+
+# etykieta -> (bar OKX, interwal Kraken [min], zakres widoczny na wykresie, ile swiec pobrac)
+# Kolejnosc = kolejnosc wysylki.
 CHARTS = {
-    "D1": ("1Dutc", 1440, 365 + WARMUP),
-    "W1": ("1Wutc", 10080, 53 + WARMUP),
-    "M1": ("1Mutc", None, LOOKBACK_MONTHS + WARMUP),
+    "M1": ("1Mutc", None, {"months": 12}, 12 + WARMUP),
+    "W1": ("1Wutc", 10080, {"months": 12}, 53 + WARMUP),
+    "D1": ("1Dutc", 1440, {"months": 12}, 365 + WARMUP),
+    "H4": ("4H", 240, {"days": 30}, 6 * 30 + WARMUP),
 }
 
 
@@ -143,7 +159,7 @@ def fetch_kraken(interval):
 
 
 def get_candles(label):
-    bar, kraken_interval, need = CHARTS[label]
+    bar, kraken_interval, _, need = CHARTS[label]
     try:
         df = fetch_okx(bar, need)
         if len(df) < SMA_PERIOD + 5:
@@ -342,10 +358,10 @@ def find_level(df, zones, side):
     return best[1]
 
 
-# ---------------------------------------------------------------- wykres
+# ---------------------------------------------------------------- przygotowanie danych
 
-def prepare(df):
-    """Wskazniki, trend, poziomy oporu i strefy na pelnej historii, potem przyciecie do 12 mies."""
+def prepare(df, lookback):
+    """Wskazniki, trend, poziomy oporu i strefy na pelnej historii, potem przyciecie do okna."""
     df = df.copy()
     df["SMA"] = df["Close"].rolling(SMA_PERIOD).mean()
     df["RSI"] = rsi_wilder(df["Close"])
@@ -353,16 +369,27 @@ def prepare(df):
     trend = detect_trend(df)
     sides = {"WZROSTOWY": ["up"], "SPADKOWY": ["down"]}.get(trend[0], ["up", "down"])
     levels = [(side, find_level(df, zones, side)) for side in sides]
-    cut = df.index.get_indexer([df.index[df.index > df.index[-1] - pd.DateOffset(months=LOOKBACK_MONTHS)][0]])[0]
+    start_ts = df.index[-1] - pd.DateOffset(**lookback)
+    cut = df.index.get_indexer([df.index[df.index > start_ts][0]])[0]
     view = df.iloc[cut:]
     for z in zones:
         z["start"] = max(z["start"] - cut, 0)       # pozycja wzgledem widocznego okna
     return view, zones, trend, levels
 
 
+# ---------------------------------------------------------------- wykres
+
 def num(v):
     """Liczba bez znaku $ (matplotlib traktuje $...$ jako mathtext)."""
     return f"{v:,.0f}".replace(",", " ")
+
+
+def short_num(v, _pos=None):
+    if v >= 1e6:
+        return f"{v / 1e6:.1f}M"
+    if v >= 1e3:
+        return f"{v / 1e3:.0f}k"
+    return f"{v:.0f}"
 
 
 def level_range(lvl, fmt):
@@ -370,58 +397,86 @@ def level_range(lvl, fmt):
     return fmt(lo) if round(lo) == round(hi) else f"{fmt(lo)} - {fmt(hi)}"
 
 
+def visible_zones(zones, ylo, yhi):
+    """Tylko strefy, ktore choc czesciowo leza w zakresie cen widocznych swiec."""
+    return [z for z in zones if z["top"] >= ylo and z["bottom"] <= yhi]
+
+
 def build_chart(df, zones, trend, levels, label, path):
     n = len(df)
-    ap = []
-    if df["SMA"].notna().any():
-        ap.append(mpf.make_addplot(df["SMA"], color="#1f77b4", width=1.4))
-    ap += [
-        mpf.make_addplot(df["RSI"], panel=2, color="#7f3fbf", width=1.2,
-                         ylabel=f"RSI {RSI_PERIOD}", ylim=(0, 100)),
-        mpf.make_addplot(pd.Series(RSI_HIGH, index=df.index), panel=2, color="gray",
-                         linestyle="--", width=0.7),
-        mpf.make_addplot(pd.Series(RSI_LOW, index=df.index), panel=2, color="gray",
-                         linestyle="--", width=0.7),
-    ]
-    fills = []
-    for z in zones:
-        where = np.zeros(n, dtype=bool)
-        where[z["start"]:] = True
-        fills.append(dict(y1=np.full(n, z["bottom"]), y2=np.full(n, z["top"]),
-                          where=where, alpha=0.18, color=ZONE_STYLE[(z["kind"], z["dir"])][0]))
+    x = np.arange(n)
+    lo, hi = float(df["Low"].min()), float(df["High"].max())
+    pad = (hi - lo) * Y_PAD
+    ylo, yhi = lo - pad, hi + pad
 
-    h_vals, h_cols = [], []
-    for side, lvl in levels:
-        if lvl:
-            h_vals += [lvl["bottom"], lvl["top"]]
-            h_cols += [LEVEL_COLOR[side]] * 2
+    fig = plt.figure(figsize=(14, 10), facecolor="white")
+    gs = fig.add_gridspec(3, 1, height_ratios=(6, 1.5, 2.2), hspace=PANEL_GAP)
+    ax_p = fig.add_subplot(gs[0])
+    ax_v = fig.add_subplot(gs[1], sharex=ax_p)
+    ax_r = fig.add_subplot(gs[2], sharex=ax_p)
 
-    kwargs = dict(
-        type="candle", style="yahoo", volume=True, addplot=ap, returnfig=True,
-        title=f"BTC {label} - trend {trend[0]} - SMA {SMA_PERIOD}, RSI {RSI_PERIOD}, FVG/OB/RB",
-        ylabel="USD(T)", ylabel_lower="Wolumen", figsize=(14, 10), tight_layout=True,
-        panel_ratios=(6, 1.5, 2.5),
-    )
-    if fills:
-        kwargs["fill_between"] = fills
-    if h_vals:
-        kwargs["hlines"] = dict(hlines=h_vals, colors=h_cols, linestyle="--", linewidths=1.2)
-    fig, axes = mpf.plot(df, **kwargs)
+    # --- swiece
+    up = (df["Close"] >= df["Open"]).to_numpy()
+    colors = np.where(up, UP_COLOR, DOWN_COLOR)
+    body_lo = np.minimum(df["Open"].to_numpy(), df["Close"].to_numpy())
+    body_h = np.maximum(np.abs(df["Close"].to_numpy() - df["Open"].to_numpy()), (yhi - ylo) * 0.002)
+    ax_p.vlines(x, df["Low"].to_numpy(), df["High"].to_numpy(), colors=colors, linewidth=1.0, zorder=3)
+    ax_p.bar(x, body_h, bottom=body_lo, width=0.7, color=colors, zorder=4)
+    ax_p.plot(x, df["SMA"].to_numpy(), color=SMA_COLOR, linewidth=1.4, zorder=5)
 
-    ax = axes[0]
-    for z in zones:
+    # --- strefy (tylko w zakresie cen, przyciete do osi)
+    for z in visible_zones(zones, ylo, yhi):
         color, text = ZONE_STYLE[(z["kind"], z["dir"])]
-        ax.text(z["start"], z["top"], text, color=color, fontsize=8, fontweight="bold",
-                va="bottom", ha="left")
+        bottom, top = max(z["bottom"], ylo), min(z["top"], yhi)
+        ax_p.fill_between(x[z["start"]:], bottom, top, color=color, alpha=0.18, linewidth=0, zorder=1)
+        ax_p.text(z["start"], top, text, color=color, fontsize=8, fontweight="bold",
+                  va="top", ha="left", zorder=6)
+
+    # --- linie oporu: tylko wartosc przy linii, tylko gdy w zakresie
     for side, lvl in levels:
         if not lvl:
             continue
-        short = LEVEL_TAGS[(trend[0], side)][1]
-        text = f"{short}: {level_range(lvl, num)} USD ({lvl['dist_pct']:+.1f}%)"
-        y, va = (lvl["top"], "bottom") if side == "up" else (lvl["bottom"], "top")
-        ax.text(n - 1, y, text, color=LEVEL_COLOR[side], fontsize=9, fontweight="bold",
-                va=va, ha="right")
-    fig.savefig(str(path), dpi=150, bbox_inches="tight")
+        color = LEVEL_COLOR[side]
+        pair = lvl["bottom"] != lvl["top"] and round(lvl["bottom"]) != round(lvl["top"])
+        for value, va in ((lvl["bottom"], "top" if pair else "bottom"), (lvl["top"], "bottom")):
+            if not (ylo <= value <= yhi):
+                continue
+            ax_p.axhline(value, color=color, linestyle="--", linewidth=1.2, zorder=2)
+            ax_p.text(n - 0.5, value, num(value), color=color, fontsize=9, fontweight="bold",
+                      va=va, ha="right", zorder=6)
+            if not pair:
+                break
+
+    ax_p.set_ylim(ylo, yhi)
+    ax_p.set_title(f"BTC {label}", loc="left", fontsize=12, fontweight="bold")
+
+    # --- wolumen (osobny panel)
+    ax_v.bar(x, df["Volume"].to_numpy(), width=0.7, color=colors, alpha=0.6)
+    ax_v.yaxis.set_major_formatter(FuncFormatter(short_num))
+
+    # --- RSI (osobny panel)
+    ax_r.plot(x, df["RSI"].to_numpy(), color=RSI_COLOR, linewidth=1.2)
+    for level in (RSI_HIGH, RSI_LOW):
+        ax_r.axhline(level, color="gray", linestyle="--", linewidth=0.7)
+    ax_r.set_ylim(0, 100)
+    ax_r.set_yticks([RSI_LOW, RSI_HIGH])
+
+    # --- osie
+    ax_p.yaxis.set_major_formatter(FuncFormatter(lambda v, _p: num(v)))
+    for ax in (ax_p, ax_v, ax_r):
+        ax.yaxis.tick_right()
+        ax.grid(alpha=0.25)
+        ax.set_facecolor("white")
+    ax_p.set_xlim(-1, n + max(1.0, n * 0.03))
+
+    ticks = np.unique(np.linspace(0, n - 1, min(X_TICKS, n)).round().astype(int))
+    ax_r.set_xticks(ticks)
+    ax_r.set_xticklabels(df.index[ticks].strftime(DATE_FMT[label]), fontsize=9)
+    ax_p.tick_params(labelbottom=False)
+    ax_v.tick_params(labelbottom=False)
+
+    fig.subplots_adjust(left=0.04, right=0.93, top=0.95, bottom=0.06)
+    fig.savefig(str(path), dpi=150)
     plt.close(fig)
 
 
@@ -432,7 +487,7 @@ def usd(v):
 
 
 def build_caption(label, df, zones, trend, levels, today_iso):
-    """Ten sam uklad dla kazdego interwalu (D1 / W1 / M1)."""
+    """Ten sam uklad dla kazdego interwalu (M1 / W1 / D1 / H4)."""
     last = df.iloc[-1]
     price = last["Close"]
 
@@ -455,7 +510,7 @@ def build_caption(label, df, zones, trend, levels, today_iso):
 
     level_lines = []
     for side, lvl in levels:
-        tag = LEVEL_TAGS[(t_label, side)][0]
+        tag = LEVEL_TAGS[(t_label, side)]
         if lvl:
             level_lines.append(f"🧱 <b>{tag}</b>: {level_range(lvl, usd)} "
                                f"({lvl['dist_pct']:+.1f}%) - {' + '.join(lvl['names'])}")
@@ -492,10 +547,10 @@ def main():
     OUT_DIR.mkdir(exist_ok=True)
 
     charts = []
-    for label in CHARTS:
+    for label, (_, _, lookback, _) in CHARTS.items():
         raw, source = get_candles(label)
         print(f"[{label}] źródło danych: {source}")      # tylko log, nie Telegram
-        df, zones, trend, levels = prepare(raw)
+        df, zones, trend, levels = prepare(raw, lookback)
         if df.empty:
             sys.exit(f"Brak danych dla {label} - przerywam.")
         path = OUT_DIR / f"BTC_{label}.png"
