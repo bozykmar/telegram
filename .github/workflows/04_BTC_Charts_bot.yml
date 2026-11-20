@@ -2,21 +2,29 @@ name: 04_BTC_Charts
 
 on:
   schedule:
-    - cron: "0 8 * * *"    # 08:00 UTC = 09:00 zimą / 10:00 latem (slot 09)
-    - cron: "0 18 * * *"   # 18:00 UTC = 19:00 zimą / 20:00 latem (slot 19)
+    - cron: "15 7 * * *"    # 07:15 UTC = 09:15 latem (CEST)
+    - cron: "15 8 * * *"    # 08:15 UTC = 09:15 zimą (CET)
+    - cron: "15 18 * * *"   # 18:15 UTC = 20:15 latem (CEST)
+    - cron: "15 19 * * *"   # 19:15 UTC = 20:15 zimą (CET)
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: btc-charts
-  cancel-in-progress: false
-
 jobs:
+  gate:
+    uses: ./.github/workflows/_gate.yml
+    with:
+      schedule: ${{ github.event.schedule }}
+
   btc-charts:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: btc-charts
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +36,7 @@ jobs:
 
       - run: pip install requests pandas numpy matplotlib six mplfinance
 
-      - name: Wykresy BTC D1, W1 i M1 (RSI, FVG, OB, RB)
+      - name: Wykresy BTC D1, W1 i M1 (04_BTC_Charts.py)
         env:
           TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
