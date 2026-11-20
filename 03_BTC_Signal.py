@@ -710,7 +710,7 @@ def main():
     extras = evaluate_extras(spot, daily, fear_greed)
     score = compute_score(indicators, extras)
     if score is None:
-        sys.exit("Żadien wskaźnik nie zwrócił wyniku - przerywam.")
+        sys.exit("Żaden wskaźnik nie zwrócił wyniku - przerywam.")
 
     pi = indicators.get("pi")
     if pi and pi[0] == -1 and score["final"] >= NEUTRAL_BAND:
