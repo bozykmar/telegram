@@ -34,30 +34,24 @@ Zmienne srodowiskowe:
 Uruchomienie lokalne bez wysylki:  python 04_BTC_Charts.py --dry-run
 """
 
-import os
 import sys
 import time
 import argparse
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import matplotlib
 matplotlib.use("Agg")
 
 import numpy as np
-import requests
 import pandas as pd
 import mplfinance as mpf
 import matplotlib.pyplot as plt
 
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_WYKRESY")  # ID tematu #WYKRESY (93)
+from common import TZ, Telegram, fmt_usd, http_get
 
-TZ = ZoneInfo("Europe/Warsaw")
-NBSP = "\u00a0"
-HTTP_TIMEOUT = 30
+TG = Telegram("TELEGRAM_THREAD_WYKRESY")  # ID tematu #WYKRESY (93)
+
 OUT_DIR = Path("tmp_charts")
 
 OKX_URL = "https://www.okx.com/api/v5/market/history-candles"
@@ -111,29 +105,7 @@ CHARTS = {
 }
 
 
-# ---------------------------------------------------------------- HTTP / dane
-
-def http_get(url, params=None, retries=3):
-    last = None
-    for i in range(retries):
-        try:
-            r = requests.get(url, params=params, timeout=HTTP_TIMEOUT,
-                             headers={"User-Agent": "btc-charts-bot"})
-            if r.status_code >= 400:
-                err = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]!r}")
-                if r.status_code < 500 and r.status_code != 429:
-                    raise err            # bledu klienta nie ma sensu ponawiac
-                last = err
-                time.sleep(2 * (i + 1))
-                continue
-            return r.json()
-        except RuntimeError:
-            raise
-        except Exception as e:  # noqa: BLE001
-            last = e
-            time.sleep(2 * (i + 1))
-    raise last
-
+# ---------------------------------------------------------------- dane
 
 def fetch_okx(bar, need):
     rows, after = [], None
@@ -141,7 +113,7 @@ def fetch_okx(bar, need):
         params = {"instId": OKX_INST, "bar": bar, "limit": OKX_PAGE}
         if after:
             params["after"] = after          # rekordy starsze niz ts
-        data = http_get(OKX_URL, params)
+        data = http_get(OKX_URL, params, user_agent="btc-charts-bot")
         if data.get("code") != "0":
             raise RuntimeError(f"OKX: {data.get('code')} {data.get('msg')}")
         batch = data["data"]
@@ -159,7 +131,7 @@ def fetch_okx(bar, need):
 
 def fetch_kraken(interval):
     data = http_get("https://api.kraken.com/0/public/OHLC",
-                    {"pair": "XBTUSD", "interval": interval})
+                    {"pair": "XBTUSD", "interval": interval}, user_agent="btc-charts-bot")
     if data.get("error"):
         raise RuntimeError(data["error"])
     result = data["result"]
@@ -456,7 +428,7 @@ def build_chart(df, zones, trend, levels, label, path):
 # ---------------------------------------------------------------- formatowanie
 
 def usd(v):
-    return "$" + f"{v:,.0f}".replace(",", NBSP)
+    return fmt_usd(v, 0)
 
 
 def build_caption(label, df, zones, trend, levels, today_iso):
@@ -506,27 +478,15 @@ def build_caption(label, df, zones, trend, levels, today_iso):
             f"{sma_txt}\n{rsi_txt}\n{trend_txt}\n" + "\n".join(level_lines) + "\n" + "\n".join(lines))
 
 
-# ---------------------------------------------------------------- telegram
-
-def send_telegram_photo(path, caption):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}
-    if TELEGRAM_THREAD_ID:
-        payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
-    print(f"Telegram: temat = {TELEGRAM_THREAD_ID or 'BRAK (wiadomość trafi do General)'}")
-    with open(path, "rb") as f:
-        res = requests.post(url, data=payload, files={"photo": f}, timeout=HTTP_TIMEOUT * 2)
-    if not res.ok:
-        print(f"Błąd Telegrama: {res.text}")
-    res.raise_for_status()
-
-
 # ---------------------------------------------------------------- main
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="bez wysyłki na Telegram")
     args = parser.parse_args()
+
+    if not args.dry_run:
+        TG.require()
 
     today_iso = datetime.now(TZ).strftime("%d.%m.%Y")
     OUT_DIR.mkdir(exist_ok=True)
@@ -548,10 +508,8 @@ def main():
         print(f"Dry-run: wykresy zapisane w {OUT_DIR}/, bez wysyłki.")
         return
 
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        sys.exit("Brak TELEGRAM_TOKEN / TELEGRAM_CHAT_ID.")
     for path, caption in charts:                          # kazdy wykres osobno
-        send_telegram_photo(path, caption)
+        TG.send_photo(path, caption)
         time.sleep(1)
 
 
