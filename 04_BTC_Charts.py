@@ -12,9 +12,11 @@ Na wykresie nie ma opisow wskaznikow - przy liniach oporu stoi tylko wartosc. Ws
 szczegoly (SMA, RSI, trend, opor, strefy) sa w podpisie pod wykresem.
 
 Podpis pod kazdym wykresem ma ten sam uklad: cena, SMA 50, RSI 14, trend, opor, FVG, OB, RB.
+Linie FVG/OB/RB w podpisie dotycza stref widocznych na wykresie (te same, co na obrazku).
 Zakres wykresu: M1/W1/D1 ostatnie 12 miesiecy, H4 ostatnie 30 dni. SMA, RSI, trend i strefy
-liczone na pelnej pobranej historii, dopiero potem wykres jest przycinany. Pokazywane sa
-tylko strefy AKTYWNE.
+liczone na pelnej pobranej historii, dopiero potem wykres jest przycinany. Strefy sa liczone
+na ZAMKNIETYCH swiecach (bez biezacej, niedomknietej), wiec nie zmieniaja sie w trakcie swiecy.
+Pokazywane sa tylko strefy AKTYWNE. Oznaczenia czasu na osi X sa w czasie polskim.
 
 Trend (punkty -3..+3): struktura swingow (HH/HL = +1, LH/LL = -1), cena vs SMA 50 (+1 / -1),
 nachylenie SMA 50 wzgledem 10 swiec wczesniej (+1 / -1). Wynik >= +2 = WZROSTOWY,
@@ -365,7 +367,7 @@ def prepare(df, lookback):
     df = df.copy()
     df["SMA"] = df["Close"].rolling(SMA_PERIOD).mean()
     df["RSI"] = rsi_wilder(df["Close"])
-    zones = detect_zones(df)
+    zones = detect_zones(df.iloc[:-1])          # strefy tylko na zamknietych swiecach
     trend = detect_trend(df)
     sides = {"WZROSTOWY": ["up"], "SPADKOWY": ["down"]}.get(trend[0], ["up", "down"])
     levels = [(side, find_level(df, zones, side)) for side in sides]
@@ -397,6 +399,13 @@ def level_range(lvl, fmt):
     return fmt(lo) if round(lo) == round(hi) else f"{fmt(lo)} - {fmt(hi)}"
 
 
+def price_window(df):
+    """Zakres osi Y: widoczne swiece + zapas. Wspolny dla wykresu i podpisu."""
+    lo, hi = float(df["Low"].min()), float(df["High"].max())
+    pad = (hi - lo) * Y_PAD
+    return lo - pad, hi + pad
+
+
 def visible_zones(zones, ylo, yhi):
     """Tylko strefy, ktore choc czesciowo leza w zakresie cen widocznych swiec."""
     return [z for z in zones if z["top"] >= ylo and z["bottom"] <= yhi]
@@ -405,9 +414,7 @@ def visible_zones(zones, ylo, yhi):
 def build_chart(df, zones, trend, levels, label, path):
     n = len(df)
     x = np.arange(n)
-    lo, hi = float(df["Low"].min()), float(df["High"].max())
-    pad = (hi - lo) * Y_PAD
-    ylo, yhi = lo - pad, hi + pad
+    ylo, yhi = price_window(df)
 
     fig = plt.figure(figsize=(14, 10), facecolor="white")
     gs = fig.add_gridspec(3, 1, height_ratios=(6, 1.5, 2.2), hspace=PANEL_GAP)
@@ -470,8 +477,9 @@ def build_chart(df, zones, trend, levels, label, path):
     ax_p.set_xlim(-1, n + max(1.0, n * 0.03))
 
     ticks = np.unique(np.linspace(0, n - 1, min(X_TICKS, n)).round().astype(int))
+    local_ticks = df.index[ticks].tz_localize("UTC").tz_convert(TZ)     # etykiety w czasie polskim
     ax_r.set_xticks(ticks)
-    ax_r.set_xticklabels(df.index[ticks].strftime(DATE_FMT[label]), fontsize=9)
+    ax_r.set_xticklabels(local_ticks.strftime(DATE_FMT[label]), fontsize=9)
     ax_p.tick_params(labelbottom=False)
     ax_v.tick_params(labelbottom=False)
 
@@ -487,7 +495,10 @@ def usd(v):
 
 
 def build_caption(label, df, zones, trend, levels, today_iso):
-    """Ten sam uklad dla kazdego interwalu (M1 / W1 / D1 / H4)."""
+    """
+    Ten sam uklad dla kazdego interwalu (M1 / W1 / D1 / H4).
+    `zones` to strefy widoczne na wykresie - podpis opisuje to samo, co obrazek.
+    """
     last = df.iloc[-1]
     price = last["Close"]
 
@@ -521,11 +532,11 @@ def build_caption(label, df, zones, trend, levels, today_iso):
     for kind in ("FVG", "OB", "RB"):
         kz = [z for z in zones if z["kind"] == kind]
         if not kz:
-            lines.append(f"<b>{kind}</b>: brak aktywnych")
+            lines.append(f"<b>{kind}</b>: brak na wykresie")
             continue
         near = min(kz, key=lambda z: min(abs(price - z["bottom"]), abs(price - z["top"])))
         arrow = "↑" if near["dir"] == 1 else "↓"
-        lines.append(f"<b>{kind}</b>: {len(kz)} akt. | najbliższa {arrow} "
+        lines.append(f"<b>{kind}</b>: {len(kz)} na wykresie | najbliższa {arrow} "
                      f"{usd(near['bottom'])} - {usd(near['top'])}")
 
     return (f"<b>₿ BTC - wykres {label}</b> {today_iso}\n"
@@ -553,9 +564,10 @@ def main():
         df, zones, trend, levels = prepare(raw, lookback)
         if df.empty:
             sys.exit(f"Brak danych dla {label} - przerywam.")
+        shown = visible_zones(zones, *price_window(df))   # te same strefy trafiają na wykres i do podpisu
         path = OUT_DIR / f"BTC_{label}.png"
-        build_chart(df, zones, trend, levels, label, path)
-        caption = build_caption(label, df, zones, trend, levels, today_iso)
+        build_chart(df, shown, trend, levels, label, path)
+        caption = build_caption(label, df, shown, trend, levels, today_iso)
         print(caption)
         charts.append((path, caption))
 
