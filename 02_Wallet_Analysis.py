@@ -29,6 +29,8 @@ Metodyka (heurystyka konsensusu, nie model predykcyjny):
    stronach), od największego. Portfele z Account Equity poniżej MIN_EQUITY są pomijane.
 5. Średnie wejście = średnia cen wejścia portfeli po dominującej stronie, ważona wagą portfela
    i marginem pozycji. Dźwignia = mediana ważona dźwigni tych portfeli.
+6. Zmiana pozycji = zmiana wielkości pozycji (w jednostkach monety) od poprzedniego dnia;
+   przy redukcji komunikat podaje, o ile procent pozycja się zmniejszyła.
 """
 
 import re
@@ -98,7 +100,10 @@ def wallet_weight(equity, positions):
 
 
 def trend_factor(prev_positions, p):
-    """Porównanie wielkości pozycji (w jednostkach monety) z poprzednim dniem."""
+    """
+    Porównanie wielkości pozycji (w jednostkach monety) z poprzednim dniem.
+    Zwraca (współczynnik, etykieta, zmiana względna), np. (0.85, "down", -0.23).
+    """
     prev = prev_positions.get(p["coin"])
     if (
         not prev
@@ -106,17 +111,17 @@ def trend_factor(prev_positions, p):
         or not prev.get("mark_px")
         or not p["mark_px"]
     ):
-        return 1.0, "new"
+        return 1.0, "new", 0.0
     size_prev = prev["val"] / prev["mark_px"]
     size_now = p["val"] / p["mark_px"]
     if size_prev <= 0:
-        return 1.0, "new"
+        return 1.0, "new", 0.0
     change = size_now / size_prev - 1
     if change > 0.05:
-        return 1.15, "up"
+        return 1.15, "up", change
     if change < -0.05:
-        return 0.85, "down"
-    return 1.0, "flat"
+        return 0.85, "down", change
+    return 1.0, "flat", change
 
 
 def fmt_date(iso_date):
@@ -224,11 +229,12 @@ def analyze(wallets):
     by_coin = {}
     for w in wallets:
         for p in w["positions"]:
-            tf, trend = trend_factor(w["prev"], p)
+            tf, trend, change = trend_factor(w["prev"], p)
             share = min(1.0, p["margin"] / w["equity"]) if w["equity"] > 0 else 0.0
             conviction = w["weight"] * share * tf
             sides = by_coin.setdefault(p["coin"], {"LONG": [], "SHORT": []})
-            sides[p["direction"]].append({"w": w, "p": p, "conv": conviction, "trend": trend})
+            sides[p["direction"]].append(
+                {"w": w, "p": p, "conv": conviction, "trend": trend, "change": change})
 
     coins = [c for c in (summarize_coin(coin, sides, len(wallets))
                          for coin, sides in by_coin.items()) if c]
@@ -238,7 +244,12 @@ def analyze(wallets):
 
 # ---------------------------------------------------------------- komunikat
 
-TREND_TXT = {"up": " - zwiększa", "down": " - redukuje"}
+def trend_text(e):
+    if e["trend"] == "up":
+        return " - zwiększa"
+    if e["trend"] == "down":
+        return f" - redukuje o {abs(e['change']) * 100:.0f}%"
+    return ""
 
 
 def build_wallet_line(e):
@@ -248,24 +259,36 @@ def build_wallet_line(e):
         f"• {html.escape(w['name'])}: equity {fmt_usd(w['equity'], 0)}, "
         f"margin {fmt_usd(p['margin'], 0)} ({share:.0%} equity), {lev_label(p['leverage'])}, "
         f"wejście {fmt_px(p['entry_px'])}, PnL {p['pnl_pct']:+.0f}%"
-        f"{TREND_TXT.get(e['trend'], '')}"
+        f"{trend_text(e)}"
     )
 
 
+def margin_split(c):
+    """Udział marginu LONG i SHORT w % (suma zawsze 100)."""
+    total = c["margin_long"] + c["margin_short"]
+    if total <= 0:
+        return 0, 0
+    long_pct = round(c["margin_long"] / total * 100)
+    return long_pct, 100 - long_pct
+
+
 def build_coin_block(i, c):
+    long_pct, short_pct = margin_split(c)
     lines = [
         f"<b>{i}. {c['coin']}</b> | {c['icon']} <b>{c['direction']}</b> "
         f"(zgodność {c['agreement']:.0%} wagi)",
         f"Zaangażowanie portfeli: <b>{fmt_usd(c['margin_long'] + c['margin_short'], 0)}</b> marginu "
         f"(nominalnie {fmt_usd(c['notional'], 0)})",
-        f"Portfele: {c['n_long']} LONG / {c['n_short']} SHORT (z {c['wallets_total']} analizowanych), "
-        f"margin LONG {fmt_usd(c['margin_long'], 0)} / SHORT {fmt_usd(c['margin_short'], 0)}",
+        f"Portfele: <b>{c['n_long']} LONG / {c['n_short']} SHORT</b> "
+        f"(z {c['wallets_total']} analizowanych), margin "
+        f"<b>LONG {fmt_usd(c['margin_long'], 0)} ({long_pct}%) / "
+        f"SHORT {fmt_usd(c['margin_short'], 0)} ({short_pct}%)</b>",
     ]
     if c["avg_entry"]:
         gap = (c["price"] / c["avg_entry"] - 1) * 100
-        lines.append(f"Śr. wejście portfeli: {fmt_px(c['avg_entry'])} | cena {fmt_px(c['price'])} "
-                     f"({gap:+.1f}% od śr. wejścia)")
-    lines.append(f"Dźwignia portfeli: mediana {c['leverage_median']:g}x "
+        lines.append(f"Śr. wejście portfeli: <b>{fmt_px(c['avg_entry'])}</b> | "
+                     f"cena <b>{fmt_px(c['price'])}</b> ({gap:+.1f}% od śr. wejścia)")
+    lines.append(f"Dźwignia portfeli: mediana <b>{c['leverage_median']:g}x</b> "
                  f"(zakres {c['lev_min']:g}x-{c['lev_max']:g}x)")
 
     trend_parts = []
@@ -275,6 +298,7 @@ def build_coin_block(i, c):
         trend_parts.append(f"{c['down']} redukuje")
     if trend_parts:
         lines.append(f"Zmiany od poprzedniego dnia: <b>{', '.join(trend_parts)}</b>")
+        lines.append("")
 
     shown = c["entries"][:MAX_WALLET_LINES]
     lines += [build_wallet_line(e) for e in shown]
@@ -288,8 +312,7 @@ def build_message(coins, wallets, today_iso):
     msg = (
         f"<b>📊 Analiza portfeli - pozycje</b> - {fmt_date(today_iso)}\n"
         f"Przeanalizowano: {len(wallets)} portfeli (Account Equity łącznie "
-        f"{fmt_usd(total_equity, 2)})\n"
-        f"Ranking: {MAX_COINS} waluty z największym zaangażowanym kapitałem portfeli\n\n"
+        f"{fmt_usd(total_equity, 2)})\n\n"
     )
     if not coins:
         msg += "<i>Brak otwartych pozycji w analizowanych portfelach.</i>\n\n"
@@ -299,7 +322,8 @@ def build_message(coins, wallets, today_iso):
         msg += (
             "<i>Informacja o pozycjach portfeli, nie rekomendacja. Kierunek = strona z większym "
             "przekonaniem portfeli; zgodność = jej udział w sumie obu stron. Zaangażowanie = "
-            "suma marginów po obu stronach, nominalnie = margin x dźwignia.</i>\n"
+            "suma marginów po obu stronach, nominalnie = margin x dźwignia. Redukcja = spadek "
+            "wielkości pozycji (w jednostkach monety) od poprzedniego dnia.</i>\n"
         )
     return msg
 
