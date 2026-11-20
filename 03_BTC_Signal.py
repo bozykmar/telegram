@@ -39,6 +39,8 @@ a nie prognozę kursu.
 Stan (historia sygnałów i Open Interest do oceny trendu OI) zapisuje się w
 03_BTC_History.json - workflow powinien go zatwierdzać do repozytorium.
 
+Wspólne narzędzia (HTTP, Telegram, strefa czasowa) pochodzą z common.py.
+
 Uruchomienie lokalne bez wysyłki:  python 03_BTC_Signal.py --dry-run
 """
 
@@ -46,23 +48,18 @@ import os
 import sys
 import json
 import math
-import time
 import argparse
 import statistics
 from datetime import datetime, date, timezone
-from zoneinfo import ZoneInfo
 
 import requests
 
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-TELEGRAM_THREAD_ID = os.environ.get("TELEGRAM_THREAD_SIGNAL")  # ID tematu #3 BTC_Signal (8)
+from common import HTTP_TIMEOUT, NBSP, TZ, Telegram, http_get
+
+TG = Telegram("TELEGRAM_THREAD_SIGNAL")  # ID tematu #3 BTC_Signal (8)
 
 STATE_FILE = "03_BTC_History.json"
 STATE_DAYS = 400
-TZ = ZoneInfo("Europe/Warsaw")
-NBSP = "\u00a0"
-HTTP_TIMEOUT = 30
 
 # ---------------------------------------------------------------- parametry
 
@@ -122,33 +119,11 @@ HALVINGS = [date(2012, 11, 28), date(2016, 7, 9), date(2020, 5, 11), date(2024, 
 # po kolejnym halvingu (ok. 2028) dopisz jego date do listy
 
 
-# ---------------------------------------------------------------- HTTP / dane
-
-def http_get(url, params=None, retries=3):
-    last = None
-    for i in range(retries):
-        try:
-            r = requests.get(url, params=params, timeout=HTTP_TIMEOUT,
-                             headers={"User-Agent": "btc-signal-bot"})
-            if r.status_code >= 400:
-                err = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]!r}")
-                if r.status_code < 500 and r.status_code != 429:
-                    raise err            # bledu klienta nie ma sensu ponawiac
-                last = err
-                time.sleep(2 * (i + 1))
-                continue
-            return r.json()
-        except RuntimeError:
-            raise
-        except Exception as e:  # noqa: BLE001
-            last = e
-            time.sleep(2 * (i + 1))
-    raise last
-
+# ---------------------------------------------------------------- dane
 
 def fetch_kraken_ohlc(interval):
     data = http_get("https://api.kraken.com/0/public/OHLC",
-                    {"pair": "XBTUSD", "interval": interval})
+                    {"pair": "XBTUSD", "interval": interval}, user_agent="btc-signal-bot")
     if data.get("error"):
         raise RuntimeError(data["error"])
     result = data["result"]
@@ -161,7 +136,8 @@ def fetch_kraken_ohlc(interval):
 
 
 def fetch_spot():
-    data = http_get("https://api.kraken.com/0/public/Ticker", {"pair": "XBTUSD"})
+    data = http_get("https://api.kraken.com/0/public/Ticker", {"pair": "XBTUSD"},
+                    user_agent="btc-signal-bot")
     key = next(iter(data["result"]))
     return float(data["result"][key]["c"][0])
 
@@ -177,7 +153,8 @@ def fetch_mvrv_z():
     for metrics in ("CapMrktCurUSD,CapRealUSD", "CapMrktCurUSD,CapMVRVCur"):
         try:
             data = http_get(url, {"assets": "btc", "metrics": metrics, "frequency": "1d",
-                                  "start_time": "2010-07-18", "page_size": 10000})
+                                  "start_time": "2010-07-18", "page_size": 10000},
+                            user_agent="btc-signal-bot")
             second = metrics.split(",")[1]
             rows = [r for r in data["data"] if r.get("CapMrktCurUSD") and r.get(second)]
             caps = [float(r["CapMrktCurUSD"]) for r in rows]
@@ -209,7 +186,7 @@ def fetch_hyperliquid_btc():
 
 
 def fetch_fear_greed():
-    data = http_get("https://api.alternative.me/fng/", {"limit": 1})
+    data = http_get("https://api.alternative.me/fng/", {"limit": 1}, user_agent="btc-signal-bot")
     item = data["data"][0]
     return int(item["value"]), item["value_classification"]
 
@@ -699,16 +676,8 @@ def build_message(today_iso, spot, daily, indicators, extras, score, plan, prev_
 
 
 def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message,
-               "parse_mode": "HTML", "disable_web_page_preview": True}
-    if TELEGRAM_THREAD_ID:
-        payload["message_thread_id"] = int(TELEGRAM_THREAD_ID)
-    print(f"Telegram: temat = {TELEGRAM_THREAD_ID or 'BRAK (wiadomość trafi do General)'}")
-    res = requests.post(url, json=payload, timeout=HTTP_TIMEOUT)
-    if not res.ok:
-        print(f"Błąd Telegrama: {res.text}")
-    res.raise_for_status()
+    TG.require()
+    TG.send_message(message)
 
 
 # ---------------------------------------------------------------- main
@@ -741,7 +710,7 @@ def main():
     extras = evaluate_extras(spot, daily, fear_greed)
     score = compute_score(indicators, extras)
     if score is None:
-        sys.exit("Żaden wskaźnik nie zwrócił wyniku - przerywam.")
+        sys.exit("Żadien wskaźnik nie zwrócił wyniku - przerywam.")
 
     pi = indicators.get("pi")
     if pi and pi[0] == -1 and score["final"] >= NEUTRAL_BAND:
