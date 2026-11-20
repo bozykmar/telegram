@@ -1,0 +1,108 @@
+name: Telegram_Bots
+
+# Jeden workflow uruchamia po kolei skrypty 00-04 dwa razy dziennie: 09:15 i 20:15 czasu polskiego.
+# GitHub liczy cron wyłącznie w UTC, więc są 4 crony (letnie i zimowe), a job "gate" przepuszcza
+# tylko ten, który odpowiada aktualnemu przesunięciu Europe/Warsaw. Ręczne uruchomienie działa zawsze.
+# Kolejność: 00 Walory -> 01 Whale Wallet -> 02 Wallet Analysis -> 03 BTC Signal -> 04 BTC Charts.
+# Błąd jednego skryptu nie zatrzymuje pozostałych (run kończy się wtedy na czerwono).
+
+on:
+  schedule:
+    - cron: "15 7 * * *"    # 07:15 UTC = 09:15 latem (CEST)
+    - cron: "15 8 * * *"    # 08:15 UTC = 09:15 zimą (CET)
+    - cron: "15 18 * * *"   # 18:15 UTC = 20:15 latem (CEST)
+    - cron: "15 19 * * *"   # 19:15 UTC = 20:15 zimą (CET)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      run: ${{ steps.slot.outputs.run }}
+    steps:
+      - id: slot
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          run=true
+          offset=$(TZ=Europe/Warsaw date +%z)
+          if [ "$EVENT" = "schedule" ]; then
+            case "$offset|$SCHEDULE" in
+              "+0200|15 7 * * *"|"+0100|15 8 * * *"|"+0200|15 18 * * *"|"+0100|15 19 * * *") ;;
+              *) run=false ;;
+            esac
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          echo "Zdarzenie: $EVENT | cron: '$SCHEDULE' | offset Warszawy: $offset | run=$run"
+
+  bots:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: telegram-bots
+      cancel-in-progress: false
+    env:
+      TELEGRAM_TOKEN: ${{ vars.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+      TELEGRAM_THREAD_WALORY: ${{ vars.TELEGRAM_THREAD_WALORY }}
+      TELEGRAM_THREAD_WHALE: ${{ vars.TELEGRAM_THREAD_WHALE }}
+      TELEGRAM_THREAD_ANALYSIS: ${{ vars.TELEGRAM_THREAD_ANALYSIS }}
+      TELEGRAM_THREAD_SIGNAL: ${{ vars.TELEGRAM_THREAD_SIGNAL }}
+      TELEGRAM_THREAD_WYKRESY: ${{ vars.TELEGRAM_THREAD_WYKRESY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/workflows/telegram_bots.yml
+
+      - run: pip install requests yfinance pandas numpy matplotlib six mplfinance
+
+      - name: 00 Walory
+        run: python 00_Walory.py
+
+      - name: 01 Whale Wallet
+        if: ${{ !cancelled() }}
+        run: python 01_Wallet_Whale.py
+
+      - name: 02 Wallet Analysis
+        if: ${{ !cancelled() }}
+        run: python 02_Wallet_Analysis.py
+
+      - name: 03 BTC Signal
+        if: ${{ !cancelled() }}
+        run: python 03_BTC_Signal.py
+
+      - name: 04 BTC Charts
+        if: ${{ !cancelled() }}
+        run: python 04_BTC_Charts.py
+
+      - name: Zapisz historię
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in 01_Wallet_History.json 02_Analysis_History.json 03_BTC_History.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          if git diff --staged --quiet; then
+            echo "Brak zmian w historii"
+            exit 0
+          fi
+          git commit -m "Aktualizacja historii (portfele, analiza, sygnał BTC)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main && git push origin main && exit 0
+            echo "Próba $i nieudana, ponawiam..."
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          exit 1
