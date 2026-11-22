@@ -1,9 +1,9 @@
 name: Telegram_Bots
 
-# Jeden workflow uruchamia po kolei skrypty 00-04 dwa razy dziennie: 09:15 i 20:15 czasu polskiego.
+# Jeden workflow uruchamia po kolei skrypty 00-05 dwa razy dziennie: 09:15 i 20:15 czasu polskiego.
 # GitHub liczy cron wyłącznie w UTC, więc są 4 crony (letnie i zimowe), a job "gate" przepuszcza
 # tylko ten, który odpowiada aktualnemu przesunięciu Europe/Warsaw. Ręczne uruchomienie działa zawsze.
-# Kolejność: 00 Walory -> 01 Whale Wallet -> 02 Wallet Analysis -> 03 BTC Signal -> 04 BTC Charts.
+# Kolejność: 00 Walory -> 01 Whale Wallet -> 02 Wallet Analysis -> 03 BTC Signal -> 04 BTC Charts -> 05 BTC Strefy.
 # Błąd jednego skryptu nie zatrzymuje pozostałych (run kończy się wtedy na czerwono).
 
 on:
@@ -56,6 +56,7 @@ jobs:
       TELEGRAM_THREAD_ANALYSIS: ${{ vars.TELEGRAM_THREAD_ANALYSIS }}
       TELEGRAM_THREAD_SIGNAL: ${{ vars.TELEGRAM_THREAD_SIGNAL }}
       TELEGRAM_THREAD_WYKRESY: ${{ vars.TELEGRAM_THREAD_WYKRESY }}
+      TELEGRAM_THREAD_STREFY: ${{ vars.TELEGRAM_THREAD_STREFY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -86,19 +87,23 @@ jobs:
         if: ${{ !cancelled() }}
         run: python 04_BTC_Charts.py
 
+      - name: 05 BTC Strefy
+        if: ${{ !cancelled() }}
+        run: python 05_BTC_Strefy.py
+
       - name: Zapisz historię
         if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in 01_Wallet_History.json 02_Analysis_History.json 03_BTC_History.json; do
+          for f in 01_Wallet_History.json 02_Analysis_History.json 03_BTC_History.json 05_Strefy_History.json; do
             if [ -f "$f" ]; then git add "$f"; fi
           done
           if git diff --staged --quiet; then
             echo "Brak zmian w historii"
             exit 0
           fi
-          git commit -m "Aktualizacja historii (portfele, analiza, sygnał BTC)"
+          git commit -m "Aktualizacja historii (portfele, analiza, sygnał BTC, strefy BTC)"
           for i in 1 2 3 4 5; do
             git pull --rebase -X theirs origin main && git push origin main && exit 0
             echo "Próba $i nieudana, ponawiam..."
