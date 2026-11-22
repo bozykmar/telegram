@@ -56,6 +56,7 @@ jobs:
       TELEGRAM_THREAD_ANALYSIS: ${{ vars.TELEGRAM_THREAD_ANALYSIS }}
       TELEGRAM_THREAD_SIGNAL: ${{ vars.TELEGRAM_THREAD_SIGNAL }}
       TELEGRAM_THREAD_WYKRESY: ${{ vars.TELEGRAM_THREAD_WYKRESY }}
+      TELEGRAM_THREAD_STREFY: ${{ vars.TELEGRAM_THREAD_STREFY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -95,14 +96,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in 01_Wallet_History.json 02_Analysis_History.json 03_BTC_History.json; do
+          for f in 01_Wallet_History.json 02_Analysis_History.json 03_BTC_History.json 05_Strefy_History.json; do
             if [ -f "$f" ]; then git add "$f"; fi
           done
           if git diff --staged --quiet; then
             echo "Brak zmian w historii"
             exit 0
           fi
-          git commit -m "Aktualizacja historii (portfele, analiza, sygnał BTC)"
+          git commit -m "Aktualizacja historii (portfele, analiza, sygnał BTC, strefy)"
           for i in 1 2 3 4 5; do
             git pull --rebase -X theirs origin main && git push origin main && exit 0
             echo "Próba $i nieudana, ponawiam..."
