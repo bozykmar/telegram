@@ -1,7 +1,8 @@
 """
 05_BTC_Strefy.py
 
-Trzy komunikaty na Telegram (2x dziennie: 09:15 i 20:15, czas polski), każdy jako OSOBNA wiadomość:
+Trzy komunikaty na Telegram, wysyłane jeden po drugim w KAŻDYM przebiegu (2x dziennie: 09:15 i 20:15,
+czas polski), każdy jako OSOBNA wiadomość:
   1. BTC - strefy skalowania pozycji (progi cenowe, depozyt zabezpieczający, cena likwidacji),
   2. ETH - strefy skalowania pozycji (j.w.),
   3. BTC - sygnały wskaźnika TradingView "#1 Strefy BTC" (D1): wejścia LONG / SHORT, zielony i czerwony X,
@@ -14,7 +15,6 @@ Konfiguracja (GitHub Actions variables, przekazane jako zmienne środowiskowe):
   TELEGRAM_THREAD_STREFY   - ID tematu w grupie (opcjonalnie; bez niej wiadomości trafią do General)
 
 Uruchomienie lokalne bez wysyłki i bez zapisu stanu:  python 05_BTC_Strefy.py --dry-run
-Wymuszenie komunikatu 3 mimo braku nowych zdarzeń:    python 05_BTC_Strefy.py --force
 
 --- 1-2. Strefy skalowania (dla każdej pozycji; tylko progi nie wyższe niż aktualny kurs) ---
 a) Przy przejściu przez próg depozyt rośnie o TOPUP_SHARE niezrealizowanego zysku od poprzedniego
@@ -32,8 +32,8 @@ Skrypt odtwarza logikę wskaźnika na dziennych świecach BTC. Źródło: yfinan
 awaryjnie Kraken (ok. 720 świec D1 - stan pozycji może wtedy odbiegać od wykresu TradingView).
 Wskaźnik "pamięta" wejścia, więc cała historia jest przeliczana przy każdym uruchomieniu. TradingView
 używa innego źródła cen, więc pojedyncze sygnały mogą różnić się o jedną świecę. To nie jest porada
-inwestycyjna. Stan (wysłane zdarzenia, data ostatniego podsumowania) jest w 05_Strefy_History.json;
-komunikat 3 wysyłany jest przy nowym zdarzeniu albo gdy dziś nie było jeszcze podsumowania.
+inwestycyjna. Komunikat 3 wysyłany jest w każdym przebiegu; sekcja NOWE SYGNAŁY pokazuje tylko zdarzenia
+jeszcze niezgłoszone - lista zgłoszonych zdarzeń jest w 05_Strefy_History.json.
 Ostatni halving (2028) jest szacunkowy - po prawdziwym halvingu zaktualizuj HALVINGS.
 """
 
@@ -580,8 +580,8 @@ def signal_text(today, spot, last, new_events, source, partial):
     return "\n".join(lines)
 
 
-def signal_message(force):
-    """Komunikat 3. Zwraca (tekst, zapis_stanu) albo (None, None), gdy nie ma czego wysyłać."""
+def signal_message():
+    """Komunikat 3 (zawsze wysyłany). Zwraca (tekst, zapis_stanu)."""
     df, source = load_daily()
     if len(df) < MIN_CANDLES:
         raise RuntimeError("za mało danych dziennych")
@@ -597,16 +597,10 @@ def signal_message(force):
     notified = list(state.get("notified", []))
     keyed = [(f"{e['type']}|{e['date']}|{e.get('side', '')}", e) for e in events]
     new_events = [e for key, e in keyed if key not in notified]
-    summary_due = state.get("last_summary_date") != today.isoformat()
-    if not (new_events or summary_due or force):
-        print("Brak nowych sygnałów i podsumowanie już wysłane - nic nie wysyłam.")
-        return None, None
-
     text = signal_text(today, spot, last, new_events, source, df.index[-1].date() == today)
 
     def save_state():
         state["notified"] = (notified + [key for key, _ in keyed])[-NOTIFIED_KEEP:]
-        state["last_summary_date"] = today.isoformat()
         save_json(STATE_FILE, state)
 
     return text, save_state
@@ -617,7 +611,6 @@ def signal_message(force):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="bez wysyłki i bez zapisu stanu")
-    parser.add_argument("--force", action="store_true", help="wyślij komunikat 3 mimo braku nowych zdarzeń")
     args = parser.parse_args()
 
     if not args.dry_run:
@@ -625,14 +618,12 @@ def main():
 
     today_pl = datetime.now(TZ).strftime("%d.%m.%Y")
     tasks = [(f"{name} strefy skalowania", partial(zone_message, name, today_pl)) for name in POSITIONS]
-    tasks.append(("sygnały wskaźnika", partial(signal_message, args.force)))
+    tasks.append(("sygnały wskaźnika", signal_message))
 
     failed = 0
     for label, build in tasks:
         try:
             text, on_sent = build()
-            if text is None:
-                continue
             print(text)
             if not args.dry_run:
                 TG.send_message(text)
