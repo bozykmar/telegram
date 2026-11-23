@@ -604,6 +604,10 @@
   "2026-11-23T09": {
    "account_value": 0.58,
    "positions": {}
+  },
+  "2026-11-23T20": {
+   "account_value": 0.58,
+   "positions": {}
   }
  },
  "0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00": {
@@ -9926,6 +9930,539 @@
      "mark_px": 0.017175
     }
    }
+  },
+  "2026-11-23T20": {
+   "account_value": 30889498.2,
+   "positions": {
+    "SOL": {
+     "direction": "SHORT",
+     "val": 12001591.42,
+     "upnl": 81796.49,
+     "pnl_pct": 13.63,
+     "entry_px": 73.4632,
+     "mark_px": 72.966
+    },
+    "BTC": {
+     "direction": "SHORT",
+     "val": 10611780.44,
+     "upnl": 34021.05,
+     "pnl_pct": 6.41,
+     "entry_px": 61325.9,
+     "mark_px": 61129.99999999999
+    },
+    "ETH": {
+     "direction": "SHORT",
+     "val": 9683882.83,
+     "upnl": 181824.18,
+     "pnl_pct": 28.16,
+     "entry_px": 1759.22,
+     "mark_px": 1726.8
+    },
+    "ZEC": {
+     "direction": "SHORT",
+     "val": 6789022.14,
+     "upnl": -48187.44,
+     "pnl_pct": -3.55,
+     "entry_px": 795.821,
+     "mark_px": 801.51
+    },
+    "HYPE": {
+     "direction": "SHORT",
+     "val": 5532008.15,
+     "upnl": -1995.99,
+     "pnl_pct": -0.11,
+     "entry_px": 64.4003,
+     "mark_px": 64.4236
+    },
+    "DOGE": {
+     "direction": "SHORT",
+     "val": 3036417.12,
+     "upnl": 16835.68,
+     "pnl_pct": 5.54,
+     "entry_px": 0.057009,
+     "mark_px": 0.056695
+    },
+    "XRP": {
+     "direction": "SHORT",
+     "val": 2367103.11,
+     "upnl": 6373.23,
+     "pnl_pct": 2.69,
+     "entry_px": 0.943904,
+     "mark_px": 0.94137
+    },
+    "VVV": {
+     "direction": "SHORT",
+     "val": 1611647.18,
+     "upnl": -175765.44,
+     "pnl_pct": -32.72,
+     "entry_px": 22.2307,
+     "mark_px": 24.951999999999998
+    },
+    "TRX": {
+     "direction": "LONG",
+     "val": 1404937.69,
+     "upnl": -9342.25,
+     "pnl_pct": -6.65,
+     "entry_px": 0.311266,
+     "mark_px": 0.30921
+    },
+    "PUMP": {
+     "direction": "SHORT",
+     "val": 1370765.06,
+     "upnl": -2197.62,
+     "pnl_pct": -0.48,
+     "entry_px": 0.002556,
+     "mark_px": 0.002561
+    },
+    "LINK": {
+     "direction": "SHORT",
+     "val": 1078861.92,
+     "upnl": 123403.28,
+     "pnl_pct": 114.38,
+     "entry_px": 10.0096,
+     "mark_px": 8.982199999999999
+    },
+    "PAXG": {
+     "direction": "LONG",
+     "val": 1004546.68,
+     "upnl": 8160.99,
+     "pnl_pct": 4.06,
+     "entry_px": 3600.608,
+     "mark_px": 3630.1000000000004
+    },
+    "XPL": {
+     "direction": "SHORT",
+     "val": 871816.55,
+     "upnl": -11110.52,
+     "pnl_pct": -6.37,
+     "entry_px": 0.045367,
+     "mark_px": 0.045953
+    },
+    "VIRTUAL": {
+     "direction": "SHORT",
+     "val": 743602.42,
+     "upnl": 287680.92,
+     "pnl_pct": 193.44,
+     "entry_px": 0.52408,
+     "mark_px": 0.37789
+    },
+    "LIT": {
+     "direction": "LONG",
+     "val": 724594.6,
+     "upnl": -42959.02,
+     "pnl_pct": -17.79,
+     "entry_px": 2.607011,
+     "mark_px": 2.4611
+    },
+    "ZRO": {
+     "direction": "LONG",
+     "val": 638268.16,
+     "upnl": -44590.21,
+     "pnl_pct": -34.93,
+     "entry_px": 1.2543,
+     "mark_px": 1.1724
+    },
+    "WLD": {
+     "direction": "SHORT",
+     "val": 627391.77,
+     "upnl": 96439.18,
+     "pnl_pct": 153.71,
+     "entry_px": 0.27599,
+     "mark_px": 0.23922000000000002
+    },
+    "UNI": {
+     "direction": "SHORT",
+     "val": 612961.06,
+     "upnl": 13649.59,
+     "pnl_pct": 22.27,
+     "entry_px": 4.98253,
+     "mark_px": 4.8740000000000006
+    },
+    "CASHCAT": {
+     "direction": "SHORT",
+     "val": 587477.18,
+     "upnl": 41227.17,
+     "pnl_pct": 6.15,
+     "entry_px": 0.04404,
+     "mark_px": 0.041153
+    },
+    "JUP": {
+     "direction": "LONG",
+     "val": 574583.47,
+     "upnl": -13033.79,
+     "pnl_pct": -11.34,
+     "entry_px": 0.24391,
+     "mark_px": 0.23850000000000002
+    },
+    "TRUMP": {
+     "direction": "LONG",
+     "val": 570425.61,
+     "upnl": -5045.72,
+     "pnl_pct": -8.85,
+     "entry_px": 0.8972,
+     "mark_px": 0.8893399999999999
+    },
+    "LTC": {
+     "direction": "SHORT",
+     "val": 513138.81,
+     "upnl": 19240.86,
+     "pnl_pct": 37.5,
+     "entry_px": 43.0073,
+     "mark_px": 41.453
+    },
+    "kPEPE": {
+     "direction": "SHORT",
+     "val": 473179.37,
+     "upnl": 9929.29,
+     "pnl_pct": 20.98,
+     "entry_px": 0.003518,
+     "mark_px": 0.003446
+    },
+    "ARB": {
+     "direction": "LONG",
+     "val": 446467.63,
+     "upnl": -5839.68,
+     "pnl_pct": -13.08,
+     "entry_px": 0.11352,
+     "mark_px": 0.11205999999999999
+    },
+    "FARTCOIN": {
+     "direction": "LONG",
+     "val": 427091.5,
+     "upnl": -159442.82,
+     "pnl_pct": -112.0,
+     "entry_px": 0.11369,
+     "mark_px": 0.08279
+    },
+    "ADA": {
+     "direction": "SHORT",
+     "val": 417758.11,
+     "upnl": 23055.0,
+     "pnl_pct": 55.19,
+     "entry_px": 0.156326,
+     "mark_px": 0.14815
+    },
+    "TAO": {
+     "direction": "SHORT",
+     "val": 399323.41,
+     "upnl": 5302.89,
+     "pnl_pct": 6.64,
+     "entry_px": 194.063,
+     "mark_px": 191.51999999999998
+    },
+    "TIA": {
+     "direction": "SHORT",
+     "val": 393663.34,
+     "upnl": 11972.65,
+     "pnl_pct": 15.21,
+     "entry_px": 0.34618,
+     "mark_px": 0.33597000000000005
+    },
+    "ENA": {
+     "direction": "SHORT",
+     "val": 393096.78,
+     "upnl": 56145.21,
+     "pnl_pct": 71.41,
+     "entry_px": 0.115791,
+     "mark_px": 0.10132
+    },
+    "LDO": {
+     "direction": "SHORT",
+     "val": 367290.82,
+     "upnl": 115102.57,
+     "pnl_pct": 156.69,
+     "entry_px": 0.31607,
+     "mark_px": 0.24066
+    },
+    "GRAM": {
+     "direction": "SHORT",
+     "val": 365259.17,
+     "upnl": -1189.73,
+     "pnl_pct": -1.63,
+     "entry_px": 0.991898,
+     "mark_px": 0.99514
+    },
+    "ASTER": {
+     "direction": "SHORT",
+     "val": 320490.08,
+     "upnl": 13689.4,
+     "pnl_pct": 12.81,
+     "entry_px": 0.530677,
+     "mark_px": 0.508939
+    },
+    "CRV": {
+     "direction": "SHORT",
+     "val": 287314.36,
+     "upnl": 45150.79,
+     "pnl_pct": 157.15,
+     "entry_px": 0.21069,
+     "mark_px": 0.18208000000000002
+    },
+    "kBONK": {
+     "direction": "SHORT",
+     "val": 252527.79,
+     "upnl": 39248.41,
+     "pnl_pct": 155.42,
+     "entry_px": 0.00251,
+     "mark_px": 0.002173
+    },
+    "SEI": {
+     "direction": "SHORT",
+     "val": 239830.23,
+     "upnl": 41903.36,
+     "pnl_pct": 87.36,
+     "entry_px": 0.040686,
+     "mark_px": 0.034635
+    },
+    "AVAX": {
+     "direction": "SHORT",
+     "val": 237325.31,
+     "upnl": -2423.87,
+     "pnl_pct": -10.21,
+     "entry_px": 6.7469,
+     "mark_px": 6.8166
+    },
+    "WLFI": {
+     "direction": "LONG",
+     "val": 214849.3,
+     "upnl": -11944.87,
+     "pnl_pct": -27.8,
+     "entry_px": 0.044467,
+     "mark_px": 0.042125
+    },
+    "NEAR": {
+     "direction": "LONG",
+     "val": 210724.91,
+     "upnl": -248.51,
+     "pnl_pct": -1.18,
+     "entry_px": 3.01385,
+     "mark_px": 3.0103
+    },
+    "MORPHO": {
+     "direction": "LONG",
+     "val": 194437.46,
+     "upnl": 1974.83,
+     "pnl_pct": 5.08,
+     "entry_px": 1.60025,
+     "mark_px": 1.61668
+    },
+    "MELANIA": {
+     "direction": "LONG",
+     "val": 194257.45,
+     "upnl": -44406.11,
+     "pnl_pct": -68.58,
+     "entry_px": 0.06249,
+     "mark_px": 0.050870000000000005
+    },
+    "AAVE": {
+     "direction": "SHORT",
+     "val": 191823.95,
+     "upnl": 20800.35,
+     "pnl_pct": 108.43,
+     "entry_px": 108.1776,
+     "mark_px": 97.595
+    },
+    "WIF": {
+     "direction": "SHORT",
+     "val": 189866.17,
+     "upnl": 31600.34,
+     "pnl_pct": 83.22,
+     "entry_px": 0.146737,
+     "mark_px": 0.1258
+    },
+    "STRK": {
+     "direction": "LONG",
+     "val": 179411.05,
+     "upnl": 8425.72,
+     "pnl_pct": 14.09,
+     "entry_px": 0.03059,
+     "mark_px": 0.032100000000000004
+    },
+    "EIGEN": {
+     "direction": "SHORT",
+     "val": 154765.31,
+     "upnl": 117065.81,
+     "pnl_pct": 378.2,
+     "entry_px": 0.203,
+     "mark_px": 0.1156
+    },
+    "SUI": {
+     "direction": "SHORT",
+     "val": 146478.19,
+     "upnl": 4695.99,
+     "pnl_pct": 32.06,
+     "entry_px": 0.699,
+     "mark_px": 0.6772900000000001
+    },
+    "SNX": {
+     "direction": "LONG",
+     "val": 136574.72,
+     "upnl": -13896.53,
+     "pnl_pct": -30.53,
+     "entry_px": 0.1694,
+     "mark_px": 0.15376
+    },
+    "BCH": {
+     "direction": "SHORT",
+     "val": 127826.28,
+     "upnl": 3602.03,
+     "pnl_pct": 28.18,
+     "entry_px": 205.851,
+     "mark_px": 200.20999999999998
+    },
+    "BNB": {
+     "direction": "LONG",
+     "val": 125602.15,
+     "upnl": -425.19,
+     "pnl_pct": -1.69,
+     "entry_px": 560.029,
+     "mark_px": 558.14
+    },
+    "ONDO": {
+     "direction": "LONG",
+     "val": 125140.95,
+     "upnl": -2462.53,
+     "pnl_pct": -19.68,
+     "entry_px": 0.295227,
+     "mark_px": 0.28953
+    },
+    "MON": {
+     "direction": "LONG",
+     "val": 124227.79,
+     "upnl": -24057.26,
+     "pnl_pct": -58.1,
+     "entry_px": 0.014024,
+     "mark_px": 0.011748999999999999
+    },
+    "GRASS": {
+     "direction": "SHORT",
+     "val": 112749.17,
+     "upnl": 3837.09,
+     "pnl_pct": 10.21,
+     "entry_px": 0.3964,
+     "mark_px": 0.38336
+    },
+    "ATOM": {
+     "direction": "LONG",
+     "val": 96850.64,
+     "upnl": 2255.44,
+     "pnl_pct": 11.64,
+     "entry_px": 1.2285,
+     "mark_px": 1.2578
+    },
+    "PENGU": {
+     "direction": "SHORT",
+     "val": 84606.95,
+     "upnl": 1400.21,
+     "pnl_pct": 8.27,
+     "entry_px": 0.004513,
+     "mark_px": 0.0044399999999999995
+    },
+    "PYTH": {
+     "direction": "SHORT",
+     "val": 73947.64,
+     "upnl": 872.31,
+     "pnl_pct": 5.9,
+     "entry_px": 0.051818,
+     "mark_px": 0.051213999999999996
+    },
+    "PONS": {
+     "direction": "SHORT",
+     "val": 63505.78,
+     "upnl": 2221.88,
+     "pnl_pct": 10.5,
+     "entry_px": 0.096469,
+     "mark_px": 0.093208
+    },
+    "POPCAT": {
+     "direction": "SHORT",
+     "val": 56710.73,
+     "upnl": -725.11,
+     "pnl_pct": -3.84,
+     "entry_px": 0.025477,
+     "mark_px": 0.025807
+    },
+    "MET": {
+     "direction": "LONG",
+     "val": 55902.13,
+     "upnl": -2259.4,
+     "pnl_pct": -12.13,
+     "entry_px": 0.229037,
+     "mark_px": 0.22013999999999997
+    },
+    "XLM": {
+     "direction": "LONG",
+     "val": 55748.82,
+     "upnl": 1172.73,
+     "pnl_pct": 10.52,
+     "entry_px": 0.127823,
+     "mark_px": 0.13057
+    },
+    "2Z": {
+     "direction": "LONG",
+     "val": 49340.87,
+     "upnl": -688.23,
+     "pnl_pct": -4.18,
+     "entry_px": 0.015929,
+     "mark_px": 0.015710000000000002
+    },
+    "AVNT": {
+     "direction": "SHORT",
+     "val": 29401.56,
+     "upnl": 5611.27,
+     "pnl_pct": 95.42,
+     "entry_px": 0.07171,
+     "mark_px": 0.060218
+    },
+    "kFLOKI": {
+     "direction": "LONG",
+     "val": 28819.81,
+     "upnl": 452.85,
+     "pnl_pct": 7.86,
+     "entry_px": 0.016445,
+     "mark_px": 0.016708
+    },
+    "USELESS": {
+     "direction": "LONG",
+     "val": 28298.29,
+     "upnl": -1240.54,
+     "pnl_pct": -13.15,
+     "entry_px": 0.083518,
+     "mark_px": 0.080011
+    },
+    "APT": {
+     "direction": "SHORT",
+     "val": 24566.28,
+     "upnl": 282.62,
+     "pnl_pct": 11.5,
+     "entry_px": 0.3877,
+     "mark_px": 0.3833
+    },
+    "AIXBT": {
+     "direction": "SHORT",
+     "val": 16942.5,
+     "upnl": 22.11,
+     "pnl_pct": 0.39,
+     "entry_px": 0.011905,
+     "mark_px": 0.01189
+    },
+    "SPX": {
+     "direction": "LONG",
+     "val": 4329.42,
+     "upnl": -44.46,
+     "pnl_pct": -5.13,
+     "entry_px": 0.2839,
+     "mark_px": 0.28102
+    },
+    "STBL": {
+     "direction": "LONG",
+     "val": 2807.69,
+     "upnl": 2.23,
+     "pnl_pct": 0.24,
+     "entry_px": 0.019712,
+     "mark_px": 0.019728
+    }
+   }
   }
  },
  "0x082e843a431aef031264dc232693dd710aedca88": {
@@ -10136,6 +10673,19 @@
      "mark_px": 62.676
     }
    }
+  },
+  "2026-11-23T20": {
+   "account_value": 13927805.92,
+   "positions": {
+    "HYPE": {
+     "direction": "LONG",
+     "val": 88907316.31,
+     "upnl": 35533386.26,
+     "pnl_pct": 199.83,
+     "entry_px": 38.6755,
+     "mark_px": 64.42360000000001
+    }
+   }
   }
  },
  "0x15a4f009bb324a3fb9e36137136b201e3fe0dfdb": {
@@ -10344,6 +10894,19 @@
      "pnl_pct": 649.37,
      "entry_px": 2283.23,
      "mark_px": 1723.6
+    }
+   }
+  },
+  "2026-11-23T20": {
+   "account_value": 6756061.35,
+   "positions": {
+    "ETH": {
+     "direction": "SHORT",
+     "val": 51804000.0,
+     "upnl": 16692933.43,
+     "pnl_pct": 644.47,
+     "entry_px": 2283.23,
+     "mark_px": 1726.8
     }
    }
   }
@@ -11146,6 +11709,10 @@
    "positions": {}
   },
   "2026-11-23T09": {
+   "account_value": 0.0,
+   "positions": {}
+  },
+  "2026-11-23T20": {
    "account_value": 0.0,
    "positions": {}
   }
@@ -13863,6 +14430,187 @@
      "pnl_pct": -21.0,
      "entry_px": 0.288127,
      "mark_px": 0.2822
+    }
+   }
+  },
+  "2026-11-23T20": {
+   "account_value": 12041399.32,
+   "positions": {
+    "BTC": {
+     "direction": "SHORT",
+     "val": 34559718.96,
+     "upnl": 3519887.55,
+     "pnl_pct": 254.62,
+     "entry_px": 67356.0,
+     "mark_px": 61130.0
+    },
+    "SOL": {
+     "direction": "SHORT",
+     "val": 9319661.15,
+     "upnl": 226309.24,
+     "pnl_pct": 48.57,
+     "entry_px": 74.7378,
+     "mark_px": 72.966
+    },
+    "XRP": {
+     "direction": "SHORT",
+     "val": 4582858.39,
+     "upnl": 253268.12,
+     "pnl_pct": 110.53,
+     "entry_px": 0.993394,
+     "mark_px": 0.9413699999999999
+    },
+    "ETH": {
+     "direction": "SHORT",
+     "val": 2584967.45,
+     "upnl": 37831.61,
+     "pnl_pct": 36.59,
+     "entry_px": 1752.07,
+     "mark_px": 1726.8
+    },
+    "ZEC": {
+     "direction": "SHORT",
+     "val": 2254880.07,
+     "upnl": 302333.33,
+     "pnl_pct": 134.08,
+     "entry_px": 908.9761,
+     "mark_px": 801.5100000000001
+    },
+    "NEAR": {
+     "direction": "SHORT",
+     "val": 963289.08,
+     "upnl": 640253.55,
+     "pnl_pct": 664.65,
+     "entry_px": 5.0111,
+     "mark_px": 3.0103
+    },
+    "LINK": {
+     "direction": "SHORT",
+     "val": 822050.05,
+     "upnl": 242164.82,
+     "pnl_pct": 294.59,
+     "entry_px": 11.62823,
+     "mark_px": 8.9822
+    },
+    "BNB": {
+     "direction": "LONG",
+     "val": 709869.8,
+     "upnl": -164199.99,
+     "pnl_pct": -231.31,
+     "entry_px": 687.243,
+     "mark_px": 558.14
+    },
+    "AAVE": {
+     "direction": "SHORT",
+     "val": 610058.54,
+     "upnl": 150085.98,
+     "pnl_pct": 246.02,
+     "entry_px": 121.6052,
+     "mark_px": 97.595
+    },
+    "SUI": {
+     "direction": "LONG",
+     "val": 220142.62,
+     "upnl": -59495.86,
+     "pnl_pct": -270.26,
+     "entry_px": 0.86033,
+     "mark_px": 0.6772900000000001
+    },
+    "HBAR": {
+     "direction": "SHORT",
+     "val": 155594.54,
+     "upnl": 27916.01,
+     "pnl_pct": 89.71,
+     "entry_px": 0.062531,
+     "mark_px": 0.053019
+    },
+    "HYPE": {
+     "direction": "LONG",
+     "val": 100605.18,
+     "upnl": -317.3,
+     "pnl_pct": -3.15,
+     "entry_px": 64.6267,
+     "mark_px": 64.42360000000001
+    },
+    "ADA": {
+     "direction": "LONG",
+     "val": 90630.91,
+     "upnl": -9943.86,
+     "pnl_pct": -109.72,
+     "entry_px": 0.164404,
+     "mark_px": 0.14815
+    },
+    "ENA": {
+     "direction": "LONG",
+     "val": 89158.05,
+     "upnl": -8806.88,
+     "pnl_pct": -98.78,
+     "entry_px": 0.111328,
+     "mark_px": 0.10132
+    },
+    "LTC": {
+     "direction": "SHORT",
+     "val": 75379.38,
+     "upnl": 9729.83,
+     "pnl_pct": 129.08,
+     "entry_px": 46.8036,
+     "mark_px": 41.453
+    },
+    "DOT": {
+     "direction": "LONG",
+     "val": 72928.25,
+     "upnl": -4375.17,
+     "pnl_pct": -59.99,
+     "entry_px": 0.72199,
+     "mark_px": 0.68113
+    },
+    "AVAX": {
+     "direction": "SHORT",
+     "val": 68018.08,
+     "upnl": 1450.1,
+     "pnl_pct": 21.32,
+     "entry_px": 6.9619,
+     "mark_px": 6.8166
+    },
+    "DOGE": {
+     "direction": "SHORT",
+     "val": 67190.27,
+     "upnl": 1610.56,
+     "pnl_pct": 23.97,
+     "entry_px": 0.058053,
+     "mark_px": 0.056695
+    },
+    "BCH": {
+     "direction": "LONG",
+     "val": 44070.83,
+     "upnl": -4228.85,
+     "pnl_pct": -95.96,
+     "entry_px": 219.421,
+     "mark_px": 200.21
+    },
+    "WLD": {
+     "direction": "SHORT",
+     "val": 43875.99,
+     "upnl": 12263.46,
+     "pnl_pct": 279.5,
+     "entry_px": 0.30608,
+     "mark_px": 0.23922
+    },
+    "XLM": {
+     "direction": "LONG",
+     "val": 9973.46,
+     "upnl": -146.39,
+     "pnl_pct": -7.34,
+     "entry_px": 0.132486,
+     "mark_px": 0.13057
+    },
+    "ONDO": {
+     "direction": "LONG",
+     "val": 4580.65,
+     "upnl": 22.19,
+     "pnl_pct": 4.85,
+     "entry_px": 0.288127,
+     "mark_px": 0.28953
     }
    }
   }
@@ -19706,6 +20454,539 @@
      "mark_px": 0.38805
     }
    }
+  },
+  "2026-11-23T20": {
+   "account_value": 13151264.77,
+   "positions": {
+    "HYPE": {
+     "direction": "SHORT",
+     "val": 4692868.21,
+     "upnl": 578785.05,
+     "pnl_pct": 123.33,
+     "entry_px": 72.3691,
+     "mark_px": 64.42360000000001
+    },
+    "BTC": {
+     "direction": "SHORT",
+     "val": 2863274.18,
+     "upnl": 714469.89,
+     "pnl_pct": 998.12,
+     "entry_px": 76383.7,
+     "mark_px": 61130.0
+    },
+    "STRK": {
+     "direction": "SHORT",
+     "val": 2051847.75,
+     "upnl": 3163311.92,
+     "pnl_pct": 770.84,
+     "entry_px": 0.08158,
+     "mark_px": 0.032100000000000004
+    },
+    "ZRO": {
+     "direction": "SHORT",
+     "val": 1873408.09,
+     "upnl": 856137.88,
+     "pnl_pct": 228.5,
+     "entry_px": 1.70818,
+     "mark_px": 1.1723999999999999
+    },
+    "XPL": {
+     "direction": "SHORT",
+     "val": 1789270.49,
+     "upnl": 1277561.72,
+     "pnl_pct": 714.01,
+     "entry_px": 0.078764,
+     "mark_px": 0.045953
+    },
+    "PUMP": {
+     "direction": "SHORT",
+     "val": 533784.25,
+     "upnl": 399472.4,
+     "pnl_pct": 748.38,
+     "entry_px": 0.004477,
+     "mark_px": 0.002561
+    },
+    "ASTER": {
+     "direction": "SHORT",
+     "val": 453776.63,
+     "upnl": 128646.77,
+     "pnl_pct": 141.75,
+     "entry_px": 0.653224,
+     "mark_px": 0.508939
+    },
+    "ETH": {
+     "direction": "SHORT",
+     "val": 452783.54,
+     "upnl": 172827.39,
+     "pnl_pct": 954.25,
+     "entry_px": 2385.91,
+     "mark_px": 1726.7999999999997
+    },
+    "CHIP": {
+     "direction": "SHORT",
+     "val": 409083.45,
+     "upnl": 364899.56,
+     "pnl_pct": 267.6,
+     "entry_px": 0.053108,
+     "mark_px": 0.02807
+    },
+    "MON": {
+     "direction": "SHORT",
+     "val": 178435.89,
+     "upnl": 72243.86,
+     "pnl_pct": 202.44,
+     "entry_px": 0.016505,
+     "mark_px": 0.011748999999999999
+    },
+    "SYRUP": {
+     "direction": "SHORT",
+     "val": 159944.64,
+     "upnl": 207172.72,
+     "pnl_pct": 388.58,
+     "entry_px": 0.193308,
+     "mark_px": 0.08422
+    },
+    "ZEC": {
+     "direction": "SHORT",
+     "val": 148632.01,
+     "upnl": 48285.87,
+     "pnl_pct": 324.87,
+     "entry_px": 1061.8953,
+     "mark_px": 801.5099999999999
+    },
+    "TIA": {
+     "direction": "SHORT",
+     "val": 98590.16,
+     "upnl": 72879.94,
+     "pnl_pct": 369.61,
+     "entry_px": 0.58432,
+     "mark_px": 0.33597000000000005
+    },
+    "STX": {
+     "direction": "SHORT",
+     "val": 80686.63,
+     "upnl": 9878.22,
+     "pnl_pct": 61.21,
+     "entry_px": 0.29287,
+     "mark_px": 0.26093
+    },
+    "WLD": {
+     "direction": "LONG",
+     "val": 73390.3,
+     "upnl": -87075.54,
+     "pnl_pct": -1186.47,
+     "entry_px": 0.52304,
+     "mark_px": 0.23922
+    },
+    "USELESS": {
+     "direction": "LONG",
+     "val": 72581.34,
+     "upnl": -36246.54,
+     "pnl_pct": -149.82,
+     "entry_px": 0.119967,
+     "mark_px": 0.080011
+    },
+    "IMX": {
+     "direction": "SHORT",
+     "val": 72179.45,
+     "upnl": 21384.04,
+     "pnl_pct": 148.13,
+     "entry_px": 0.11591,
+     "mark_px": 0.08942
+    },
+    "FARTCOIN": {
+     "direction": "SHORT",
+     "val": 70135.33,
+     "upnl": 98091.43,
+     "pnl_pct": 1398.6,
+     "entry_px": 0.19858,
+     "mark_px": 0.08278999999999999
+    },
+    "ZK": {
+     "direction": "SHORT",
+     "val": 66961.72,
+     "upnl": 107715.16,
+     "pnl_pct": 804.3,
+     "entry_px": 0.017829,
+     "mark_px": 0.006834999999999999
+    },
+    "GRAM": {
+     "direction": "LONG",
+     "val": 54807.34,
+     "upnl": -4480.75,
+     "pnl_pct": -40.88,
+     "entry_px": 1.076497,
+     "mark_px": 0.99514
+    },
+    "TRX": {
+     "direction": "SHORT",
+     "val": 50177.98,
+     "upnl": 4280.95,
+     "pnl_pct": 85.32,
+     "entry_px": 0.33559,
+     "mark_px": 0.30921
+    },
+    "INJ": {
+     "direction": "SHORT",
+     "val": 42882.27,
+     "upnl": 11038.49,
+     "pnl_pct": 128.71,
+     "entry_px": 8.17427,
+     "mark_px": 6.50086
+    },
+    "EIGEN": {
+     "direction": "SHORT",
+     "val": 40451.53,
+     "upnl": 18314.05,
+     "pnl_pct": 226.37,
+     "entry_px": 0.1679,
+     "mark_px": 0.11559999999999998
+    },
+    "LINK": {
+     "direction": "LONG",
+     "val": 30879.91,
+     "upnl": -5561.83,
+     "pnl_pct": -180.11,
+     "entry_px": 10.6,
+     "mark_px": 8.9822
+    },
+    "BNB": {
+     "direction": "SHORT",
+     "val": 30583.28,
+     "upnl": 8319.62,
+     "pnl_pct": 272.03,
+     "entry_px": 709.971,
+     "mark_px": 558.14
+    },
+    "NEAR": {
+     "direction": "SHORT",
+     "val": 27085.78,
+     "upnl": 8470.84,
+     "pnl_pct": 312.74,
+     "entry_px": 3.95174,
+     "mark_px": 3.0103
+    },
+    "COMP": {
+     "direction": "LONG",
+     "val": 26022.22,
+     "upnl": -3300.41,
+     "pnl_pct": -63.42,
+     "entry_px": 19.6519,
+     "mark_px": 17.44
+    },
+    "CC": {
+     "direction": "SHORT",
+     "val": 25113.23,
+     "upnl": 5237.25,
+     "pnl_pct": 62.56,
+     "entry_px": 0.093627,
+     "mark_px": 0.077471
+    },
+    "XRP": {
+     "direction": "LONG",
+     "val": 24727.91,
+     "upnl": -13433.89,
+     "pnl_pct": -1086.54,
+     "entry_px": 1.452786,
+     "mark_px": 0.9413699999999999
+    },
+    "ENA": {
+     "direction": "LONG",
+     "val": 18835.19,
+     "upnl": -15736.21,
+     "pnl_pct": -835.47,
+     "entry_px": 0.185969,
+     "mark_px": 0.10132
+    },
+    "XMR": {
+     "direction": "SHORT",
+     "val": 17856.29,
+     "upnl": 550.05,
+     "pnl_pct": 15.4,
+     "entry_px": 516.422,
+     "mark_px": 500.98999999999995
+    },
+    "POL": {
+     "direction": "LONG",
+     "val": 17463.75,
+     "upnl": -1535.85,
+     "pnl_pct": -43.97,
+     "entry_px": 0.083902,
+     "mark_px": 0.07712
+    },
+    "ONDO": {
+     "direction": "SHORT",
+     "val": 17274.52,
+     "upnl": 4775.3,
+     "pnl_pct": 276.44,
+     "entry_px": 0.369566,
+     "mark_px": 0.28952999999999995
+    },
+    "MORPHO": {
+     "direction": "SHORT",
+     "val": 17079.9,
+     "upnl": 3041.7,
+     "pnl_pct": 89.04,
+     "entry_px": 1.90458,
+     "mark_px": 1.6166800000000001
+    },
+    "CRV": {
+     "direction": "LONG",
+     "val": 16623.56,
+     "upnl": -8076.2,
+     "pnl_pct": -485.83,
+     "entry_px": 0.27053,
+     "mark_px": 0.18207999999999996
+    },
+    "DOGE": {
+     "direction": "LONG",
+     "val": 16329.24,
+     "upnl": -10381.3,
+     "pnl_pct": -635.75,
+     "entry_px": 0.092738,
+     "mark_px": 0.056694999999999995
+    },
+    "BLUR": {
+     "direction": "SHORT",
+     "val": 13899.68,
+     "upnl": -605.97,
+     "pnl_pct": -13.08,
+     "entry_px": 0.007549,
+     "mark_px": 0.007894
+    },
+    "SKR": {
+     "direction": "LONG",
+     "val": 11776.78,
+     "upnl": -2686.57,
+     "pnl_pct": -68.44,
+     "entry_px": 0.01164,
+     "mark_px": 0.009478
+    },
+    "RSR": {
+     "direction": "LONG",
+     "val": 11348.36,
+     "upnl": -3694.79,
+     "pnl_pct": -97.67,
+     "entry_px": 0.001675,
+     "mark_px": 0.001264
+    },
+    "MINA": {
+     "direction": "LONG",
+     "val": 10901.17,
+     "upnl": -4527.09,
+     "pnl_pct": -124.59,
+     "entry_px": 0.05715,
+     "mark_px": 0.040381
+    },
+    "SUI": {
+     "direction": "LONG",
+     "val": 10787.74,
+     "upnl": -5752.33,
+     "pnl_pct": -533.23,
+     "entry_px": 1.03844,
+     "mark_px": 0.6772900000000001
+    },
+    "LINEA": {
+     "direction": "SHORT",
+     "val": 10196.25,
+     "upnl": 3931.52,
+     "pnl_pct": 115.68,
+     "entry_px": 0.00232,
+     "mark_px": 0.0016749999999999998
+    },
+    "PENGU": {
+     "direction": "LONG",
+     "val": 9863.88,
+     "upnl": -7215.48,
+     "pnl_pct": -365.75,
+     "entry_px": 0.007687,
+     "mark_px": 0.00444
+    },
+    "MEGA": {
+     "direction": "SHORT",
+     "val": 9395.56,
+     "upnl": 455.8,
+     "pnl_pct": 14.55,
+     "entry_px": 0.047483,
+     "mark_px": 0.045287
+    },
+    "APEX": {
+     "direction": "LONG",
+     "val": 9106.65,
+     "upnl": -7774.85,
+     "pnl_pct": -256.13,
+     "entry_px": 0.25072,
+     "mark_px": 0.13525
+    },
+    "AZTEC": {
+     "direction": "SHORT",
+     "val": 8878.29,
+     "upnl": 3485.94,
+     "pnl_pct": 117.79,
+     "entry_px": 0.012823,
+     "mark_px": 0.009208000000000001
+    },
+    "JUP": {
+     "direction": "LONG",
+     "val": 8413.8,
+     "upnl": -2075.9,
+     "pnl_pct": -246.73,
+     "entry_px": 0.297343,
+     "mark_px": 0.2385
+    },
+    "MERL": {
+     "direction": "LONG",
+     "val": 7038.58,
+     "upnl": -2430.95,
+     "pnl_pct": -103.61,
+     "entry_px": 0.035457,
+     "mark_px": 0.026355
+    },
+    "REZ": {
+     "direction": "SHORT",
+     "val": 6892.76,
+     "upnl": 4055.92,
+     "pnl_pct": 176.53,
+     "entry_px": 0.003788,
+     "mark_px": 0.002385
+    },
+    "AAVE": {
+     "direction": "SHORT",
+     "val": 6263.65,
+     "upnl": 4319.15,
+     "pnl_pct": 689.56,
+     "entry_px": 164.8924,
+     "mark_px": 97.595
+    },
+    "PONS": {
+     "direction": "SHORT",
+     "val": 6249.41,
+     "upnl": 17800.52,
+     "pnl_pct": 854.51,
+     "entry_px": 0.358697,
+     "mark_px": 0.093208
+    },
+    "FET": {
+     "direction": "LONG",
+     "val": 5973.71,
+     "upnl": -180.52,
+     "pnl_pct": -15.11,
+     "entry_px": 0.113241,
+     "mark_px": 0.10991999999999999
+    },
+    "TAO": {
+     "direction": "SHORT",
+     "val": 4508.19,
+     "upnl": 1882.24,
+     "pnl_pct": 208.76,
+     "entry_px": 271.482,
+     "mark_px": 191.51999999999998
+    },
+    "WLFI": {
+     "direction": "LONG",
+     "val": 3356.86,
+     "upnl": -501.54,
+     "pnl_pct": -74.7,
+     "entry_px": 0.048418,
+     "mark_px": 0.042125
+    },
+    "VVV": {
+     "direction": "LONG",
+     "val": 2261.9,
+     "upnl": 471.13,
+     "pnl_pct": 62.49,
+     "entry_px": 19.7547,
+     "mark_px": 24.951999999999998
+    },
+    "kPEPE": {
+     "direction": "SHORT",
+     "val": 2022.14,
+     "upnl": 1143.36,
+     "pnl_pct": 565.42,
+     "entry_px": 0.005394,
+     "mark_px": 0.0034460000000000003
+    },
+    "LIT": {
+     "direction": "SHORT",
+     "val": 1848.29,
+     "upnl": 155.25,
+     "pnl_pct": 42.0,
+     "entry_px": 2.667821,
+     "mark_px": 2.4611
+    },
+    "kBONK": {
+     "direction": "SHORT",
+     "val": 1451.47,
+     "upnl": 583.0,
+     "pnl_pct": 401.66,
+     "entry_px": 0.003045,
+     "mark_px": 0.002173
+    },
+    "MELANIA": {
+     "direction": "SHORT",
+     "val": 1165.83,
+     "upnl": -69.83,
+     "pnl_pct": -17.97,
+     "entry_px": 0.04782,
+     "mark_px": 0.05086999999999999
+    },
+    "UNI": {
+     "direction": "SHORT",
+     "val": 792.51,
+     "upnl": 668.04,
+     "pnl_pct": 842.94,
+     "entry_px": 8.98246,
+     "mark_px": 4.874
+    },
+    "RUNE": {
+     "direction": "SHORT",
+     "val": 693.8,
+     "upnl": 31.76,
+     "pnl_pct": 22.89,
+     "entry_px": 0.53956,
+     "mark_px": 0.51595
+    },
+    "SKY": {
+     "direction": "LONG",
+     "val": 516.0,
+     "upnl": -66.02,
+     "pnl_pct": -38.38,
+     "entry_px": 0.046658,
+     "mark_px": 0.04136600000000001
+    },
+    "kSHIB": {
+     "direction": "LONG",
+     "val": 334.07,
+     "upnl": -14.49,
+     "pnl_pct": -43.38,
+     "entry_px": 0.0038,
+     "mark_px": 0.003642
+    },
+    "GRIFFAIN": {
+     "direction": "LONG",
+     "val": 250.49,
+     "upnl": -41.19,
+     "pnl_pct": -49.33,
+     "entry_px": 0.011473,
+     "mark_px": 0.009853
+    },
+    "CASHCAT": {
+     "direction": "SHORT",
+     "val": 158.73,
+     "upnl": 308.28,
+     "pnl_pct": 582.66,
+     "entry_px": 0.12108,
+     "mark_px": 0.041153
+    },
+    "MNT": {
+     "direction": "SHORT",
+     "val": 117.85,
+     "upnl": 85.96,
+     "pnl_pct": 364.72,
+     "entry_px": 0.6897,
+     "mark_px": 0.3988
+    }
+   }
   }
  },
  "0x6ea486a3426563e23023125f18867117878f0ea7": {
@@ -19849,6 +21130,19 @@
      "pnl_pct": -1.02,
      "entry_px": 1724.48,
      "mark_px": 1723.6
+    }
+   }
+  },
+  "2026-11-23T20": {
+   "account_value": 538161.73,
+   "positions": {
+    "ETH": {
+     "direction": "LONG",
+     "val": 5855946.78,
+     "upnl": 7859.82,
+     "pnl_pct": 2.68,
+     "entry_px": 1724.48,
+     "mark_px": 1726.8
     }
    }
   }
@@ -32748,6 +34042,1195 @@
      "mark_px": 0.1324
     }
    }
+  },
+  "2026-11-23T20": {
+   "account_value": 10162953.94,
+   "positions": {
+    "ETH": {
+     "direction": "SHORT",
+     "val": 43020091.31,
+     "upnl": 11450375.64,
+     "pnl_pct": 665.41,
+     "entry_px": 2186.41,
+     "mark_px": 1726.8
+    },
+    "BTC": {
+     "direction": "SHORT",
+     "val": 37660422.06,
+     "upnl": 8615289.48,
+     "pnl_pct": 915.05,
+     "entry_px": 75114.2,
+     "mark_px": 61130.00000000001
+    },
+    "HYPE": {
+     "direction": "SHORT",
+     "val": 3197923.08,
+     "upnl": 522815.32,
+     "pnl_pct": 163.49,
+     "entry_px": 74.9559,
+     "mark_px": 64.4236
+    },
+    "NEAR": {
+     "direction": "SHORT",
+     "val": 1486590.9,
+     "upnl": 270393.08,
+     "pnl_pct": 181.89,
+     "entry_px": 3.55783,
+     "mark_px": 3.0103
+    },
+    "ENA": {
+     "direction": "SHORT",
+     "val": 827022.47,
+     "upnl": 339970.03,
+     "pnl_pct": 411.08,
+     "entry_px": 0.14297,
+     "mark_px": 0.10132000000000001
+    },
+    "UNI": {
+     "direction": "SHORT",
+     "val": 775464.12,
+     "upnl": 250943.09,
+     "pnl_pct": 323.6,
+     "entry_px": 6.45124,
+     "mark_px": 4.874
+    },
+    "SOL": {
+     "direction": "SHORT",
+     "val": 676003.72,
+     "upnl": 54946.8,
+     "pnl_pct": 162.56,
+     "entry_px": 78.8968,
+     "mark_px": 72.96600000000001
+    },
+    "ADA": {
+     "direction": "LONG",
+     "val": 366497.91,
+     "upnl": -66002.83,
+     "pnl_pct": -180.09,
+     "entry_px": 0.17483,
+     "mark_px": 0.14815
+    },
+    "STRK": {
+     "direction": "SHORT",
+     "val": 364025.48,
+     "upnl": 257020.41,
+     "pnl_pct": 353.03,
+     "entry_px": 0.05476,
+     "mark_px": 0.0321
+    },
+    "MON": {
+     "direction": "SHORT",
+     "val": 363139.49,
+     "upnl": 235169.75,
+     "pnl_pct": 323.8,
+     "entry_px": 0.019357,
+     "mark_px": 0.011749
+    },
+    "CRV": {
+     "direction": "SHORT",
+     "val": 338507.53,
+     "upnl": 164548.95,
+     "pnl_pct": 486.1,
+     "entry_px": 0.27058,
+     "mark_px": 0.18208
+    },
+    "XMR": {
+     "direction": "SHORT",
+     "val": 325389.5,
+     "upnl": 17752.74,
+     "pnl_pct": 27.28,
+     "entry_px": 528.323,
+     "mark_px": 500.9899999999999
+    },
+    "ZEC": {
+     "direction": "SHORT",
+     "val": 314360.24,
+     "upnl": 99391.66,
+     "pnl_pct": 316.17,
+     "entry_px": 1054.9244,
+     "mark_px": 801.5100000000001
+    },
+    "POL": {
+     "direction": "SHORT",
+     "val": 284166.15,
+     "upnl": 52252.6,
+     "pnl_pct": 91.94,
+     "entry_px": 0.0913,
+     "mark_px": 0.07712
+    },
+    "AAVE": {
+     "direction": "SHORT",
+     "val": 280199.15,
+     "upnl": 76273.12,
+     "pnl_pct": 272.21,
+     "entry_px": 124.1613,
+     "mark_px": 97.59500000000001
+    },
+    "ZRO": {
+     "direction": "SHORT",
+     "val": 259543.57,
+     "upnl": 96775.12,
+     "pnl_pct": 186.43,
+     "entry_px": 1.60954,
+     "mark_px": 1.1723999999999999
+    },
+    "HBAR": {
+     "direction": "SHORT",
+     "val": 247017.69,
+     "upnl": 108653.38,
+     "pnl_pct": 219.93,
+     "entry_px": 0.076339,
+     "mark_px": 0.053019000000000004
+    },
+    "LTC": {
+     "direction": "SHORT",
+     "val": 232870.1,
+     "upnl": 68841.42,
+     "pnl_pct": 295.62,
+     "entry_px": 53.7073,
+     "mark_px": 41.453
+    },
+    "VVV": {
+     "direction": "SHORT",
+     "val": 228526.63,
+     "upnl": -37474.63,
+     "pnl_pct": -49.2,
+     "entry_px": 20.8602,
+     "mark_px": 24.952
+    },
+    "ETHFI": {
+     "direction": "SHORT",
+     "val": 224348.99,
+     "upnl": 28407.64,
+     "pnl_pct": 63.31,
+     "entry_px": 0.54824,
+     "mark_px": 0.48663
+    },
+    "PAXG": {
+     "direction": "SHORT",
+     "val": 198239.76,
+     "upnl": 24191.78,
+     "pnl_pct": 122.03,
+     "entry_px": 4073.091,
+     "mark_px": 3630.1
+    },
+    "ARB": {
+     "direction": "SHORT",
+     "val": 191025.06,
+     "upnl": 91804.69,
+     "pnl_pct": 480.59,
+     "entry_px": 0.16591,
+     "mark_px": 0.11206
+    },
+    "XRP": {
+     "direction": "SHORT",
+     "val": 172969.21,
+     "upnl": 68905.0,
+     "pnl_pct": 796.73,
+     "entry_px": 1.316379,
+     "mark_px": 0.94137
+    },
+    "DOT": {
+     "direction": "SHORT",
+     "val": 168745.12,
+     "upnl": 27534.27,
+     "pnl_pct": 163.17,
+     "entry_px": 0.79227,
+     "mark_px": 0.68113
+    },
+    "PUMP": {
+     "direction": "SHORT",
+     "val": 161061.26,
+     "upnl": 60657.82,
+     "pnl_pct": 376.61,
+     "entry_px": 0.003525,
+     "mark_px": 0.002561
+    },
+    "ONDO": {
+     "direction": "SHORT",
+     "val": 145195.53,
+     "upnl": 32668.23,
+     "pnl_pct": 224.99,
+     "entry_px": 0.354672,
+     "mark_px": 0.28953
+    },
+    "LDO": {
+     "direction": "SHORT",
+     "val": 128426.04,
+     "upnl": 45387.36,
+     "pnl_pct": 176.71,
+     "entry_px": 0.32571,
+     "mark_px": 0.24065999999999999
+    },
+    "kPEPE": {
+     "direction": "SHORT",
+     "val": 123817.62,
+     "upnl": 15306.72,
+     "pnl_pct": 123.62,
+     "entry_px": 0.003872,
+     "mark_px": 0.0034460000000000003
+    },
+    "TAO": {
+     "direction": "SHORT",
+     "val": 123655.08,
+     "upnl": 26464.2,
+     "pnl_pct": 107.01,
+     "entry_px": 232.508,
+     "mark_px": 191.52
+    },
+    "TRUMP": {
+     "direction": "LONG",
+     "val": 120312.14,
+     "upnl": 2342.16,
+     "pnl_pct": 19.47,
+     "entry_px": 0.87202,
+     "mark_px": 0.88934
+    },
+    "RENDER": {
+     "direction": "SHORT",
+     "val": 117011.81,
+     "upnl": 23980.92,
+     "pnl_pct": 102.47,
+     "entry_px": 1.58426,
+     "mark_px": 1.3148000000000002
+    },
+    "WLFI": {
+     "direction": "LONG",
+     "val": 110287.17,
+     "upnl": -8808.96,
+     "pnl_pct": -39.94,
+     "entry_px": 0.045489,
+     "mark_px": 0.042125
+    },
+    "XPL": {
+     "direction": "SHORT",
+     "val": 106394.75,
+     "upnl": 50312.32,
+     "pnl_pct": 472.88,
+     "entry_px": 0.067683,
+     "mark_px": 0.045953
+    },
+    "USELESS": {
+     "direction": "SHORT",
+     "val": 83531.88,
+     "upnl": 46839.14,
+     "pnl_pct": 168.22,
+     "entry_px": 0.124875,
+     "mark_px": 0.080011
+    },
+    "MEGA": {
+     "direction": "SHORT",
+     "val": 82440.09,
+     "upnl": 4522.96,
+     "pnl_pct": 16.46,
+     "entry_px": 0.047771,
+     "mark_px": 0.045287
+    },
+    "PENDLE": {
+     "direction": "SHORT",
+     "val": 71518.73,
+     "upnl": 26441.09,
+     "pnl_pct": 184.85,
+     "entry_px": 1.806077,
+     "mark_px": 1.3185850000000001
+    },
+    "SAGA": {
+     "direction": "SHORT",
+     "val": 71238.86,
+     "upnl": 16769.41,
+     "pnl_pct": 70.62,
+     "entry_px": 0.01666,
+     "mark_px": 0.013489999999999999
+    },
+    "MELANIA": {
+     "direction": "LONG",
+     "val": 69821.88,
+     "upnl": 5604.68,
+     "pnl_pct": 24.08,
+     "entry_px": 0.04678,
+     "mark_px": 0.05087
+    },
+    "ATOM": {
+     "direction": "LONG",
+     "val": 62849.64,
+     "upnl": -2849.35,
+     "pnl_pct": -22.67,
+     "entry_px": 1.3148,
+     "mark_px": 1.2577999999999998
+    },
+    "ENS": {
+     "direction": "SHORT",
+     "val": 56893.28,
+     "upnl": 17411.66,
+     "pnl_pct": 153.02,
+     "entry_px": 4.68,
+     "mark_px": 3.5834
+    },
+    "DYDX": {
+     "direction": "SHORT",
+     "val": 56130.15,
+     "upnl": 309.78,
+     "pnl_pct": 2.76,
+     "entry_px": 0.0729,
+     "mark_px": 0.0725
+    },
+    "ZK": {
+     "direction": "SHORT",
+     "val": 54531.97,
+     "upnl": 36445.98,
+     "pnl_pct": 334.17,
+     "entry_px": 0.011403,
+     "mark_px": 0.006835
+    },
+    "JUP": {
+     "direction": "LONG",
+     "val": 53137.08,
+     "upnl": 2056.41,
+     "pnl_pct": 38.7,
+     "entry_px": 0.22927,
+     "mark_px": 0.2385
+    },
+    "AERO": {
+     "direction": "SHORT",
+     "val": 49904.61,
+     "upnl": 21867.41,
+     "pnl_pct": 131.46,
+     "entry_px": 0.596256,
+     "mark_px": 0.41458999999999996
+    },
+    "BCH": {
+     "direction": "SHORT",
+     "val": 48666.85,
+     "upnl": 10998.83,
+     "pnl_pct": 226.0,
+     "entry_px": 245.457,
+     "mark_px": 200.21
+    },
+    "ALGO": {
+     "direction": "SHORT",
+     "val": 47149.58,
+     "upnl": 9934.5,
+     "pnl_pct": 105.35,
+     "entry_px": 0.100053,
+     "mark_px": 0.08264099999999999
+    },
+    "COMP": {
+     "direction": "SHORT",
+     "val": 46463.3,
+     "upnl": 7647.18,
+     "pnl_pct": 82.29,
+     "entry_px": 20.3103,
+     "mark_px": 17.44
+    },
+    "APE": {
+     "direction": "SHORT",
+     "val": 45150.9,
+     "upnl": 20790.72,
+     "pnl_pct": 230.24,
+     "entry_px": 0.10557,
+     "mark_px": 0.07229
+    },
+    "CFX": {
+     "direction": "SHORT",
+     "val": 45065.77,
+     "upnl": 17968.3,
+     "pnl_pct": 199.36,
+     "entry_px": 0.045687,
+     "mark_px": 0.032664
+    },
+    "GRAM": {
+     "direction": "LONG",
+     "val": 42046.66,
+     "upnl": -2328.1,
+     "pnl_pct": -27.68,
+     "entry_px": 1.05024,
+     "mark_px": 0.99514
+    },
+    "BNB": {
+     "direction": "SHORT",
+     "val": 40910.55,
+     "upnl": 11486.22,
+     "pnl_pct": 280.76,
+     "entry_px": 714.845,
+     "mark_px": 558.14
+    },
+    "MORPHO": {
+     "direction": "SHORT",
+     "val": 39954.79,
+     "upnl": 5221.0,
+     "pnl_pct": 65.34,
+     "entry_px": 1.82793,
+     "mark_px": 1.6166800000000001
+    },
+    "TRX": {
+     "direction": "SHORT",
+     "val": 39100.53,
+     "upnl": 1112.81,
+     "pnl_pct": 28.46,
+     "entry_px": 0.31801,
+     "mark_px": 0.30921
+    },
+    "SKR": {
+     "direction": "SHORT",
+     "val": 39044.43,
+     "upnl": 6272.42,
+     "pnl_pct": 48.19,
+     "entry_px": 0.011,
+     "mark_px": 0.009478
+    },
+    "RUNE": {
+     "direction": "LONG",
+     "val": 35252.08,
+     "upnl": -617.24,
+     "pnl_pct": -8.75,
+     "entry_px": 0.52498,
+     "mark_px": 0.5159499999999999
+    },
+    "SKY": {
+     "direction": "LONG",
+     "val": 34079.38,
+     "upnl": -3503.59,
+     "pnl_pct": -30.84,
+     "entry_px": 0.045618,
+     "mark_px": 0.041366
+    },
+    "LIT": {
+     "direction": "SHORT",
+     "val": 32284.71,
+     "upnl": 1447.05,
+     "pnl_pct": 22.41,
+     "entry_px": 2.571409,
+     "mark_px": 2.4611
+    },
+    "JTO": {
+     "direction": "SHORT",
+     "val": 31750.21,
+     "upnl": 28130.24,
+     "pnl_pct": 442.99,
+     "entry_px": 0.454107,
+     "mark_px": 0.24078
+    },
+    "ICP": {
+     "direction": "SHORT",
+     "val": 31634.8,
+     "upnl": 7494.84,
+     "pnl_pct": 118.46,
+     "entry_px": 2.53135,
+     "mark_px": 2.0465
+    },
+    "FIL": {
+     "direction": "SHORT",
+     "val": 31022.65,
+     "upnl": 20651.55,
+     "pnl_pct": 332.85,
+     "entry_px": 0.92547,
+     "mark_px": 0.5556099999999999
+    },
+    "VIRTUAL": {
+     "direction": "SHORT",
+     "val": 30916.39,
+     "upnl": 17974.07,
+     "pnl_pct": 290.69,
+     "entry_px": 0.59758,
+     "mark_px": 0.37789
+    },
+    "LINK": {
+     "direction": "SHORT",
+     "val": 30704.75,
+     "upnl": -134.05,
+     "pnl_pct": -4.37,
+     "entry_px": 8.94298,
+     "mark_px": 8.982199999999999
+    },
+    "FARTCOIN": {
+     "direction": "SHORT",
+     "val": 30538.02,
+     "upnl": -1335.3,
+     "pnl_pct": -43.73,
+     "entry_px": 0.07916,
+     "mark_px": 0.08278999999999999
+    },
+    "GMX": {
+     "direction": "SHORT",
+     "val": 28950.74,
+     "upnl": -1200.03,
+     "pnl_pct": -12.44,
+     "entry_px": 7.327,
+     "mark_px": 7.6439
+    },
+    "FET": {
+     "direction": "SHORT",
+     "val": 26351.78,
+     "upnl": 14073.02,
+     "pnl_pct": 267.02,
+     "entry_px": 0.168622,
+     "mark_px": 0.10992
+    },
+    "GALA": {
+     "direction": "SHORT",
+     "val": 25902.27,
+     "upnl": 2354.65,
+     "pnl_pct": 27.27,
+     "entry_px": 0.001466,
+     "mark_px": 0.001344
+    },
+    "WLD": {
+     "direction": "SHORT",
+     "val": 24244.35,
+     "upnl": 8686.88,
+     "pnl_pct": 358.31,
+     "entry_px": 0.32493,
+     "mark_px": 0.23922
+    },
+    "PONS": {
+     "direction": "SHORT",
+     "val": 23619.19,
+     "upnl": 87673.22,
+     "pnl_pct": 1113.58,
+     "entry_px": 0.439191,
+     "mark_px": 0.093208
+    },
+    "ZEN": {
+     "direction": "SHORT",
+     "val": 22407.07,
+     "upnl": 4430.43,
+     "pnl_pct": 98.86,
+     "entry_px": 4.477,
+     "mark_px": 3.7380000000000004
+    },
+    "STX": {
+     "direction": "LONG",
+     "val": 21984.6,
+     "upnl": -568.81,
+     "pnl_pct": -12.94,
+     "entry_px": 0.26768,
+     "mark_px": 0.26093
+    },
+    "NIL": {
+     "direction": "SHORT",
+     "val": 21156.12,
+     "upnl": 10589.83,
+     "pnl_pct": 150.17,
+     "entry_px": 0.072233,
+     "mark_px": 0.048138
+    },
+    "SYRUP": {
+     "direction": "SHORT",
+     "val": 21105.87,
+     "upnl": 15314.12,
+     "pnl_pct": 217.68,
+     "entry_px": 0.145328,
+     "mark_px": 0.08422
+    },
+    "AVAX": {
+     "direction": "LONG",
+     "val": 20980.95,
+     "upnl": -4798.0,
+     "pnl_pct": -228.68,
+     "entry_px": 8.3754,
+     "mark_px": 6.8166
+    },
+    "APEX": {
+     "direction": "SHORT",
+     "val": 19567.56,
+     "upnl": 18859.11,
+     "pnl_pct": 289.14,
+     "entry_px": 0.265603,
+     "mark_px": 0.13525
+    },
+    "SAND": {
+     "direction": "SHORT",
+     "val": 19222.83,
+     "upnl": 5930.89,
+     "pnl_pct": 154.27,
+     "entry_px": 0.043214,
+     "mark_px": 0.033025
+    },
+    "kBONK": {
+     "direction": "SHORT",
+     "val": 19166.09,
+     "upnl": 9102.7,
+     "pnl_pct": 474.94,
+     "entry_px": 0.003205,
+     "mark_px": 0.002173
+    },
+    "INJ": {
+     "direction": "SHORT",
+     "val": 17097.91,
+     "upnl": 764.13,
+     "pnl_pct": 22.35,
+     "entry_px": 6.79139,
+     "mark_px": 6.500860000000001
+    },
+    "IMX": {
+     "direction": "SHORT",
+     "val": 17026.53,
+     "upnl": 7631.24,
+     "pnl_pct": 224.1,
+     "entry_px": 0.12949,
+     "mark_px": 0.08942000000000001
+    },
+    "PENGU": {
+     "direction": "SHORT",
+     "val": 15700.35,
+     "upnl": 1326.46,
+     "pnl_pct": 42.24,
+     "entry_px": 0.004815,
+     "mark_px": 0.0044399999999999995
+    },
+    "SUI": {
+     "direction": "SHORT",
+     "val": 15329.1,
+     "upnl": 3435.16,
+     "pnl_pct": 224.09,
+     "entry_px": 0.82906,
+     "mark_px": 0.67729
+    },
+    "MET": {
+     "direction": "LONG",
+     "val": 14867.6,
+     "upnl": -1470.57,
+     "pnl_pct": -29.67,
+     "entry_px": 0.241914,
+     "mark_px": 0.22014
+    },
+    "OP": {
+     "direction": "SHORT",
+     "val": 14666.78,
+     "upnl": 3055.31,
+     "pnl_pct": 104.16,
+     "entry_px": 0.08514,
+     "mark_px": 0.07047
+    },
+    "AR": {
+     "direction": "SHORT",
+     "val": 14142.57,
+     "upnl": -1225.34,
+     "pnl_pct": -43.32,
+     "entry_px": 2.1815,
+     "mark_px": 2.3885
+    },
+    "XLM": {
+     "direction": "LONG",
+     "val": 12826.54,
+     "upnl": -46.81,
+     "pnl_pct": -1.82,
+     "entry_px": 0.131046,
+     "mark_px": 0.13057
+    },
+    "SPX": {
+     "direction": "SHORT",
+     "val": 12795.4,
+     "upnl": 2777.83,
+     "pnl_pct": 108.55,
+     "entry_px": 0.34202,
+     "mark_px": 0.28102
+    },
+    "CAKE": {
+     "direction": "SHORT",
+     "val": 12029.41,
+     "upnl": 1098.45,
+     "pnl_pct": 27.39,
+     "entry_px": 1.71292,
+     "mark_px": 1.5695999999999999
+    },
+    "SEI": {
+     "direction": "SHORT",
+     "val": 11774.62,
+     "upnl": 2310.96,
+     "pnl_pct": 98.13,
+     "entry_px": 0.041432,
+     "mark_px": 0.034635
+    },
+    "ASTER": {
+     "direction": "LONG",
+     "val": 11192.08,
+     "upnl": -930.37,
+     "pnl_pct": -41.56,
+     "entry_px": 0.551245,
+     "mark_px": 0.508939
+    },
+    "AXS": {
+     "direction": "SHORT",
+     "val": 10498.73,
+     "upnl": 2495.47,
+     "pnl_pct": 118.85,
+     "entry_px": 0.77962,
+     "mark_px": 0.6299
+    },
+    "ETC": {
+     "direction": "SHORT",
+     "val": 9231.77,
+     "upnl": -649.57,
+     "pnl_pct": -35.18,
+     "entry_px": 5.4651,
+     "mark_px": 5.8788
+    },
+    "BIO": {
+     "direction": "SHORT",
+     "val": 9108.45,
+     "upnl": 3940.86,
+     "pnl_pct": 129.8,
+     "entry_px": 0.021911,
+     "mark_px": 0.015294
+    },
+    "WIF": {
+     "direction": "SHORT",
+     "val": 8887.64,
+     "upnl": 2766.05,
+     "pnl_pct": 155.61,
+     "entry_px": 0.164952,
+     "mark_px": 0.1258
+    },
+    "XAI": {
+     "direction": "LONG",
+     "val": 8732.22,
+     "upnl": -3115.3,
+     "pnl_pct": -107.03,
+     "entry_px": 0.00717,
+     "mark_px": 0.00529
+    },
+    "EIGEN": {
+     "direction": "SHORT",
+     "val": 8018.74,
+     "upnl": 2566.9,
+     "pnl_pct": 160.06,
+     "entry_px": 0.1526,
+     "mark_px": 0.11560000000000001
+    },
+    "MEME": {
+     "direction": "SHORT",
+     "val": 7363.5,
+     "upnl": 554.42,
+     "pnl_pct": 22.59,
+     "entry_px": 0.000318,
+     "mark_px": 0.00029600000000000004
+    },
+    "IO": {
+     "direction": "LONG",
+     "val": 7362.6,
+     "upnl": -480.54,
+     "pnl_pct": -19.58,
+     "entry_px": 0.11019,
+     "mark_px": 0.10343999999999999
+    },
+    "RESOLV": {
+     "direction": "SHORT",
+     "val": 7303.53,
+     "upnl": -135.1,
+     "pnl_pct": -5.55,
+     "entry_px": 0.013577,
+     "mark_px": 0.013833
+    },
+    "MNT": {
+     "direction": "LONG",
+     "val": 7254.45,
+     "upnl": 240.96,
+     "pnl_pct": 16.61,
+     "entry_px": 0.38555,
+     "mark_px": 0.3988
+    },
+    "KAS": {
+     "direction": "SHORT",
+     "val": 6413.37,
+     "upnl": 35.38,
+     "pnl_pct": 1.65,
+     "entry_px": 0.027405,
+     "mark_px": 0.027255
+    },
+    "TIA": {
+     "direction": "SHORT",
+     "val": 6311.7,
+     "upnl": 1301.54,
+     "pnl_pct": 103.11,
+     "entry_px": 0.40525,
+     "mark_px": 0.33597
+    },
+    "APT": {
+     "direction": "SHORT",
+     "val": 6285.91,
+     "upnl": 1089.0,
+     "pnl_pct": 173.24,
+     "entry_px": 0.4497,
+     "mark_px": 0.38330000000000003
+    },
+    "YGG": {
+     "direction": "LONG",
+     "val": 6225.34,
+     "upnl": 13.82,
+     "pnl_pct": 0.67,
+     "entry_px": 0.020009,
+     "mark_px": 0.020054
+    },
+    "PYTH": {
+     "direction": "SHORT",
+     "val": 6152.39,
+     "upnl": 1310.11,
+     "pnl_pct": 106.47,
+     "entry_px": 0.062119,
+     "mark_px": 0.051213999999999996
+    },
+    "DOGE": {
+     "direction": "LONG",
+     "val": 6137.86,
+     "upnl": -206.94,
+     "pnl_pct": -33.72,
+     "entry_px": 0.058606,
+     "mark_px": 0.056695
+    },
+    "KAITO": {
+     "direction": "SHORT",
+     "val": 5683.13,
+     "upnl": 163.34,
+     "pnl_pct": 14.37,
+     "entry_px": 0.168055,
+     "mark_px": 0.16336
+    },
+    "ORDI": {
+     "direction": "SHORT",
+     "val": 5602.29,
+     "upnl": -143.69,
+     "pnl_pct": -7.69,
+     "entry_px": 2.5656,
+     "mark_px": 2.6332
+    },
+    "ZETA": {
+     "direction": "LONG",
+     "val": 5214.7,
+     "upnl": -1415.72,
+     "pnl_pct": -81.45,
+     "entry_px": 0.03459,
+     "mark_px": 0.02721
+    },
+    "CHIP": {
+     "direction": "SHORT",
+     "val": 5051.31,
+     "upnl": 1236.73,
+     "pnl_pct": 73.45,
+     "entry_px": 0.034942,
+     "mark_px": 0.02807
+    },
+    "GRASS": {
+     "direction": "SHORT",
+     "val": 4954.54,
+     "upnl": 2517.57,
+     "pnl_pct": 152.44,
+     "entry_px": 0.57815,
+     "mark_px": 0.38336
+    },
+    "RSR": {
+     "direction": "SHORT",
+     "val": 4834.04,
+     "upnl": 1128.18,
+     "pnl_pct": 70.01,
+     "entry_px": 0.001558,
+     "mark_px": 0.001264
+    },
+    "PNUT": {
+     "direction": "SHORT",
+     "val": 4789.41,
+     "upnl": -181.21,
+     "pnl_pct": -11.35,
+     "entry_px": 0.02568,
+     "mark_px": 0.02669
+    },
+    "IOTA": {
+     "direction": "SHORT",
+     "val": 4738.54,
+     "upnl": 216.31,
+     "pnl_pct": 13.69,
+     "entry_px": 0.032701,
+     "mark_px": 0.031274
+    },
+    "HEMI": {
+     "direction": "SHORT",
+     "val": 4291.65,
+     "upnl": 73.96,
+     "pnl_pct": 5.17,
+     "entry_px": 0.003349,
+     "mark_px": 0.003293
+    },
+    "BOME": {
+     "direction": "SHORT",
+     "val": 3676.23,
+     "upnl": 1432.44,
+     "pnl_pct": 116.89,
+     "entry_px": 0.000654,
+     "mark_px": 0.000471
+    },
+    "S": {
+     "direction": "LONG",
+     "val": 3252.2,
+     "upnl": -267.29,
+     "pnl_pct": -41.09,
+     "entry_px": 0.03074,
+     "mark_px": 0.028406
+    },
+    "DASH": {
+     "direction": "SHORT",
+     "val": 2756.9,
+     "upnl": 49.34,
+     "pnl_pct": 8.95,
+     "entry_px": 36.3643,
+     "mark_px": 35.725
+    },
+    "W": {
+     "direction": "LONG",
+     "val": 2753.53,
+     "upnl": 141.23,
+     "pnl_pct": 25.65,
+     "entry_px": 0.00803,
+     "mark_px": 0.00847
+    },
+    "AVNT": {
+     "direction": "SHORT",
+     "val": 2625.08,
+     "upnl": 1016.46,
+     "pnl_pct": 193.61,
+     "entry_px": 0.083535,
+     "mark_px": 0.060218
+    },
+    "AIXBT": {
+     "direction": "SHORT",
+     "val": 2375.36,
+     "upnl": 36.38,
+     "pnl_pct": 4.59,
+     "entry_px": 0.012072,
+     "mark_px": 0.01189
+    },
+    "CASHCAT": {
+     "direction": "SHORT",
+     "val": 2179.59,
+     "upnl": 15.15,
+     "pnl_pct": 2.09,
+     "entry_px": 0.041439,
+     "mark_px": 0.041153
+    },
+    "CC": {
+     "direction": "SHORT",
+     "val": 2126.73,
+     "upnl": 40.22,
+     "pnl_pct": 5.67,
+     "entry_px": 0.078936,
+     "mark_px": 0.07747100000000001
+    },
+    "LAYER": {
+     "direction": "LONG",
+     "val": 2102.07,
+     "upnl": -459.94,
+     "pnl_pct": -65.64,
+     "entry_px": 0.051878,
+     "mark_px": 0.042565
+    },
+    "SOPH": {
+     "direction": "SHORT",
+     "val": 1972.55,
+     "upnl": 612.77,
+     "pnl_pct": 93.2,
+     "entry_px": 0.00117,
+     "mark_px": 0.0008929999999999999
+    },
+    "ACE": {
+     "direction": "SHORT",
+     "val": 1799.09,
+     "upnl": -21.16,
+     "pnl_pct": -3.53,
+     "entry_px": 0.0756,
+     "mark_px": 0.0765
+    },
+    "PEOPLE": {
+     "direction": "SHORT",
+     "val": 1758.71,
+     "upnl": -21.33,
+     "pnl_pct": -3.64,
+     "entry_px": 0.004841,
+     "mark_px": 0.004901
+    },
+    "STABLE": {
+     "direction": "LONG",
+     "val": 1744.38,
+     "upnl": -247.58,
+     "pnl_pct": -42.58,
+     "entry_px": 0.026585,
+     "mark_px": 0.023281
+    },
+    "MANTA": {
+     "direction": "SHORT",
+     "val": 1729.4,
+     "upnl": 311.44,
+     "pnl_pct": 54.03,
+     "entry_px": 0.04644,
+     "mark_px": 0.03936
+    },
+    "MOODENG": {
+     "direction": "SHORT",
+     "val": 1663.95,
+     "upnl": 166.89,
+     "pnl_pct": 30.09,
+     "entry_px": 0.028514,
+     "mark_px": 0.025914999999999997
+    },
+    "INIT": {
+     "direction": "SHORT",
+     "val": 1375.24,
+     "upnl": 79.88,
+     "pnl_pct": 17.43,
+     "entry_px": 0.087695,
+     "mark_px": 0.08288100000000001
+    },
+    "MOVE": {
+     "direction": "SHORT",
+     "val": 1099.69,
+     "upnl": 100.34,
+     "pnl_pct": 27.37,
+     "entry_px": 0.004976,
+     "mark_px": 0.004560000000000001
+    },
+    "2Z": {
+     "direction": "SHORT",
+     "val": 837.42,
+     "upnl": 31.89,
+     "pnl_pct": 11.43,
+     "entry_px": 0.016308,
+     "mark_px": 0.015710000000000002
+    },
+    "GAS": {
+     "direction": "SHORT",
+     "val": 836.46,
+     "upnl": 103.09,
+     "pnl_pct": 36.97,
+     "entry_px": 1.02125,
+     "mark_px": 0.9092
+    },
+    "FOGO": {
+     "direction": "SHORT",
+     "val": 717.41,
+     "upnl": 121.15,
+     "pnl_pct": 50.66,
+     "entry_px": 0.00178,
+     "mark_px": 0.0015229999999999998
+    },
+    "PROVE": {
+     "direction": "LONG",
+     "val": 710.52,
+     "upnl": -186.28,
+     "pnl_pct": -78.65,
+     "entry_px": 0.169207,
+     "mark_px": 0.13406
+    },
+    "BERA": {
+     "direction": "LONG",
+     "val": 693.39,
+     "upnl": -76.45,
+     "pnl_pct": -55.13,
+     "entry_px": 0.09016,
+     "mark_px": 0.08120999999999999
+    },
+    "kSHIB": {
+     "direction": "SHORT",
+     "val": 582.72,
+     "upnl": 158.93,
+     "pnl_pct": 272.74,
+     "entry_px": 0.004635,
+     "mark_px": 0.0036420000000000003
+    },
+    "UMA": {
+     "direction": "SHORT",
+     "val": 566.27,
+     "upnl": 42.38,
+     "pnl_pct": 22.45,
+     "entry_px": 0.25613,
+     "mark_px": 0.23829999999999998
+    },
+    "AZTEC": {
+     "direction": "SHORT",
+     "val": 475.13,
+     "upnl": 167.57,
+     "pnl_pct": 105.8,
+     "entry_px": 0.012455,
+     "mark_px": 0.009208
+    },
+    "CELO": {
+     "direction": "SHORT",
+     "val": 449.34,
+     "upnl": 51.64,
+     "pnl_pct": 34.48,
+     "entry_px": 0.062179,
+     "mark_px": 0.05577
+    },
+    "ALT": {
+     "direction": "LONG",
+     "val": 445.53,
+     "upnl": -89.03,
+     "pnl_pct": -59.95,
+     "entry_px": 0.005234,
+     "mark_px": 0.004363
+    },
+    "POPCAT": {
+     "direction": "LONG",
+     "val": 359.67,
+     "upnl": -10.63,
+     "pnl_pct": -8.86,
+     "entry_px": 0.026569,
+     "mark_px": 0.025807
+    },
+    "BLUR": {
+     "direction": "SHORT",
+     "val": 346.49,
+     "upnl": -49.76,
+     "pnl_pct": -43.08,
+     "entry_px": 0.00676,
+     "mark_px": 0.007894
+    },
+    "ANIME": {
+     "direction": "LONG",
+     "val": 282.84,
+     "upnl": -0.56,
+     "pnl_pct": -0.6,
+     "entry_px": 0.002167,
+     "mark_px": 0.002163
+    },
+    "LINEA": {
+     "direction": "LONG",
+     "val": 198.82,
+     "upnl": -23.78,
+     "pnl_pct": -35.88,
+     "entry_px": 0.001875,
+     "mark_px": 0.001675
+    },
+    "kLUNC": {
+     "direction": "LONG",
+     "val": 194.9,
+     "upnl": -4.04,
+     "pnl_pct": -6.22,
+     "entry_px": 0.042691,
+     "mark_px": 0.041824
+    },
+    "SUSHI": {
+     "direction": "SHORT",
+     "val": 159.39,
+     "upnl": 11.23,
+     "pnl_pct": 21.15,
+     "entry_px": 0.16407,
+     "mark_px": 0.15327
+    },
+    "SUPER": {
+     "direction": "SHORT",
+     "val": 158.07,
+     "upnl": 24.88,
+     "pnl_pct": 47.22,
+     "entry_px": 0.13582,
+     "mark_px": 0.11735
+    },
+    "0G": {
+     "direction": "SHORT",
+     "val": 114.72,
+     "upnl": 3.89,
+     "pnl_pct": 10.18,
+     "entry_px": 0.111376,
+     "mark_px": 0.10772
+    }
+   }
   }
  },
  "0xfc667adba8d4837586078f4fdcdc29804337ca06": {
@@ -33509,6 +35992,75 @@
      "mark_px": 3566.2
     }
    }
+  },
+  "2026-11-23T20": {
+   "account_value": 20323887.02,
+   "positions": {
+    "BTC": {
+     "direction": "SHORT",
+     "val": 14207912.85,
+     "upnl": -206683.17,
+     "pnl_pct": -29.09,
+     "entry_px": 60240.7,
+     "mark_px": 61130.0
+    },
+    "XRP": {
+     "direction": "LONG",
+     "val": 5502987.32,
+     "upnl": -243805.07,
+     "pnl_pct": -88.61,
+     "entry_px": 0.983076,
+     "mark_px": 0.94137
+    },
+    "ETH": {
+     "direction": "SHORT",
+     "val": 4205080.05,
+     "upnl": -78999.6,
+     "pnl_pct": -37.57,
+     "entry_px": 1694.35,
+     "mark_px": 1726.8000000000002
+    },
+    "ZEC": {
+     "direction": "SHORT",
+     "val": 4056177.61,
+     "upnl": 214477.04,
+     "pnl_pct": 52.88,
+     "entry_px": 843.8911,
+     "mark_px": 801.51
+    },
+    "HYPE": {
+     "direction": "SHORT",
+     "val": 2114063.01,
+     "upnl": -97862.57,
+     "pnl_pct": -23.15,
+     "entry_px": 61.4413,
+     "mark_px": 64.4236
+    },
+    "NEAR": {
+     "direction": "SHORT",
+     "val": 1340089.53,
+     "upnl": 35521.44,
+     "pnl_pct": 26.51,
+     "entry_px": 3.09009,
+     "mark_px": 3.0103
+    },
+    "SOL": {
+     "direction": "LONG",
+     "val": 560562.75,
+     "upnl": -4621.96,
+     "pnl_pct": -16.49,
+     "entry_px": 73.5676,
+     "mark_px": 72.966
+    },
+    "PAXG": {
+     "direction": "LONG",
+     "val": 312744.01,
+     "upnl": -39766.65,
+     "pnl_pct": -101.72,
+     "entry_px": 4091.681,
+     "mark_px": 3630.1
+    }
+   }
   }
  },
  "0x44871d62caaeb8b91777be8aae0e23ee68b4c92d": {
@@ -33652,6 +36204,19 @@
      "pnl_pct": 4.69,
      "entry_px": 1715.51,
      "mark_px": 1723.6000000000001
+    }
+   }
+  },
+  "2026-11-23T20": {
+   "account_value": 529626.76,
+   "positions": {
+    "ETH": {
+     "direction": "SHORT",
+     "val": 1428118.86,
+     "upnl": 23096.59,
+     "pnl_pct": 16.17,
+     "entry_px": 1754.72,
+     "mark_px": 1726.8
     }
    }
   }
