@@ -101,14 +101,9 @@ SMA_NEUTRAL_PCT = 3.0  # odchylenie od SMA uznawane za konsolidację
 TRANCHES = [(0.50, 1), (0.30, 3), (0.20, 5)]  # (udzial alokacji, dzwignia)
 SL_ATR_MULT = 2.0      # stop-loss = 2 x ATR(14) dzienny (wczesniej sztywne 4-5% ~ 1 ATR)
 SL_MIN, SL_MAX = 6.0, 12.0   # granice stop-lossu w % od wejscia transzy
-TP1_R = 1.5            # TP1 = 1.5 x odleglosc SL od P1
-ATR_STEP = 1.0         # P2 = P1 +/- 1 ATR, P3 = P1 +/- 2 ATR (po wypelnieniu P1)
 
 SHORT_SIZE_SCALE = 0.5   # noga SHORT historycznie bez przewagi -> polowa wielkosci
 RISK_BUDGET_PCT = 5.0    # maks. strata przy SL wszystkich transz (% kapitalu)
-
-RSI_FOMO_LONG = 75     # zakaz LONG po rynkowej, gdy RSI D1 powyzej
-RSI_FOMO_SHORT = 30    # zakaz SHORT po rynkowej, gdy RSI D1 ponizej
 
 # Dodatki (korekta wyniku, lacznie max +-10 pkt)
 EXTRA_FEAR_GREED_PTS = 4
@@ -497,61 +492,25 @@ def signal_of(n):
 # ---------------------------------------------------------------- plan pozycji
 
 def build_plan(final_score, spot, daily):
-    # rozklad kierunkowy wg wzoru z promptu (po zaokragleniu do 5%)
     long_alloc = round5((100 + final_score) / 2)
-    short_alloc = 100 - long_alloc
+    plan = {"long_alloc": long_alloc, "short_alloc": 100 - long_alloc,
+            "direction": 0, "open_alloc": 0.0}
 
     if final_score >= NEUTRAL_BAND:
         direction = 1
     elif final_score <= -NEUTRAL_BAND:
         direction = -1
     else:
-        direction = 0
-
-    plan = {"long_alloc": long_alloc, "short_alloc": short_alloc,
-            "direction": direction, "open_alloc": 0.0}
-    if direction == 0:
         return plan
 
-    d_close = [c["c"] for c in daily]
-    a = atr(daily)
-    rsi_d1 = rsi(d_close)
-    sma20 = sma(d_close, 20)
-    sl_pct = max(SL_MIN, min(SL_MAX, SL_ATR_MULT * a / spot * 100))
-
-    # P1: rynkowo albo - przy filtrze anty-FOMO - limit na retescie sredniej 20D
-    # (ograniczony do 0.5-1.5 ATR od ceny)
-    p1, p1_limit = spot, False
-    if direction == 1 and rsi_d1 is not None and rsi_d1 > RSI_FOMO_LONG:
-        p1 = min(spot - 0.5 * a, max(sma20, spot - 1.5 * a))
-        p1_limit = True
-    elif direction == -1 and rsi_d1 is not None and rsi_d1 < RSI_FOMO_SHORT:
-        p1 = max(spot + 0.5 * a, min(sma20, spot + 1.5 * a))
-        p1_limit = True
-
-    levels = [p1, p1 + direction * ATR_STEP * a, p1 + direction * 2 * ATR_STEP * a]
+    sl_pct = max(SL_MIN, min(SL_MAX, SL_ATR_MULT * atr(daily) / spot * 100))
     eff_lev = sum(share * lev for share, lev in TRANCHES)
-
-    # wielkosc: ekspozycja NETTO wg wzoru (= |wynik|), SHORT x SHORT_SIZE_SCALE,
-    # ograniczona budzetem ryzyka przy stop-lossie wszystkich transz
     target = round5(abs(final_score)) * (SHORT_SIZE_SCALE if direction == -1 else 1.0)
     risk_cap = RISK_BUDGET_PCT / (eff_lev * sl_pct / 100)
     open_alloc = math.floor(min(target, risk_cap) * 2) / 2
-    if open_alloc <= 0:
-        plan["direction"] = 0
-        return plan
 
-    plan.update({
-        "levels": levels,
-        "p1_limit": p1_limit,
-        "sl_pct": sl_pct,
-        "tp1": p1 + direction * TP1_R * sl_pct / 100 * p1,
-        "open_alloc": open_alloc,
-        "target": target,
-        "risk_cap": risk_cap,
-        "max_loss_pct": open_alloc * eff_lev * sl_pct / 100,
-        "rsi_d1": rsi_d1,
-    })
+    if open_alloc > 0:
+        plan.update({"direction": direction, "open_alloc": open_alloc})
     return plan
 
 
