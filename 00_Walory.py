@@ -52,7 +52,7 @@ GROUPS = {
 
 def format_colored_val(val, max_pos, max_neg):
     """
-    Zmiana procentowa z emoji i pogrubieniem:
+    Zmiana procentowa z emoji:
     - wzrosty: najlepszy w grupie = 🟢, pozostałe = 🟡
     - spadki: największy minus w grupie = 🔴, pozostałe = 🟠
     """
@@ -61,7 +61,7 @@ def format_colored_val(val, max_pos, max_neg):
         icon = "🟢" if (max_pos is not None and val == max_pos and max_pos > 0) else "🟡"
     else:
         icon = "🔴" if (max_neg is not None and val == max_neg and max_neg < 0) else "🟠"
-    return f"{icon} <b>{val_str}</b>"
+    return f"{icon} {val_str}"
 
 
 # ---------------------------------------------------------------- dane
@@ -125,7 +125,7 @@ def extremes(values):
 
 
 def build_report(groups_data):
-    parts = ["📊 <b>RAPORT SYGNAŁÓW I POTENCJAŁU WALORÓW</b>"]
+    parts = ["📊 RAPORT SYGNAŁÓW I POTENCJAŁU WALORÓW"]
     for group_name, assets in groups_data.items():
         if not assets:
             continue
@@ -136,12 +136,12 @@ def build_report(groups_data):
         for a in assets:
             status = "Wzrostowy (Bullish) 🟢" if a["bullish"] else "Spadkowy / Korekta (Bearish) 🔴"
             parts.append(
-                f"📌 <b>{html.escape(a['name'])}</b>\n"
-                f"• <b>Cena rynkowa (Mark Price):</b> {fmt_usd(a['latest_close'])}\n"
-                f"• <b>Poziom 200 SMA (Stop Loss):</b> {fmt_usd(a['latest_sma'])}\n"
-                f"• <b>Odchylenie od 200 SMA:</b> {a['diff_pct']:+.1f}%\n"
-                f"• <b>Główny trend (D1):</b> {status}\n"
-                f"• <b>Wzrost T / M:</b> {format_colored_val(a['change_7d'], max_pos_t, max_neg_t)} / "
+                f"📌 {html.escape(a['name'])}\n"
+                f"• Cena rynkowa (Mark Price): {fmt_usd(a['latest_close'])}\n"
+                f"• Poziom 200 SMA (Stop Loss): {fmt_usd(a['latest_sma'])}\n"
+                f"• Odchylenie od 200 SMA: {a['diff_pct']:+.1f}%\n"
+                f"• Główny trend (D1): {status}\n"
+                f"• Wzrost T / M: {format_colored_val(a['change_7d'], max_pos_t, max_neg_t)} / "
                 f"{format_colored_val(a['change_30d'], max_pos_m, max_neg_m)}\n"
             )
     return "\n".join(parts)
