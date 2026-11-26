@@ -51,7 +51,7 @@ HISTORY_DAYS = 30
 # ---------------------------------------------------------------- parametry
 
 MAX_COINS = 3             # ile walut pokazać (największy zaangażowany kapitał)
-MAX_WALLET_LINES = 5      # ile największych portfeli wypisać przy każdej walucie
+MAX_WALLET_LINES = 3      # ile największych portfeli wypisać przy każdej walucie
 MIN_EQUITY = 50_000       # portfele poniżej tej wartości są pomijane (USD)
 
 
@@ -298,7 +298,7 @@ def build_coin_block(i, c):
         trend_parts.append(f"{c['down']} redukuje")
     if trend_parts:
         lines.append(f"Zmiany od poprzedniego dnia: <b>{', '.join(trend_parts)}</b>")
-        lines.append("")
+    lines.append("")      # zawsze jedna pusta linia przed listą portfeli
 
     shown = c["entries"][:MAX_WALLET_LINES]
     lines += [build_wallet_line(e) for e in shown]
@@ -318,13 +318,6 @@ def build_message(coins, wallets, today_iso):
         msg += "<i>Brak otwartych pozycji w analizowanych portfelach.</i>\n\n"
     for i, c in enumerate(coins, 1):
         msg += build_coin_block(i, c)
-    if coins:
-        msg += (
-            "<i>Informacja o pozycjach portfeli, nie rekomendacja. Kierunek = strona z większym "
-            "przekonaniem portfeli; zgodność = jej udział w sumie obu stron. Zaangażowanie = "
-            "suma marginów po obu stronach, nominalnie = margin x dźwignia. Redukcja = spadek "
-            "wielkości pozycji (w jednostkach monety) od poprzedniego dnia.</i>\n"
-        )
     return msg
 
 
