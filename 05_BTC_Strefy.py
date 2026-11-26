@@ -31,9 +31,10 @@ adresów IP z USA (runnery GitHub), dlatego pierwszy jest publiczny mirror danyc
 Skrypt odtwarza logikę wskaźnika na dziennych świecach BTC. Źródło: yfinance (BTC-USD od 2014 r.),
 awaryjnie Kraken (ok. 720 świec D1 - stan pozycji może wtedy odbiegać od wykresu TradingView).
 Wskaźnik "pamięta" wejścia, więc cała historia jest przeliczana przy każdym uruchomieniu. TradingView
-używa innego źródła cen, więc pojedyncze sygnały mogą różnić się o jedną świecę. To nie jest porada
-inwestycyjna. Komunikat 3 wysyłany jest w każdym przebiegu; sekcja NOWE SYGNAŁY pokazuje tylko zdarzenia
-jeszcze niezgłoszone - lista zgłoszonych zdarzeń jest w 05_Strefy_History.json.
+używa innego źródła cen, więc pojedyncze sygnały mogą różnić się o jedną świecę. Komunikat 3 jest
+wysyłany w każdym przebiegu; sekcja NOWE SYGNAŁY pokazuje tylko zdarzenia jeszcze niezgłoszone -
+lista zgłoszonych zdarzeń jest w 05_Strefy_History.json. Wykorzystane źródło danych jest zapisywane
+tylko w logu, nie w komunikacie, a stan uwzględnia też dzisiejszą, jeszcze otwartą świecę dzienną.
 Ostatni halving (2028) jest szacunkowy - po prawdziwym halvingu zaktualizuj HALVINGS.
 """
 
@@ -547,13 +548,11 @@ def waiting_line(last, spot):
     return "👀 Faza cyklu nie dopuszcza nowych wejść."
 
 
-def signal_text(today, spot, last, new_events, source, partial):
+def signal_text(today, spot, last, new_events):
     ci, sma, up, lo = last["ci"], last["sma"], last["up"], last["lo"]
     lines = [f"<b>₿ BTC - Strefy konsolidacji</b> {today.strftime('%d.%m.%Y')}",
-             f"Cena: <b>{usd(spot)}</b> | wykres D1, kanały W1 | dane: {source}"]
-    if partial:
-        lines.append("<i>Stan uwzględnia dzisiejszą, jeszcze otwartą świecę dzienną.</i>")
-    lines.append("")
+             f"Cena: <b>{usd(spot)}</b> | wykres D1, kanały W1",
+             ""]
     if new_events:
         lines += ["<b>NOWE SYGNAŁY:</b>"] + [event_text(e) for e in new_events] + [""]
 
@@ -575,8 +574,6 @@ def signal_text(today, spot, last, new_events, source, partial):
     else:
         lines += ["⚪️ <b>Pozycja</b>: brak", waiting_line(last, spot)]
 
-    lines += ["", "<i>Odtworzenie wskaźnika TradingView na danych yfinance - sygnały mogą różnić się od wykresu. "
-                  "To nie jest porada inwestycyjna.</i>"]
     return "\n".join(lines)
 
 
@@ -585,6 +582,7 @@ def signal_message():
     df, source = load_daily()
     if len(df) < MIN_CANDLES:
         raise RuntimeError("za mało danych dziennych")
+    print(f"Źródło danych: {source}")      # tylko log, nie Telegram
 
     today = datetime.now(timezone.utc).date()
     spot = float(df["Close"].iloc[-1])
@@ -597,7 +595,7 @@ def signal_message():
     notified = list(state.get("notified", []))
     keyed = [(f"{e['type']}|{e['date']}|{e.get('side', '')}", e) for e in events]
     new_events = [e for key, e in keyed if key not in notified]
-    text = signal_text(today, spot, last, new_events, source, df.index[-1].date() == today)
+    text = signal_text(today, spot, last, new_events)
 
     def save_state():
         state["notified"] = (notified + [key for key, _ in keyed])[-NOTIFIED_KEEP:]
