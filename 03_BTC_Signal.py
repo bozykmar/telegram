@@ -2,8 +2,10 @@
 03_BTC_Signal.py
 
 Dzienny sygnał dla BTC wysyłany na Telegram. Zasady z promptu (11 wskaźników, wagi,
-mnożniki M = +1 / 0 / -1, alokacja LONG/SHORT, transze P1-P3, filtr anty-FOMO) zostały
-zamienione na deterministyczny kod, więc wynik jest powtarzalny.
+mnożniki M = +1 / 0 / -1, alokacja LONG/SHORT, wielkość pozycji ograniczona budżetem
+ryzyka) zostały zamienione na deterministyczny kod, więc wynik jest powtarzalny.
+Komunikat pokazuje wskaźniki, wynik netto, podział LONG/SHORT i wielkość pozycji do otwarcia
+(bez poziomów wejścia, SL i TP).
 
 Źródła danych (darmowe, bez kluczy):
   - Kraken            : świece D1 i W1, cena spot
@@ -23,15 +25,14 @@ Przybliżenia (zaznaczone w komunikacie):
 Przegląd reguł i wag (backtest kodu produkcyjnego na dziennych danych Bitstamp 2016-2024,
 tylko wskaźniki cenowe; MVRV, funding/OI i Fear/Greed nie mają darmowej historii):
   - cena poniżej 200W SMA NIE poprzedzała spadków (śr. +8% w 30 dni) -> M = 0, nie -1,
-  - RSI D1 powyżej 75 poprzedzał wzrosty (śr. +15% w 30 dni) -> M = 0, nie -1
-    (zostaje tylko jako filtr anty-FOMO przy wejściu),
+  - RSI D1 powyżej 75 poprzedzał wzrosty (śr. +15% w 30 dni) -> M = 0, nie -1,
   - Pi Cycle Top był najsilniejszym sygnałem szczytu (śr. -18% w 30 dni) -> wyższa waga
     i blokada nowych LONG, gdy aktywny,
   - noga SHORT miała w próbie ujemny wynik (zysk tylko w bessie 2022) -> SHORT x0.5,
   - sizing "tylko strona dominująca" podwajał ekspozycję netto względem wzoru
     (100 +/- wynik) / 2 i pogłębiał obsunięcie -> wielkość liczona netto,
-  - stop 4-5% (~1 ATR) był wybijany w ok. 55-62% wejść w ciągu 10 dni -> SL = 2 x ATR,
-    a wielkość pozycji ograniczona budżetem ryzyka.
+  - stop 4-5% (~1 ATR) był wybijany w ok. 55-62% wejść w ciągu 10 dni -> do obliczeń
+    przyjęto SL = 2 x ATR, a wielkość pozycji jest ograniczona budżetem ryzyka.
 Wagi nie są "zoptymalizowane" - próba obejmuje ok. 2,5 cyklu BTC, więc różnice między
 zestawami wag mieszczą się w szumie. Traktuj wynik jako uporządkowany przegląd wskaźników,
 a nie prognozę kursu.
@@ -98,9 +99,9 @@ NEUTRAL_BAND = 10      # |wynik netto| ponizej tej wartosci = brak nowych pozycj
 STRONG_LEVEL = 50      # |wynik netto| od tej wartosci = sygnal "MOCNY"
 SMA_NEUTRAL_PCT = 3.0  # odchylenie od SMA uznawane za konsolidację
 
-TRANCHES = [(0.50, 1), (0.30, 3), (0.20, 5)]  # (udzial alokacji, dzwignia)
-SL_ATR_MULT = 2.0      # stop-loss = 2 x ATR(14) dzienny (wczesniej sztywne 4-5% ~ 1 ATR)
-SL_MIN, SL_MAX = 6.0, 12.0   # granice stop-lossu w % od wejscia transzy
+TRANCHES = [(0.50, 1), (0.30, 3), (0.20, 5)]  # (udzial alokacji, dzwignia) -> efektywna dzwignia
+SL_ATR_MULT = 2.0      # stop-loss do budzetu ryzyka = 2 x ATR(14) dzienny
+SL_MIN, SL_MAX = 6.0, 12.0   # granice stop-lossu (% od wejscia) uzywanego w budzecie ryzyka
 
 SHORT_SIZE_SCALE = 0.5   # noga SHORT historycznie bez przewagi -> polowa wielkosci
 RISK_BUDGET_PCT = 5.0    # maks. strata przy SL wszystkich transz (% kapitalu)
@@ -411,13 +412,13 @@ def evaluate_indicators(spot, daily, weekly, mvrv_z, hl, oi_trend):
         oi_txt = {"up": "OI rośnie", "down": "OI spada", "flat": "OI płaskie", None: "OI bez historii"}[oi_trend]
         out["funding"] = (m, "Funding + OI", f"{f:.4f}%/8h, {oi_txt} - {why}")
 
-    # 8. RSI D1 (wyprzedanie = WZROST; wykupienie tylko jako filtr wejscia, nie sygnal spadku)
+    # 8. RSI D1 (wyprzedanie = WZROST; wykupienie = brak sygnalu spadku)
     r = rsi(d_close)
     if r is not None:
         if r < 30:
             m, why = 1, "wyprzedanie"
         elif r > 75:
-            m, why = 0, "wykupienie (filtr wejścia, nie sygnał spadku)"
+            m, why = 0, "wykupienie (bez sygnału spadku)"
         else:
             m, why = 0, "neutralnie"
         out["rsi_d1"] = (m, "RSI D1", f"{r:.1f} - {why}")
