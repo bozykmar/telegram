@@ -636,33 +636,6 @@ def build_message(today_iso, spot, daily, indicators, extras, score, plan, prev_
     msg += (f"<b>Pozycja LONG:</b> {plan['long_alloc']}% kapitału "
             f"(do otwarcia: {long_open:g}%) - <b>{long_status}</b>\n")
 
-    if d != 0:
-        side = "LONG" if d == 1 else "SHORT"
-        p1, p2, p3 = plan["levels"]
-        a = plan["open_alloc"]
-        p1_txt = f"{usd(p1)} (limit, retest)" if plan["p1_limit"] else f"{usd(p1)} (rynkowo)"
-
-        size_txt = f"|wynik| {round5(abs(n)):g}%"
-        if d == -1:
-            size_txt += f" x{SHORT_SIZE_SCALE:g} (SHORT)"
-        size_txt += f" = {plan['target']:g}%"
-        if plan["target"] > plan["risk_cap"]:
-            size_txt += f", ograniczone budżetem ryzyka do {open_alloc:g}%"
-
-        msg += (
-            f"\n<b>Plan {side} (margin {open_alloc:g}% kapitału):</b>\n"
-            f"<i>Wielkość: {size_txt}</i>\n"
-            f"P1 (50%, x1): {p1_txt} - {a * 0.5:.1f}% kapitału\n"
-            f"P2 (30%, x3): {usd(p2)} - {a * 0.3:.1f}% kapitału\n"
-            f"P3 (20%, x5): {usd(p3)} - {a * 0.2:.1f}% kapitału\n"
-            f"P2/P3 tylko po wypełnieniu P1 (zlecenia stop zgodne z trendem)\n"
-            f"SL: {plan['sl_pct']:.1f}% od wejścia każdej transzy ({SL_ATR_MULT:g} x ATR) | "
-            f"TP1: {usd(plan['tp1'])}, potem SL na break-even\n"
-            f"Maks. strata przy SL ≈ {plan['max_loss_pct']:.1f}% kapitału (gdy wejdą wszystkie transze)\n"
-        )
-        if plan["p1_limit"]:
-            msg += "Filtr anty-FOMO: P1 tylko na retest, bez wejścia po cenie rynkowej.\n"
-
     if score.get("long_blocked"):
         msg += "\n⚠️ Pi Cycle Top aktywny - blokada nowych pozycji LONG.\n"
 
