@@ -35,7 +35,7 @@ używa innego źródła cen, więc pojedyncze sygnały mogą różnić się o je
 wysyłany w każdym przebiegu; sekcja NOWE SYGNAŁY pokazuje tylko zdarzenia jeszcze niezgłoszone -
 lista zgłoszonych zdarzeń jest w 05_Strefy_History.json. Wykorzystane źródło danych jest zapisywane
 tylko w logu, nie w komunikacie, a stan uwzględnia też dzisiejszą, jeszcze otwartą świecę dzienną.
-Ostatni halving (2028) jest szacunkowy - po prawdziwym halvingu zaktualizuj HALVINGS.
+Ostatni halving (2028, przyjęty 10.04.2028) jest szacunkowy - po prawdziwym halvingu zaktualizuj HALVINGS.
 """
 
 import sys
@@ -207,8 +207,16 @@ MOVE_STEP = 1.0           # minimalne przesunięcie SL do komunikatu (%)
 MAX_LOSS_PCT = 100.0 / LEVERAGE * LIQ_SAFETY
 
 HALVINGS = [date(2012, 11, 28), date(2016, 7, 9), date(2020, 5, 11), date(2024, 4, 20),
-            date(2028, 4, 20)]   # ostatni - szacunkowy
+            date(2028, 4, 10)]   # ostatni - szacunkowy
 CYCLE_DAYS = 1461         # długość cyklu po ostatnim znanym halvingu
+
+MONTHS_PL = ("stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca",
+             "lipca", "sierpnia", "września", "października", "listopada", "grudnia")
+
+
+def fmt_date_pl(d):
+    """Data po polsku w dopełniaczu, np. 10 kwietnia 2028."""
+    return f"{d.day} {MONTHS_PL[d.month - 1]} {d.year}"
 
 
 # ---------------------------------------------------------------- dane
@@ -376,12 +384,18 @@ def cycle_info(d):
         tightness = 0.0 if rem >= RAMP_DAYS else (1.0 if rem <= 0 else 1.0 - rem / RAMP_DAYS)
         return WIDE_MULT + (TIGHT_MULT - WIDE_MULT) * tightness
 
+    # dzień szczytu liczony od 1 (dzień halvingu = dzień 1), stąd PEAK_DAY - 1
+    ath_base = last if dd < PEAK_DAY else nxt
+    ath_date = ath_base + timedelta(days=PEAK_DAY - 1)
+    days_to_ath = (ath_date - d).days
+
     return {
         "dd": dd, "phase": phase, "long_zone": long_zone, "short_zone": short_zone,
         "rem_peak": rem_peak, "rem_bottom": rem_bottom,
         "mult_long": multiplier(rem_peak), "mult_short": multiplier(rem_bottom),
         "long_force": FORCE_EXIT and PEAK_DAY + PEAK_GRACE <= dd < BOTTOM_DAY,
         "short_force": FORCE_EXIT and (dd >= BOTTOM_DAY - COVER_MARGIN or dd < PEAK_DAY),
+        "next_halving": nxt, "ath_date": ath_date, "days_to_ath": days_to_ath,
     }
 
 
@@ -548,6 +562,15 @@ def waiting_line(last, spot):
     return "👀 Faza cyklu nie dopuszcza nowych wejść."
 
 
+def cycle_line(ci, zone):
+    """Linia fazy cyklu: dni od halvingu (z datą) oraz dni do ATH (z datą)."""
+    line = (f"🔄 <b>Faza cyklu</b>: {ci['phase']} ({zone}), "
+            f"{ci['dd']} dni od halvingu ({fmt_date_pl(ci['next_halving'])})")
+    if ci["days_to_ath"] >= 0:
+        line += f" / {ci['days_to_ath']} dni do ATH ({fmt_date_pl(ci['ath_date'])})"
+    return line
+
+
 def signal_text(today, spot, last, new_events):
     ci, sma, up, lo = last["ci"], last["sma"], last["up"], last["lo"]
     lines = [f"<b>₿ BTC - Strefy konsolidacji</b> {today.strftime('%d.%m.%Y')}",
@@ -557,8 +580,7 @@ def signal_text(today, spot, last, new_events):
         lines += ["<b>NOWE SYGNAŁY:</b>"] + [event_text(e) for e in new_events] + [""]
 
     zone = "tylko LONG" if ci["long_zone"] else "tylko SHORT" if ci["short_zone"] else "bez nowych wejść"
-    lines += ["<b>Status:</b>",
-              f"🔄 <b>Faza cyklu</b>: {ci['phase']} ({zone}), {ci['dd']} dni od halvingu"]
+    lines += ["<b>Status:</b>", cycle_line(ci, zone)]
     if not np.isnan(sma):
         lines.append(f"{'🟢' if last['is_up'] else '🔴'} <b>Trend SMA 200</b>: "
                      f"{'wzrostowy' if last['is_up'] else 'spadkowy'}: cena {pct((spot / sma - 1) * 100)} vs {usd(sma)}")
