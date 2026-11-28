@@ -10,7 +10,8 @@
     "2026-11-24": {},
     "2026-11-25": {},
     "2026-11-26": {},
-    "2026-11-27": {}
+    "2026-11-27": {},
+    "2026-11-28": {}
   },
   "0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00": {
     "2026-11-17": {
@@ -4764,6 +4765,438 @@
         "val": 0.082131,
         "mark_px": 0.03911
       }
+    },
+    "2026-11-28": {
+      "ETH": {
+        "direction": "SHORT",
+        "val": 16415713.78653,
+        "mark_px": 1668.8999999999999
+      },
+      "SOL": {
+        "direction": "SHORT",
+        "val": 11796536.95229,
+        "mark_px": 72.143
+      },
+      "ZEC": {
+        "direction": "SHORT",
+        "val": 7425551.4225,
+        "mark_px": 757.69
+      },
+      "HYPE": {
+        "direction": "SHORT",
+        "val": 6238079.16745,
+        "mark_px": 64.627
+      },
+      "BTC": {
+        "direction": "LONG",
+        "val": 5779022.7285,
+        "mark_px": 60165.00000000001
+      },
+      "DOGE": {
+        "direction": "SHORT",
+        "val": 2555038.638812,
+        "mark_px": 0.057982
+      },
+      "TRX": {
+        "direction": "LONG",
+        "val": 1981295.5988,
+        "mark_px": 0.30076
+      },
+      "PUMP": {
+        "direction": "SHORT",
+        "val": 1850195.170509,
+        "mark_px": 0.002623
+      },
+      "VVV": {
+        "direction": "SHORT",
+        "val": 1108974.99296,
+        "mark_px": 25.832
+      },
+      "CASHCAT": {
+        "direction": "SHORT",
+        "val": 858021.700622,
+        "mark_px": 0.045398
+      },
+      "XPL": {
+        "direction": "SHORT",
+        "val": 834495.767024,
+        "mark_px": 0.046993999999999994
+      },
+      "TRUMP": {
+        "direction": "LONG",
+        "val": 822476.87834,
+        "mark_px": 0.8824400000000001
+      },
+      "PAXG": {
+        "direction": "LONG",
+        "val": 767498.0186,
+        "mark_px": 3652.7
+      },
+      "XRP": {
+        "direction": "SHORT",
+        "val": 750177.60844,
+        "mark_px": 0.95407
+      },
+      "kPEPE": {
+        "direction": "SHORT",
+        "val": 728990.720682,
+        "mark_px": 0.0035740000000000004
+      },
+      "VIRTUAL": {
+        "direction": "SHORT",
+        "val": 718987.27104,
+        "mark_px": 0.37139
+      },
+      "LINK": {
+        "direction": "SHORT",
+        "val": 710118.98546,
+        "mark_px": 9.3766
+      },
+      "WLD": {
+        "direction": "SHORT",
+        "val": 701410.8153,
+        "mark_px": 0.24700000000000003
+      },
+      "NEAR": {
+        "direction": "SHORT",
+        "val": 655650.86202,
+        "mark_px": 3.0582
+      },
+      "TAO": {
+        "direction": "SHORT",
+        "val": 651990.42216,
+        "mark_px": 188.72
+      },
+      "LIT": {
+        "direction": "LONG",
+        "val": 601975.259744,
+        "mark_px": 2.691872
+      },
+      "UNI": {
+        "direction": "SHORT",
+        "val": 579105.71946,
+        "mark_px": 4.8546000000000005
+      },
+      "JUP": {
+        "direction": "LONG",
+        "val": 468092.52625,
+        "mark_px": 0.24875
+      },
+      "LTC": {
+        "direction": "SHORT",
+        "val": 448078.6752,
+        "mark_px": 44.805
+      },
+      "kBONK": {
+        "direction": "SHORT",
+        "val": 428732.386176,
+        "mark_px": 0.002176
+      },
+      "ARB": {
+        "direction": "LONG",
+        "val": 408093.945588,
+        "mark_px": 0.11508
+      },
+      "CRV": {
+        "direction": "SHORT",
+        "val": 402338.402835,
+        "mark_px": 0.17769000000000001
+      },
+      "TIA": {
+        "direction": "SHORT",
+        "val": 352033.9563,
+        "mark_px": 0.34292
+      },
+      "ASTER": {
+        "direction": "SHORT",
+        "val": 349250.87541,
+        "mark_px": 0.5057699999999999
+      },
+      "POPCAT": {
+        "direction": "SHORT",
+        "val": 295759.187064,
+        "mark_px": 0.028248
+      },
+      "LDO": {
+        "direction": "SHORT",
+        "val": 292787.769455,
+        "mark_px": 0.23677
+      },
+      "WLFI": {
+        "direction": "LONG",
+        "val": 291236.89032,
+        "mark_px": 0.03481
+      },
+      "WIF": {
+        "direction": "SHORT",
+        "val": 220893.3008,
+        "mark_px": 0.1424
+      },
+      "FARTCOIN": {
+        "direction": "LONG",
+        "val": 216956.28342,
+        "mark_px": 0.08101
+      },
+      "SUI": {
+        "direction": "LONG",
+        "val": 214422.259463,
+        "mark_px": 0.67631
+      },
+      "PENGU": {
+        "direction": "SHORT",
+        "val": 195261.081183,
+        "mark_px": 0.004473
+      },
+      "AVAX": {
+        "direction": "SHORT",
+        "val": 189442.6918,
+        "mark_px": 6.6428
+      },
+      "ENA": {
+        "direction": "SHORT",
+        "val": 172603.59488,
+        "mark_px": 0.10432
+      },
+      "SEI": {
+        "direction": "SHORT",
+        "val": 158950.2471,
+        "mark_px": 0.0383
+      },
+      "AAVE": {
+        "direction": "SHORT",
+        "val": 155250.8765,
+        "mark_px": 95.64200000000001
+      },
+      "ADA": {
+        "direction": "SHORT",
+        "val": 144774.1764,
+        "mark_px": 0.14868
+      },
+      "GRAM": {
+        "direction": "SHORT",
+        "val": 138168.39143,
+        "mark_px": 0.9810099999999999
+      },
+      "EIGEN": {
+        "direction": "SHORT",
+        "val": 137128.914036,
+        "mark_px": 0.1116
+      },
+      "SNX": {
+        "direction": "LONG",
+        "val": 132994.2027,
+        "mark_px": 0.14606
+      },
+      "XLM": {
+        "direction": "LONG",
+        "val": 128986.41771,
+        "mark_px": 0.126855
+      },
+      "BCH": {
+        "direction": "SHORT",
+        "val": 127501.09332,
+        "mark_px": 208.86
+      },
+      "2Z": {
+        "direction": "LONG",
+        "val": 121017.807702,
+        "mark_px": 0.017413
+      },
+      "STRK": {
+        "direction": "LONG",
+        "val": 112372.200688,
+        "mark_px": 0.03154
+      },
+      "GRASS": {
+        "direction": "SHORT",
+        "val": 107136.926001,
+        "mark_px": 0.37107
+      },
+      "MON": {
+        "direction": "SHORT",
+        "val": 94144.458818,
+        "mark_px": 0.010118
+      },
+      "BNB": {
+        "direction": "SHORT",
+        "val": 93337.51244,
+        "mark_px": 556.1200000000001
+      },
+      "ONDO": {
+        "direction": "LONG",
+        "val": 82973.17875,
+        "mark_px": 0.28875
+      },
+      "MELANIA": {
+        "direction": "LONG",
+        "val": 79752.531183,
+        "mark_px": 0.04889
+      },
+      "PONS": {
+        "direction": "SHORT",
+        "val": 74788.06615,
+        "mark_px": 0.10235
+      },
+      "MET": {
+        "direction": "LONG",
+        "val": 73068.58044,
+        "mark_px": 0.19494
+      },
+      "USELESS": {
+        "direction": "LONG",
+        "val": 48155.57955,
+        "mark_px": 0.07397000000000001
+      },
+      "AVNT": {
+        "direction": "SHORT",
+        "val": 47968.89014,
+        "mark_px": 0.061388000000000005
+      },
+      "MORPHO": {
+        "direction": "LONG",
+        "val": 47593.586327,
+        "mark_px": 1.6473099999999998
+      },
+      "APT": {
+        "direction": "SHORT",
+        "val": 45462.07048,
+        "mark_px": 0.391
+      },
+      "SPX": {
+        "direction": "LONG",
+        "val": 44920.209792,
+        "mark_px": 0.27474000000000004
+      },
+      "PYTH": {
+        "direction": "SHORT",
+        "val": 42964.696302,
+        "mark_px": 0.04836699999999999
+      },
+      "kFLOKI": {
+        "direction": "LONG",
+        "val": 39424.297892,
+        "mark_px": 0.016534
+      },
+      "ZRO": {
+        "direction": "SHORT",
+        "val": 37117.14669,
+        "mark_px": 1.0959
+      },
+      "STBL": {
+        "direction": "LONG",
+        "val": 28790.04128,
+        "mark_px": 0.020215
+      },
+      "AIXBT": {
+        "direction": "SHORT",
+        "val": 21596.664355,
+        "mark_px": 0.012635
+      },
+      "ATOM": {
+        "direction": "SHORT",
+        "val": 19475.966878,
+        "mark_px": 1.2361
+      },
+      "GRIFFAIN": {
+        "direction": "SHORT",
+        "val": 36.02872,
+        "mark_px": 0.010192
+      },
+      "PURR": {
+        "direction": "LONG",
+        "val": 9.73324,
+        "mark_px": 0.08044
+      },
+      "MOODENG": {
+        "direction": "LONG",
+        "val": 7.199325,
+        "mark_px": 0.029385
+      },
+      "ETHFI": {
+        "direction": "LONG",
+        "val": 3.97503,
+        "mark_px": 0.44167
+      },
+      "KAITO": {
+        "direction": "LONG",
+        "val": 3.92375,
+        "mark_px": 0.15695
+      },
+      "CHIP": {
+        "direction": "LONG",
+        "val": 3.634884,
+        "mark_px": 0.027537
+      },
+      "BERA": {
+        "direction": "LONG",
+        "val": 3.028752,
+        "mark_px": 0.08208
+      },
+      "GOAT": {
+        "direction": "LONG",
+        "val": 2.675322,
+        "mark_px": 0.011433
+      },
+      "INJ": {
+        "direction": "SHORT",
+        "val": 2.52632,
+        "mark_px": 6.3158
+      },
+      "BOME": {
+        "direction": "SHORT",
+        "val": 2.429361,
+        "mark_px": 0.000477
+      },
+      "kSHIB": {
+        "direction": "SHORT",
+        "val": 2.15788,
+        "mark_px": 0.003695
+      },
+      "PNUT": {
+        "direction": "SHORT",
+        "val": 1.366728,
+        "mark_px": 0.02728
+      },
+      "STX": {
+        "direction": "SHORT",
+        "val": 1.10946,
+        "mark_px": 0.2706
+      },
+      "ZORA": {
+        "direction": "LONG",
+        "val": 0.586858,
+        "mark_px": 0.004222
+      },
+      "TURBO": {
+        "direction": "LONG",
+        "val": 0.507535,
+        "mark_px": 0.0005949999999999999
+      },
+      "0G": {
+        "direction": "LONG",
+        "val": 0.32604,
+        "mark_px": 0.10868
+      },
+      "LAYER": {
+        "direction": "LONG",
+        "val": 0.28953,
+        "mark_px": 0.048255
+      },
+      "USUAL": {
+        "direction": "LONG",
+        "val": 0.21063,
+        "mark_px": 0.0119
+      },
+      "SOPH": {
+        "direction": "LONG",
+        "val": 0.102256,
+        "mark_px": 0.000913
+      },
+      "ME": {
+        "direction": "LONG",
+        "val": 0.081459,
+        "mark_px": 0.03879
+      }
     }
   },
   "0x082e843a431aef031264dc232693dd710aedca88": {
@@ -4842,6 +5275,13 @@
         "direction": "LONG",
         "val": 88159885.20612,
         "mark_px": 63.882000000000005
+      }
+    },
+    "2026-11-28": {
+      "HYPE": {
+        "direction": "LONG",
+        "val": 89188016.98782,
+        "mark_px": 64.62700000000001
       }
     }
   },
@@ -4922,6 +5362,13 @@
         "val": 50178000.0,
         "mark_px": 1672.6
       }
+    },
+    "2026-11-28": {
+      "ETH": {
+        "direction": "SHORT",
+        "val": 50067000.0,
+        "mark_px": 1668.9
+      }
     }
   },
   "0x5b5d51203a0f9079f8aeb098a6523a13f298c060": {
@@ -4935,7 +5382,8 @@
     "2026-11-24": {},
     "2026-11-25": {},
     "2026-11-26": {},
-    "2026-11-27": {}
+    "2026-11-27": {},
+    "2026-11-28": {}
   },
   "0xfc27136e42af1732ddc9ce2605ea9bff1b959d9d": {
     "2026-11-17": {
@@ -6168,6 +6616,118 @@
         "direction": "LONG",
         "val": 4566.968965,
         "mark_px": 0.288665
+      }
+    },
+    "2026-11-28": {
+      "BTC": {
+        "direction": "SHORT",
+        "val": 45937601.35335,
+        "mark_px": 60165.0
+      },
+      "SOL": {
+        "direction": "SHORT",
+        "val": 8730675.15986,
+        "mark_px": 72.143
+      },
+      "XRP": {
+        "direction": "SHORT",
+        "val": 3008740.84095,
+        "mark_px": 0.9540700000000001
+      },
+      "ETH": {
+        "direction": "SHORT",
+        "val": 2922059.15277,
+        "mark_px": 1668.9
+      },
+      "ZEC": {
+        "direction": "SHORT",
+        "val": 2127828.4039,
+        "mark_px": 757.6899999999999
+      },
+      "NEAR": {
+        "direction": "SHORT",
+        "val": 978616.96614,
+        "mark_px": 3.0582
+      },
+      "LINK": {
+        "direction": "SHORT",
+        "val": 849447.76018,
+        "mark_px": 9.3766
+      },
+      "BNB": {
+        "direction": "LONG",
+        "val": 709247.08588,
+        "mark_px": 556.12
+      },
+      "AAVE": {
+        "direction": "SHORT",
+        "val": 597850.49064,
+        "mark_px": 95.642
+      },
+      "SUI": {
+        "direction": "LONG",
+        "val": 219824.082695,
+        "mark_px": 0.67631
+      },
+      "HBAR": {
+        "direction": "SHORT",
+        "val": 157801.431074,
+        "mark_px": 0.053771
+      },
+      "HYPE": {
+        "direction": "LONG",
+        "val": 100922.81574,
+        "mark_px": 64.62700000000001
+      },
+      "ENA": {
+        "direction": "LONG",
+        "val": 91797.9488,
+        "mark_px": 0.10432
+      },
+      "ADA": {
+        "direction": "LONG",
+        "val": 90955.13868,
+        "mark_px": 0.14868
+      },
+      "LTC": {
+        "direction": "SHORT",
+        "val": 81474.75615,
+        "mark_px": 44.805
+      },
+      "DOT": {
+        "direction": "LONG",
+        "val": 71376.81148,
+        "mark_px": 0.66664
+      },
+      "DOGE": {
+        "direction": "SHORT",
+        "val": 68715.511876,
+        "mark_px": 0.057982000000000006
+      },
+      "AVAX": {
+        "direction": "SHORT",
+        "val": 66283.85124,
+        "mark_px": 6.642800000000001
+      },
+      "BCH": {
+        "direction": "LONG",
+        "val": 45974.88978,
+        "mark_px": 208.85999999999999
+      },
+      "WLD": {
+        "direction": "SHORT",
+        "val": 45302.9369,
+        "mark_px": 0.247
+      },
+      "XLM": {
+        "direction": "LONG",
+        "val": 9689.69232,
+        "mark_px": 0.126855
+      },
+      "ONDO": {
+        "direction": "LONG",
+        "val": 4568.31375,
+        "mark_px": 0.28875
       }
     }
   },
@@ -10028,6 +10588,358 @@
         "val": 0.43128,
         "mark_px": 0.86256
       }
+    },
+    "2026-11-28": {
+      "BTC": {
+        "direction": "SHORT",
+        "val": 2760556.7115,
+        "mark_px": 60165.00000000001
+      },
+      "HYPE": {
+        "direction": "SHORT",
+        "val": 2450899.48379,
+        "mark_px": 64.62700000000001
+      },
+      "STRK": {
+        "direction": "SHORT",
+        "val": 2008610.073046,
+        "mark_px": 0.03154
+      },
+      "XPL": {
+        "direction": "SHORT",
+        "val": 1829803.874192,
+        "mark_px": 0.046993999999999994
+      },
+      "ZRO": {
+        "direction": "SHORT",
+        "val": 1751166.77463,
+        "mark_px": 1.0959
+      },
+      "ZEC": {
+        "direction": "SHORT",
+        "val": 480072.384,
+        "mark_px": 757.69
+      },
+      "ETH": {
+        "direction": "SHORT",
+        "val": 451811.45049,
+        "mark_px": 1668.8999999999999
+      },
+      "ASTER": {
+        "direction": "SHORT",
+        "val": 450951.10701,
+        "mark_px": 0.5057699999999999
+      },
+      "CHIP": {
+        "direction": "SHORT",
+        "val": 375074.730435,
+        "mark_px": 0.027537
+      },
+      "MON": {
+        "direction": "SHORT",
+        "val": 153665.364468,
+        "mark_px": 0.010118
+      },
+      "SYRUP": {
+        "direction": "SHORT",
+        "val": 132109.110627,
+        "mark_px": 0.069563
+      },
+      "PUMP": {
+        "direction": "LONG",
+        "val": 106730.231974,
+        "mark_px": 0.002623
+      },
+      "TIA": {
+        "direction": "SHORT",
+        "val": 100629.633956,
+        "mark_px": 0.34292000000000006
+      },
+      "STX": {
+        "direction": "SHORT",
+        "val": 83676.85326,
+        "mark_px": 0.2706
+      },
+      "IMX": {
+        "direction": "SHORT",
+        "val": 76635.169252,
+        "mark_px": 0.09494
+      },
+      "WLD": {
+        "direction": "LONG",
+        "val": 75777.13,
+        "mark_px": 0.24700000000000003
+      },
+      "FARTCOIN": {
+        "direction": "SHORT",
+        "val": 68627.410874,
+        "mark_px": 0.08100999999999998
+      },
+      "USELESS": {
+        "direction": "LONG",
+        "val": 67101.29374,
+        "mark_px": 0.07397
+      },
+      "ZK": {
+        "direction": "SHORT",
+        "val": 62082.866582,
+        "mark_px": 0.006337000000000001
+      },
+      "GRAM": {
+        "direction": "LONG",
+        "val": 54029.12575,
+        "mark_px": 0.9810099999999999
+      },
+      "TRX": {
+        "direction": "SHORT",
+        "val": 48806.73128,
+        "mark_px": 0.30076
+      },
+      "INJ": {
+        "direction": "SHORT",
+        "val": 41661.54312,
+        "mark_px": 6.3158
+      },
+      "EIGEN": {
+        "direction": "SHORT",
+        "val": 39051.820836,
+        "mark_px": 0.11159999999999999
+      },
+      "LINK": {
+        "direction": "LONG",
+        "val": 32235.81314,
+        "mark_px": 9.3766
+      },
+      "BNB": {
+        "direction": "SHORT",
+        "val": 30472.5954,
+        "mark_px": 556.12
+      },
+      "NEAR": {
+        "direction": "SHORT",
+        "val": 27516.76614,
+        "mark_px": 3.0582
+      },
+      "COMP": {
+        "direction": "LONG",
+        "val": 27190.5383,
+        "mark_px": 18.223000000000003
+      },
+      "XRP": {
+        "direction": "LONG",
+        "val": 25061.51076,
+        "mark_px": 0.9540700000000001
+      },
+      "ENA": {
+        "direction": "LONG",
+        "val": 19392.87936,
+        "mark_px": 0.10432
+      },
+      "POL": {
+        "direction": "LONG",
+        "val": 17648.302815,
+        "mark_px": 0.07793499999999999
+      },
+      "MORPHO": {
+        "direction": "SHORT",
+        "val": 17403.500688,
+        "mark_px": 1.64731
+      },
+      "ONDO": {
+        "direction": "SHORT",
+        "val": 17227.98,
+        "mark_px": 0.28875
+      },
+      "DOGE": {
+        "direction": "LONG",
+        "val": 16699.917658,
+        "mark_px": 0.05798199999999999
+      },
+      "CRV": {
+        "direction": "LONG",
+        "val": 16222.759389,
+        "mark_px": 0.17769
+      },
+      "XMR": {
+        "direction": "SHORT",
+        "val": 14621.41766,
+        "mark_px": 410.22999999999996
+      },
+      "BLUR": {
+        "direction": "SHORT",
+        "val": 12179.391347,
+        "mark_px": 0.006917
+      },
+      "SKR": {
+        "direction": "LONG",
+        "val": 11633.883294,
+        "mark_px": 0.009363
+      },
+      "RSR": {
+        "direction": "LONG",
+        "val": 11500.990935,
+        "mark_px": 0.001281
+      },
+      "SUI": {
+        "direction": "LONG",
+        "val": 10772.130418,
+        "mark_px": 0.6763100000000001
+      },
+      "LINEA": {
+        "direction": "SHORT",
+        "val": 10500.611475,
+        "mark_px": 0.001725
+      },
+      "MINA": {
+        "direction": "LONG",
+        "val": 10455.710783,
+        "mark_px": 0.042067
+      },
+      "PENGU": {
+        "direction": "LONG",
+        "val": 9937.189962,
+        "mark_px": 0.004473
+      },
+      "JUP": {
+        "direction": "LONG",
+        "val": 8775.4025,
+        "mark_px": 0.24875
+      },
+      "APEX": {
+        "direction": "LONG",
+        "val": 8534.66766,
+        "mark_px": 0.12675499999999998
+      },
+      "AZTEC": {
+        "direction": "SHORT",
+        "val": 8249.635308,
+        "mark_px": 0.008556000000000001
+      },
+      "MEGA": {
+        "direction": "SHORT",
+        "val": 8239.966839,
+        "mark_px": 0.039717
+      },
+      "MERL": {
+        "direction": "LONG",
+        "val": 7313.65718,
+        "mark_px": 0.027385
+      },
+      "PONS": {
+        "direction": "SHORT",
+        "val": 6862.3628,
+        "mark_px": 0.10235
+      },
+      "FET": {
+        "direction": "LONG",
+        "val": 6826.40106,
+        "mark_px": 0.12561
+      },
+      "AAVE": {
+        "direction": "SHORT",
+        "val": 6138.30356,
+        "mark_px": 95.642
+      },
+      "TAO": {
+        "direction": "SHORT",
+        "val": 4442.28008,
+        "mark_px": 188.72
+      },
+      "WLFI": {
+        "direction": "LONG",
+        "val": 2773.93928,
+        "mark_px": 0.03481
+      },
+      "VVV": {
+        "direction": "LONG",
+        "val": 2341.6708,
+        "mark_px": 25.831999999999997
+      },
+      "kPEPE": {
+        "direction": "SHORT",
+        "val": 2097.251792,
+        "mark_px": 0.003574
+      },
+      "LIT": {
+        "direction": "SHORT",
+        "val": 2021.595872,
+        "mark_px": 2.691872
+      },
+      "kBONK": {
+        "direction": "SHORT",
+        "val": 1453.476608,
+        "mark_px": 0.002176
+      },
+      "MELANIA": {
+        "direction": "SHORT",
+        "val": 1120.456131,
+        "mark_px": 0.048889999999999996
+      },
+      "UNI": {
+        "direction": "SHORT",
+        "val": 789.35796,
+        "mark_px": 4.8546000000000005
+      },
+      "RUNE": {
+        "direction": "SHORT",
+        "val": 768.697755,
+        "mark_px": 0.57165
+      },
+      "CC": {
+        "direction": "SHORT",
+        "val": 721.095375,
+        "mark_px": 0.075075
+      },
+      "SKY": {
+        "direction": "LONG",
+        "val": 656.830944,
+        "mark_px": 0.052656
+      },
+      "kSHIB": {
+        "direction": "LONG",
+        "val": 338.93496,
+        "mark_px": 0.003695
+      },
+      "GRIFFAIN": {
+        "direction": "LONG",
+        "val": 259.111216,
+        "mark_px": 0.010192
+      },
+      "CASHCAT": {
+        "direction": "SHORT",
+        "val": 175.100086,
+        "mark_px": 0.045398
+      },
+      "MNT": {
+        "direction": "SHORT",
+        "val": 108.906525,
+        "mark_px": 0.36855
+      },
+      "REZ": {
+        "direction": "LONG",
+        "val": 90.965296,
+        "mark_px": 0.0024259999999999998
+      },
+      "INIT": {
+        "direction": "SHORT",
+        "val": 82.944394,
+        "mark_px": 0.08795800000000001
+      },
+      "AR": {
+        "direction": "SHORT",
+        "val": 75.443052,
+        "mark_px": 2.2676
+      },
+      "HBAR": {
+        "direction": "SHORT",
+        "val": 33.87573,
+        "mark_px": 0.05377099999999999
+      },
+      "TRUMP": {
+        "direction": "LONG",
+        "val": 0.44122,
+        "mark_px": 0.88244
+      }
     }
   },
   "0x6ea486a3426563e23023125f18867117878f0ea7": {
@@ -10106,6 +11018,13 @@
         "direction": "LONG",
         "val": 5672143.03106,
         "mark_px": 1672.6
+      }
+    },
+    "2026-11-28": {
+      "ETH": {
+        "direction": "LONG",
+        "val": 5659595.54259,
+        "mark_px": 1668.8999999999999
       }
     }
   },
@@ -19191,6 +20110,838 @@
         "val": 0.002298,
         "mark_px": 0.01149
       }
+    },
+    "2026-11-28": {
+      "ETH": {
+        "direction": "SHORT",
+        "val": 39233496.53196,
+        "mark_px": 1668.9000000000003
+      },
+      "BTC": {
+        "direction": "SHORT",
+        "val": 38792948.04,
+        "mark_px": 60165.0
+      },
+      "HYPE": {
+        "direction": "SHORT",
+        "val": 4631252.25002,
+        "mark_px": 64.62700000000001
+      },
+      "NEAR": {
+        "direction": "SHORT",
+        "val": 1296693.92592,
+        "mark_px": 3.0582000000000003
+      },
+      "ENA": {
+        "direction": "SHORT",
+        "val": 924755.28064,
+        "mark_px": 0.10432
+      },
+      "UNI": {
+        "direction": "SHORT",
+        "val": 794230.03656,
+        "mark_px": 4.8546000000000005
+      },
+      "ADA": {
+        "direction": "LONG",
+        "val": 424970.11116,
+        "mark_px": 0.14867999999999998
+      },
+      "SOL": {
+        "direction": "SHORT",
+        "val": 384495.49709,
+        "mark_px": 72.143
+      },
+      "STRK": {
+        "direction": "SHORT",
+        "val": 379611.8129,
+        "mark_px": 0.03154
+      },
+      "MON": {
+        "direction": "SHORT",
+        "val": 299926.224766,
+        "mark_px": 0.010118
+      },
+      "POL": {
+        "direction": "SHORT",
+        "val": 286407.929665,
+        "mark_px": 0.077935
+      },
+      "ZEC": {
+        "direction": "SHORT",
+        "val": 285444.5537,
+        "mark_px": 757.6899999999999
+      },
+      "XMR": {
+        "direction": "SHORT",
+        "val": 269333.63489,
+        "mark_px": 410.22999999999996
+      },
+      "LTC": {
+        "direction": "SHORT",
+        "val": 260416.06905,
+        "mark_px": 44.805
+      },
+      "HBAR": {
+        "direction": "SHORT",
+        "val": 250521.293611,
+        "mark_px": 0.053771
+      },
+      "ZRO": {
+        "direction": "SHORT",
+        "val": 248982.89091,
+        "mark_px": 1.0958999999999999
+      },
+      "VVV": {
+        "direction": "SHORT",
+        "val": 245642.68768,
+        "mark_px": 25.832
+      },
+      "ETHFI": {
+        "direction": "SHORT",
+        "val": 228637.233051,
+        "mark_px": 0.44167
+      },
+      "CRV": {
+        "direction": "SHORT",
+        "val": 201896.015709,
+        "mark_px": 0.17769
+      },
+      "ARB": {
+        "direction": "SHORT",
+        "val": 153670.98474,
+        "mark_px": 0.11508000000000002
+      },
+      "PUMP": {
+        "direction": "SHORT",
+        "val": 148092.117003,
+        "mark_px": 0.002623
+      },
+      "TRUMP": {
+        "direction": "LONG",
+        "val": 143140.680644,
+        "mark_px": 0.88244
+      },
+      "ONDO": {
+        "direction": "SHORT",
+        "val": 142198.4025,
+        "mark_px": 0.28875
+      },
+      "XPL": {
+        "direction": "SHORT",
+        "val": 132231.529224,
+        "mark_px": 0.046994
+      },
+      "kPEPE": {
+        "direction": "SHORT",
+        "val": 129801.0681,
+        "mark_px": 0.003574
+      },
+      "LDO": {
+        "direction": "SHORT",
+        "val": 124797.418233,
+        "mark_px": 0.23677
+      },
+      "AAVE": {
+        "direction": "SHORT",
+        "val": 123426.95742,
+        "mark_px": 95.64200000000001
+      },
+      "TAO": {
+        "direction": "SHORT",
+        "val": 120657.1884,
+        "mark_px": 188.72
+      },
+      "PAXG": {
+        "direction": "SHORT",
+        "val": 119585.7453,
+        "mark_px": 3652.7000000000003
+      },
+      "SAGA": {
+        "direction": "SHORT",
+        "val": 112166.847222,
+        "mark_px": 0.01447
+      },
+      "WLFI": {
+        "direction": "LONG",
+        "val": 108323.35926,
+        "mark_px": 0.03481
+      },
+      "JUP": {
+        "direction": "LONG",
+        "val": 106528.1825,
+        "mark_px": 0.24875
+      },
+      "RENDER": {
+        "direction": "SHORT",
+        "val": 94893.28416,
+        "mark_px": 1.3968
+      },
+      "XRP": {
+        "direction": "SHORT",
+        "val": 90337.07202,
+        "mark_px": 0.9540700000000001
+      },
+      "MEGA": {
+        "direction": "SHORT",
+        "val": 79695.73503,
+        "mark_px": 0.039716999999999995
+      },
+      "USELESS": {
+        "direction": "SHORT",
+        "val": 78223.34897,
+        "mark_px": 0.07397000000000001
+      },
+      "LIT": {
+        "direction": "SHORT",
+        "val": 73170.464704,
+        "mark_px": 2.691872
+      },
+      "DYDX": {
+        "direction": "SHORT",
+        "val": 60324.711052,
+        "mark_px": 0.07153
+      },
+      "PENDLE": {
+        "direction": "SHORT",
+        "val": 60318.2165,
+        "mark_px": 1.2035
+      },
+      "INJ": {
+        "direction": "LONG",
+        "val": 57907.04388,
+        "mark_px": 6.315799999999999
+      },
+      "MNT": {
+        "direction": "LONG",
+        "val": 57704.53689,
+        "mark_px": 0.36855000000000004
+      },
+      "FET": {
+        "direction": "SHORT",
+        "val": 54982.76286,
+        "mark_px": 0.12561
+      },
+      "MELANIA": {
+        "direction": "LONG",
+        "val": 54376.77803,
+        "mark_px": 0.04889
+      },
+      "ALGO": {
+        "direction": "SHORT",
+        "val": 53277.917742,
+        "mark_px": 0.080741
+      },
+      "CFX": {
+        "direction": "SHORT",
+        "val": 53140.915393,
+        "mark_px": 0.034621
+      },
+      "DOT": {
+        "direction": "SHORT",
+        "val": 51771.862376,
+        "mark_px": 0.66664
+      },
+      "ZK": {
+        "direction": "SHORT",
+        "val": 50558.753254,
+        "mark_px": 0.006337000000000001
+      },
+      "APE": {
+        "direction": "SHORT",
+        "val": 49383.008046,
+        "mark_px": 0.07218000000000001
+      },
+      "COMP": {
+        "direction": "SHORT",
+        "val": 48549.35214,
+        "mark_px": 18.223000000000003
+      },
+      "ENS": {
+        "direction": "SHORT",
+        "val": 47290.74776,
+        "mark_px": 3.5032
+      },
+      "RUNE": {
+        "direction": "LONG",
+        "val": 43495.076385,
+        "mark_px": 0.5716500000000001
+      },
+      "GRAM": {
+        "direction": "LONG",
+        "val": 42057.86072,
+        "mark_px": 0.9810099999999999
+      },
+      "ATOM": {
+        "direction": "LONG",
+        "val": 41956.015225,
+        "mark_px": 1.2361
+      },
+      "BNB": {
+        "direction": "SHORT",
+        "val": 39995.03816,
+        "mark_px": 556.1199999999999
+      },
+      "SPX": {
+        "direction": "SHORT",
+        "val": 37402.82886,
+        "mark_px": 0.27474
+      },
+      "SKY": {
+        "direction": "LONG",
+        "val": 37326.679968,
+        "mark_px": 0.052655999999999994
+      },
+      "LINK": {
+        "direction": "SHORT",
+        "val": 37210.09944,
+        "mark_px": 9.3766
+      },
+      "FARTCOIN": {
+        "direction": "SHORT",
+        "val": 37134.09289,
+        "mark_px": 0.08101
+      },
+      "2Z": {
+        "direction": "SHORT",
+        "val": 34707.034384,
+        "mark_px": 0.017412999999999998
+      },
+      "GMX": {
+        "direction": "SHORT",
+        "val": 33280.032168,
+        "mark_px": 8.7144
+      },
+      "JTO": {
+        "direction": "SHORT",
+        "val": 31760.76304,
+        "mark_px": 0.24086000000000002
+      },
+      "ICP": {
+        "direction": "SHORT",
+        "val": 31273.299,
+        "mark_px": 2.0204999999999997
+      },
+      "FIL": {
+        "direction": "SHORT",
+        "val": 28967.295962,
+        "mark_px": 0.53159
+      },
+      "GALA": {
+        "direction": "SHORT",
+        "val": 27600.93765,
+        "mark_px": 0.00143
+      },
+      "AERO": {
+        "direction": "SHORT",
+        "val": 27426.39636,
+        "mark_px": 0.38863
+      },
+      "SAND": {
+        "direction": "SHORT",
+        "val": 25342.161264,
+        "mark_px": 0.034811999999999996
+      },
+      "ETC": {
+        "direction": "SHORT",
+        "val": 24427.677645,
+        "mark_px": 5.9115
+      },
+      "TRX": {
+        "direction": "SHORT",
+        "val": 24124.56112,
+        "mark_px": 0.30075999999999997
+      },
+      "MORPHO": {
+        "direction": "SHORT",
+        "val": 23791.768868,
+        "mark_px": 1.64731
+      },
+      "PONS": {
+        "direction": "SHORT",
+        "val": 23503.96105,
+        "mark_px": 0.10235000000000001
+      },
+      "BCH": {
+        "direction": "SHORT",
+        "val": 22968.12534,
+        "mark_px": 208.85999999999999
+      },
+      "WLD": {
+        "direction": "SHORT",
+        "val": 22733.0649,
+        "mark_px": 0.24700000000000003
+      },
+      "STX": {
+        "direction": "LONG",
+        "val": 22606.76286,
+        "mark_px": 0.27059999999999995
+      },
+      "ZEN": {
+        "direction": "SHORT",
+        "val": 22434.042,
+        "mark_px": 3.7425000000000006
+      },
+      "SUI": {
+        "direction": "LONG",
+        "val": 19562.131488,
+        "mark_px": 0.67631
+      },
+      "NIL": {
+        "direction": "SHORT",
+        "val": 19427.611245,
+        "mark_px": 0.044205
+      },
+      "kBONK": {
+        "direction": "SHORT",
+        "val": 19192.546304,
+        "mark_px": 0.002176
+      },
+      "SYRUP": {
+        "direction": "SHORT",
+        "val": 19176.223521,
+        "mark_px": 0.069563
+      },
+      "BERA": {
+        "direction": "LONG",
+        "val": 18354.803472,
+        "mark_px": 0.08208
+      },
+      "APEX": {
+        "direction": "SHORT",
+        "val": 18338.533135,
+        "mark_px": 0.126755
+      },
+      "IMX": {
+        "direction": "SHORT",
+        "val": 18172.446412,
+        "mark_px": 0.09494000000000001
+      },
+      "VIRTUAL": {
+        "direction": "SHORT",
+        "val": 17452.210324,
+        "mark_px": 0.37139
+      },
+      "PENGU": {
+        "direction": "SHORT",
+        "val": 16053.051294,
+        "mark_px": 0.004473
+      },
+      "CAKE": {
+        "direction": "SHORT",
+        "val": 15027.6168,
+        "mark_px": 1.5693
+      },
+      "OP": {
+        "direction": "SHORT",
+        "val": 14388.74604,
+        "mark_px": 0.07092
+      },
+      "APT": {
+        "direction": "SHORT",
+        "val": 13895.25243,
+        "mark_px": 0.39099999999999996
+      },
+      "AXS": {
+        "direction": "SHORT",
+        "val": 13688.347113,
+        "mark_px": 0.6533100000000001
+      },
+      "AR": {
+        "direction": "SHORT",
+        "val": 13426.709036,
+        "mark_px": 2.2676000000000003
+      },
+      "MET": {
+        "direction": "LONG",
+        "val": 13165.66278,
+        "mark_px": 0.19494
+      },
+      "WIF": {
+        "direction": "SHORT",
+        "val": 12935.7584,
+        "mark_px": 0.1424
+      },
+      "XLM": {
+        "direction": "LONG",
+        "val": 12478.98006,
+        "mark_px": 0.126855
+      },
+      "ASTER": {
+        "direction": "LONG",
+        "val": 10915.02237,
+        "mark_px": 0.50577
+      },
+      "TIA": {
+        "direction": "SHORT",
+        "val": 10243.8777,
+        "mark_px": 0.34291999999999995
+      },
+      "RESOLV": {
+        "direction": "SHORT",
+        "val": 9863.345667,
+        "mark_px": 0.014077
+      },
+      "BIO": {
+        "direction": "SHORT",
+        "val": 9486.70214,
+        "mark_px": 0.015369999999999998
+      },
+      "XAI": {
+        "direction": "LONG",
+        "val": 9095.375734,
+        "mark_px": 0.00551
+      },
+      "SEI": {
+        "direction": "SHORT",
+        "val": 7583.6298,
+        "mark_px": 0.0383
+      },
+      "MEME": {
+        "direction": "SHORT",
+        "val": 7350.58285,
+        "mark_px": 0.000295
+      },
+      "DOGE": {
+        "direction": "SHORT",
+        "val": 7051.538912,
+        "mark_px": 0.057982
+      },
+      "PYTH": {
+        "direction": "SHORT",
+        "val": 7026.515925,
+        "mark_px": 0.048367
+      },
+      "IO": {
+        "direction": "LONG",
+        "val": 6917.26464,
+        "mark_px": 0.0988
+      },
+      "IOTA": {
+        "direction": "SHORT",
+        "val": 6820.606104,
+        "mark_px": 0.032617
+      },
+      "YGG": {
+        "direction": "LONG",
+        "val": 6536.703453,
+        "mark_px": 0.021057
+      },
+      "KAS": {
+        "direction": "SHORT",
+        "val": 6412.2425,
+        "mark_px": 0.026750000000000003
+      },
+      "CASHCAT": {
+        "direction": "SHORT",
+        "val": 6174.264194,
+        "mark_px": 0.045398
+      },
+      "PNUT": {
+        "direction": "SHORT",
+        "val": 6137.78176,
+        "mark_px": 0.02728
+      },
+      "ZETA": {
+        "direction": "LONG",
+        "val": 5619.072448,
+        "mark_px": 0.02932
+      },
+      "KAITO": {
+        "direction": "SHORT",
+        "val": 5460.13355,
+        "mark_px": 0.15694999999999998
+      },
+      "ORDI": {
+        "direction": "SHORT",
+        "val": 5156.56776,
+        "mark_px": 2.6470000000000002
+      },
+      "CHIP": {
+        "direction": "SHORT",
+        "val": 4659.480696,
+        "mark_px": 0.027537
+      },
+      "AVNT": {
+        "direction": "LONG",
+        "val": 4315.88334,
+        "mark_px": 0.061388000000000005
+      },
+      "HEMI": {
+        "direction": "SHORT",
+        "val": 4282.698192,
+        "mark_px": 0.003277
+      },
+      "RSR": {
+        "direction": "SHORT",
+        "val": 4048.7286,
+        "mark_px": 0.001281
+      },
+      "SKR": {
+        "direction": "SHORT",
+        "val": 3791.200419,
+        "mark_px": 0.009363
+      },
+      "W": {
+        "direction": "LONG",
+        "val": 3488.344002,
+        "mark_px": 0.009179999999999999
+      },
+      "AIXBT": {
+        "direction": "SHORT",
+        "val": 3316.28318,
+        "mark_px": 0.012635
+      },
+      "S": {
+        "direction": "LONG",
+        "val": 3209.781885,
+        "mark_px": 0.028555
+      },
+      "DASH": {
+        "direction": "SHORT",
+        "val": 2784.67945,
+        "mark_px": 36.085
+      },
+      "BOME": {
+        "direction": "SHORT",
+        "val": 2727.142083,
+        "mark_px": 0.00047700000000000005
+      },
+      "PEOPLE": {
+        "direction": "SHORT",
+        "val": 2365.454252,
+        "mark_px": 0.004988
+      },
+      "EIGEN": {
+        "direction": "SHORT",
+        "val": 2344.54302,
+        "mark_px": 0.1116
+      },
+      "LAYER": {
+        "direction": "LONG",
+        "val": 2286.70794,
+        "mark_px": 0.04825499999999999
+      },
+      "BABY": {
+        "direction": "SHORT",
+        "val": 2275.90968,
+        "mark_px": 0.00969
+      },
+      "LINEA": {
+        "direction": "LONG",
+        "val": 2179.746225,
+        "mark_px": 0.001725
+      },
+      "STBL": {
+        "direction": "SHORT",
+        "val": 1870.756745,
+        "mark_px": 0.020215
+      },
+      "STABLE": {
+        "direction": "LONG",
+        "val": 1842.979419,
+        "mark_px": 0.024597
+      },
+      "MERL": {
+        "direction": "LONG",
+        "val": 1731.142775,
+        "mark_px": 0.027385
+      },
+      "MANTA": {
+        "direction": "SHORT",
+        "val": 1522.4517,
+        "mark_px": 0.03465
+      },
+      "MINA": {
+        "direction": "LONG",
+        "val": 1509.027424,
+        "mark_px": 0.042067
+      },
+      "INIT": {
+        "direction": "SHORT",
+        "val": 1441.367746,
+        "mark_px": 0.087958
+      },
+      "CC": {
+        "direction": "SHORT",
+        "val": 1400.223825,
+        "mark_px": 0.075075
+      },
+      "GRASS": {
+        "direction": "SHORT",
+        "val": 1314.663903,
+        "mark_px": 0.37106999999999996
+      },
+      "SOPH": {
+        "direction": "SHORT",
+        "val": 1050.875782,
+        "mark_px": 0.0009130000000000001
+      },
+      "BLUR": {
+        "direction": "SHORT",
+        "val": 839.135855,
+        "mark_px": 0.0069169999999999995
+      },
+      "MOVE": {
+        "direction": "SHORT",
+        "val": 810.072312,
+        "mark_px": 0.005684
+      },
+      "BIGTIME": {
+        "direction": "LONG",
+        "val": 795.57104,
+        "mark_px": 0.0056240000000000005
+      },
+      "0G": {
+        "direction": "SHORT",
+        "val": 792.60324,
+        "mark_px": 0.10868
+      },
+      "GAS": {
+        "direction": "SHORT",
+        "val": 762.65004,
+        "mark_px": 0.96783
+      },
+      "FOGO": {
+        "direction": "SHORT",
+        "val": 703.7487,
+        "mark_px": 0.0014939999999999999
+      },
+      "UMA": {
+        "direction": "SHORT",
+        "val": 617.37942,
+        "mark_px": 0.24045
+      },
+      "kSHIB": {
+        "direction": "SHORT",
+        "val": 591.2,
+        "mark_px": 0.0036950000000000004
+      },
+      "CELO": {
+        "direction": "SHORT",
+        "val": 461.343488,
+        "mark_px": 0.060992
+      },
+      "AZTEC": {
+        "direction": "SHORT",
+        "val": 441.4896,
+        "mark_px": 0.008556
+      },
+      "ALT": {
+        "direction": "LONG",
+        "val": 435.485136,
+        "mark_px": 0.004404
+      },
+      "SUPER": {
+        "direction": "SHORT",
+        "val": 301.9464,
+        "mark_px": 0.11982
+      },
+      "POPCAT": {
+        "direction": "SHORT",
+        "val": 111.664344,
+        "mark_px": 0.028248
+      },
+      "SUSHI": {
+        "direction": "SHORT",
+        "val": 100.379953,
+        "mark_px": 0.15097
+      },
+      "NXPC": {
+        "direction": "SHORT",
+        "val": 98.99384,
+        "mark_px": 0.13432
+      },
+      "HYPER": {
+        "direction": "LONG",
+        "val": 94.225464,
+        "mark_px": 0.040932
+      },
+      "TRB": {
+        "direction": "LONG",
+        "val": 89.725842,
+        "mark_px": 13.2339
+      },
+      "AVAX": {
+        "direction": "SHORT",
+        "val": 84.762128,
+        "mark_px": 6.6428
+      },
+      "REZ": {
+        "direction": "SHORT",
+        "val": 45.055672,
+        "mark_px": 0.002426
+      },
+      "GMT": {
+        "direction": "SHORT",
+        "val": 39.460536,
+        "mark_px": 0.005253
+      },
+      "PROVE": {
+        "direction": "SHORT",
+        "val": 32.2252,
+        "mark_px": 0.1354
+      },
+      "POLYX": {
+        "direction": "SHORT",
+        "val": 29.261487,
+        "mark_px": 0.026529
+      },
+      "WCT": {
+        "direction": "SHORT",
+        "val": 24.97268,
+        "mark_px": 0.029038
+      },
+      "MOODENG": {
+        "direction": "LONG",
+        "val": 13.16448,
+        "mark_px": 0.029384999999999998
+      },
+      "kLUNC": {
+        "direction": "LONG",
+        "val": 7.705089,
+        "mark_px": 0.045059
+      },
+      "USUAL": {
+        "direction": "LONG",
+        "val": 5.80244,
+        "mark_px": 0.011899999999999999
+      },
+      "BSV": {
+        "direction": "LONG",
+        "val": 4.91334,
+        "mark_px": 14.450999999999999
+      },
+      "ZORA": {
+        "direction": "LONG",
+        "val": 3.723804,
+        "mark_px": 0.004222
+      },
+      "ANIME": {
+        "direction": "SHORT",
+        "val": 3.475011,
+        "mark_px": 0.002229
+      },
+      "GOAT": {
+        "direction": "LONG",
+        "val": 1.417692,
+        "mark_px": 0.011433
+      },
+      "ME": {
+        "direction": "LONG",
+        "val": 1.1637,
+        "mark_px": 0.03879
+      },
+      "BRETT": {
+        "direction": "LONG",
+        "val": 1.1191,
+        "mark_px": 0.0031
+      },
+      "DYM": {
+        "direction": "LONG",
+        "val": 0.002286,
+        "mark_px": 0.01143
+      }
     }
   },
   "0xfc667adba8d4837586078f4fdcdc29804337ca06": {
@@ -19655,6 +21406,48 @@
         "val": 313760.6107,
         "mark_px": 3641.9
       }
+    },
+    "2026-11-28": {
+      "HYPE": {
+        "direction": "SHORT",
+        "val": 14048106.7067,
+        "mark_px": 64.62700000000001
+      },
+      "BTC": {
+        "direction": "SHORT",
+        "val": 12773463.28965,
+        "mark_px": 60165.0
+      },
+      "ZEC": {
+        "direction": "SHORT",
+        "val": 4274439.9429,
+        "mark_px": 757.69
+      },
+      "XRP": {
+        "direction": "LONG",
+        "val": 3860008.84438,
+        "mark_px": 0.9540700000000001
+      },
+      "ETH": {
+        "direction": "SHORT",
+        "val": 3664534.40487,
+        "mark_px": 1668.9
+      },
+      "NEAR": {
+        "direction": "SHORT",
+        "val": 2014984.06362,
+        "mark_px": 3.0582
+      },
+      "SOL": {
+        "direction": "LONG",
+        "val": 1960531.47509,
+        "mark_px": 72.143
+      },
+      "PAXG": {
+        "direction": "LONG",
+        "val": 314691.0631,
+        "mark_px": 3652.7000000000003
+      }
     }
   },
   "0x44871d62caaeb8b91777be8aae0e23ee68b4c92d": {
@@ -19733,6 +21526,13 @@
         "direction": "SHORT",
         "val": 4596542.64372,
         "mark_px": 1672.6000000000001
+      }
+    },
+    "2026-11-28": {
+      "ETH": {
+        "direction": "SHORT",
+        "val": 6328988.32857,
+        "mark_px": 1668.9
       }
     }
   }
